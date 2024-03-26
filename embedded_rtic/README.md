@@ -4,6 +4,12 @@
 
 This is our base embedded application it is based on the [rtic-rs](https://github.com/rtic-rs/defmt-app-template) example.
 
+## Prerequisite
+
+To be able to run this we need to use a fork of probe-rs that side-steps the flashing rules by remapping the ram addresses to dcode addresses while flashing
+<https://github.com/ivario123/probe-rs>.
+
+
 ## Initial optimizations
 
 All of the code runs from RAM, the linker also places the `.data` region in RAM to ensure the shortest possible load times.
