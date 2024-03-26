@@ -15,7 +15,6 @@ on:
       - main
       - ci
 
-
 name: Check and Lint for shared
 
 jobs:
@@ -29,11 +28,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - name: cd
-        run : cd shared
       - uses: actions-rs/cargo@v1
-        run: |
-          cd shared
+        working-directory: ./shared
         with:
           command: check
 
@@ -51,12 +47,11 @@ jobs:
         run: |
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
-        run: |
-          cd shared
+        working-directory: ./shared
         with:
           command: fmt
           args: --all -- --check
-  
+
   test:
     name: Test
     env:
@@ -64,10 +59,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test
+        working-directory: ./shared
         run: |
-          cd shared
           cargo test
       - name: Test docs
+        working-directory: ./shared
         run: |
-          cd shared
           cargo test --doc

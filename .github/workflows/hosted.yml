@@ -17,7 +17,6 @@ on:
 
 
 name: Check and Lint for hosted
-
 jobs:
   check:
     name: Check
@@ -29,11 +28,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - name: cd
-        run : cd hosted
       - uses: actions-rs/cargo@v1
-        run: |
-          cd hosted
+        working-directory: ./hosted
         with:
           command: check
 
@@ -51,12 +47,11 @@ jobs:
         run: |
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
-        run: |
-          cd hosted
+        working-directory: ./hosted
         with:
           command: fmt
           args: --all -- --check
-  
+
   test:
     name: Test
     env:
@@ -64,10 +59,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test
+        working-directory: ./hosted
         run: |
-          cd hosted
           cargo test
       - name: Test docs
+        working-directory: ./hosted
         run: |
-          cd hosted
           cargo test --doc
