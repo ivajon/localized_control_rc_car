@@ -1,0 +1,23 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+# TODO(2) replace `$CHIP` with your chip's name (see `probe-rs chip list` output)
+runner = "probe-rs run --chip nrf52840_xxAA"
+rustflags = [
+    "-C",
+    "link-arg=--nmagic",
+    "-C",
+    "link-arg=-Tcustom_link.x",
+    "-C",
+    "link-arg=-Tdefmt.x",
+]
+
+[build]
+target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+
+[alias]
+rb = "run --bin"
+rrb = "run --release --bin"
+bbr = "build --release --bin"
+
+
+[env]
+DEFMT_LOG = "info"
