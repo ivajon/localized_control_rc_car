@@ -16,11 +16,10 @@ on:
       - ci
 
 defaults:
-  run:
-    run: |
+  run: |
       pwd
       ls
-    working-directory: hosted
+      cd hosted
 
 name: Check and Lint for hosted
 jobs:
