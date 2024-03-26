@@ -33,6 +33,7 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
+          working-directory: hosted
           command: check
 
   fmt:
@@ -53,6 +54,7 @@ jobs:
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
         with:
+          working-directory: hosted
           command: fmt
           args: --all -- --check
 
