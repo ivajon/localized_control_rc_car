@@ -13,13 +13,11 @@ on:
   push:
     branches:
       - main
-      - ci
+      - '*ci*'
 
 defaults:
-  run: |
-      pwd
-      ls
-      cd hosted
+  run:
+    working-directory: hosted
 
 name: Check and Lint for hosted
 jobs:
