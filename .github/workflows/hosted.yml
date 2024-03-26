@@ -17,6 +17,9 @@ on:
 
 defaults:
   run:
+    run: |
+      pwd
+      ls
     working-directory: hosted
 
 name: Check and Lint for hosted
