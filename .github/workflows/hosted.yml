@@ -19,6 +19,9 @@ name: Check and Lint for hosted
 
 defaults:
   run:
+    run: |
+      pwd
+      ls
     working-directory: hosted
 
 jobs:
