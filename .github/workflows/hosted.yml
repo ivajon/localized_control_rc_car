@@ -15,11 +15,12 @@ on:
       - main
       - '*ci*'
 
+name: Check and Lint for hosted
+
 defaults:
   run:
     working-directory: hosted
 
-name: Check and Lint for hosted
 jobs:
   check:
     name: Check
@@ -31,9 +32,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+      - name: cargo_check
+        run: |
+          ls -la
+          cargo check
 
   fmt:
     name: Rustfmt
@@ -48,11 +50,7 @@ jobs:
       - name: fmt check
         run: |
           rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          working-directory: hosted
-          command: fmt
-          args: --all -- --check
+          cargo fmt --all -- --check
 
   test:
     name: Test
@@ -60,6 +58,12 @@ jobs:
       PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Test
         run: |
           cargo test
