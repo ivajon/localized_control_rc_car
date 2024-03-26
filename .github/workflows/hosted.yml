@@ -15,15 +15,16 @@ on:
       - main
       - ci
 
+defaults:
+  run:
+    working-directory: hosted
 
 name: Check and Lint for hosted
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: hosted
+    working-directory: hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -33,15 +34,12 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          working-directory: hosted
           command: check
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: hosted
+    working-directory: hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -63,9 +61,7 @@ jobs:
     env:
       PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: hosted
+    working-directory: hosted
     steps:
       - name: Test
         run: |
