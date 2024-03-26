@@ -13,7 +13,7 @@ on:
   push:
     branches:
       - main
-      - '*ci*'
+      - "*ci*"
 
 defaults:
   run:
@@ -31,9 +31,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+      - name: cargo_check
+        run: |
+          ls -la
+          cargo check
 
   fmt:
     name: Rustfmt
@@ -48,10 +49,7 @@ jobs:
       - name: fmt check
         run: |
           rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+          cargo fmt --all -- --check
 
   test:
     name: Test
