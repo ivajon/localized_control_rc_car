@@ -13,28 +13,28 @@ on:
   push:
     branches:
       - main
+      - "*ci*"
 
+defaults:
+  run:
+    working-directory: shared
 
 name: Check and Lint for shared
-
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
-          override: trued
-      - name: cd
-        run : |
-        cd shared
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+          override: true
+      - name: cargo_check
+        run: |
+          ls -la
+          cargo check
 
   fmt:
     name: Rustfmt
@@ -46,25 +46,26 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: |
-        cd shared
-        rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-  
+      - name: fmt check
+        run: |
+          rustup component add rustfmt
+          cargo fmt --all -- --check
+
   test:
     name: Test
     env:
       PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Test
         run: |
-          cd shared
           cargo test
       - name: Test docs
         run: |
-          cd shared
           cargo test --doc
