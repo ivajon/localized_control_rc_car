@@ -21,6 +21,9 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -29,13 +32,15 @@ jobs:
           toolchain: stable
           override: true
       - uses: actions-rs/cargo@v1
-        working-directory: ./hosted
         with:
           command: check
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -47,7 +52,6 @@ jobs:
         run: |
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
-        working-directory: ./hosted
         with:
           command: fmt
           args: --all -- --check
@@ -57,12 +61,13 @@ jobs:
     env:
       PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./hosted
     steps:
       - name: Test
-        working-directory: ./hosted
         run: |
           cargo test
       - name: Test docs
-        working-directory: ./hosted
         run: |
           cargo test --doc

@@ -16,11 +16,13 @@ on:
       - ci
 
 name: Check and Lint for shared
-
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./shared
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -29,13 +31,15 @@ jobs:
           toolchain: stable
           override: true
       - uses: actions-rs/cargo@v1
-        working-directory: ./shared
         with:
           command: check
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./shared
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -47,7 +51,6 @@ jobs:
         run: |
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
-        working-directory: ./shared
         with:
           command: fmt
           args: --all -- --check
@@ -57,12 +60,13 @@ jobs:
     env:
       PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./shared
     steps:
       - name: Test
-        working-directory: ./shared
         run: |
           cargo test
       - name: Test docs
-        working-directory: ./shared
         run: |
           cargo test --doc
