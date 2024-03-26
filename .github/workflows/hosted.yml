@@ -67,6 +67,3 @@ jobs:
       - name: Test
         run: |
           cargo test
-      - name: Test docs
-        run: |
-          cargo test --doc
