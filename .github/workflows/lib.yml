@@ -64,8 +64,10 @@ jobs:
           toolchain: stable
           override: true
       - name: Test
+        working-directory: ./shared
         run: |
           cargo test
       - name: Test docs
+        working-directory: ./shared
         run: |
           cargo test --doc

@@ -65,5 +65,6 @@ jobs:
           toolchain: stable
           override: true
       - name: Test
+        working-directory: ./hosted
         run: |
           cargo test
