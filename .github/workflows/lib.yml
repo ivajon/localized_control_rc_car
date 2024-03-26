@@ -23,16 +23,17 @@ jobs:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
-          override: trued
+          override: true
       - name: cd
         run : cd shared
       - uses: actions-rs/cargo@v1
+        run: |
+          cd shared
         with:
           command: check
 
@@ -48,9 +49,10 @@ jobs:
           override: true
       - name: fmt check
         run: |
-          cd shared
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
+        run: |
+          cd shared
         with:
           command: fmt
           args: --all -- --check

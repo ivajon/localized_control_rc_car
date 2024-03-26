@@ -32,6 +32,8 @@ jobs:
       - name: cd
         run : cd hosted
       - uses: actions-rs/cargo@v1
+        run: |
+          cd hosted
         with:
           command: check
 
@@ -47,9 +49,10 @@ jobs:
           override: true
       - name: fmt check
         run: |
-          cd shared
           rustup component add rustfmt
       - uses: actions-rs/cargo@v1
+        run: |
+          cd hosted
         with:
           command: fmt
           args: --all -- --check
