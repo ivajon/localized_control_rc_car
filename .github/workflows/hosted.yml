@@ -25,7 +25,6 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    working-directory: hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -41,7 +40,6 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
-    working-directory: hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -59,7 +57,6 @@ jobs:
     env:
       PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
     runs-on: ubuntu-latest
-    working-directory: hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
