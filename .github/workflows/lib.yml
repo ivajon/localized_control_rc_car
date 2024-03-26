@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./shared
+        working-directory: shared
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./shared
+        working-directory: shared
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./shared
+        working-directory: shared
     steps:
       - name: Test
         run: |
