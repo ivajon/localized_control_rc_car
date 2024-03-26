@@ -30,8 +30,7 @@ jobs:
           toolchain: stable
           override: trued
       - name: cd
-        run : |
-        cd shared
+        run : cd shared
       - uses: actions-rs/cargo@v1
         with:
           command: check
