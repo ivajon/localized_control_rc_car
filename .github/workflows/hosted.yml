@@ -18,10 +18,8 @@ on:
 name: Check and Lint for hosted
 
 defaults:
-  run: |
-      pwd
-      ls
-      cd hosted
+  run:
+    working-directory: hosted
 
 jobs:
   check:
