@@ -66,11 +66,10 @@ mod app {
     async fn task1(_cx: task1::Context) {
         defmt::info!("Hello from task1!");
         for i in 0..20 {
-            unsafe{
+            unsafe {
                 asm!("nop");
             }
-            defmt::info!("Hello from task1!{}",i);
-
+            defmt::info!("Hello from task1!{}", i);
         }
     }
 }

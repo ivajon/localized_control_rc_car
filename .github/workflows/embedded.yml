@@ -15,7 +15,7 @@ on:
       - main
       - "*ci*"
 
-name: Check and Lint for hosted
+name: Check and Lint for embedded
 
 defaults:
   run:
@@ -35,7 +35,6 @@ jobs:
       - name: cargo_check
         run: |
           ls -la
-          cargo install clippy
           cargo clippy
   check:
     needs: [clippy]
