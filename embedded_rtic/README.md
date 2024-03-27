@@ -6,8 +6,29 @@ This is our base embedded application it is based on the [rtic-rs](https://githu
 
 ## Prerequisite
 
-To be able to run this we need to use a fork of probe-rs that side-steps the flashing rules by remapping the ram addresses to dcode addresses while flashing
+To be able to run this we `might` need to use a fork of probe-rs that side-steps the flashing rules by remapping the ram addresses to dcode addresses while flashing
 <https://github.com/ivario123/probe-rs>.
+
+Installation:
+
+```bash
+echo "creating a temporary directory."
+mkdir -p tmp
+cd tmp
+echo "retrieving source."
+git clone https://github.com/ivario123/probe-rs > /dev/null
+
+echo "installing fulhack."
+cd probe-rs
+cargo install --path ./probe-rs > /dev/null
+
+cd ../..
+echo "cleaning up."
+rm -rf tmp
+```
+
+This should only be needed if we run in to issues where `probe` fails due to no contigous memory regions containing those addresses.
+
 
 
 ## Initial optimizations

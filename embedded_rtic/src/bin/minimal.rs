@@ -16,6 +16,8 @@ use test_app as _; // global logger + panicking-behavior + memory layout
     dispatchers = [RTC0]
 )]
 mod app {
+    use core::arch::asm;
+
     // Shared resources go here
     #[shared]
     struct Shared {
@@ -63,5 +65,12 @@ mod app {
     #[task(priority = 1)]
     async fn task1(_cx: task1::Context) {
         defmt::info!("Hello from task1!");
+        for i in 0..20 {
+            unsafe{
+                asm!("nop");
+            }
+            defmt::info!("Hello from task1!{}",i);
+
+        }
     }
 }
