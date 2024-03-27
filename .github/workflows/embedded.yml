@@ -14,6 +14,8 @@ on:
     branches:
       - main
       - "*ci*"
+    paths:
+      - folder1/**
 
 name: Check and Lint for embedded
 
@@ -35,7 +37,6 @@ jobs:
       - name: cargo_check
         run: |
           rustup target add thumbv7em-none-eabihf
-          ls -la
           cargo clippy
   check:
     needs: [clippy]
@@ -50,7 +51,7 @@ jobs:
           override: true
       - name: cargo_check
         run: |
-          ls -la
+          rustup target add thumbv7em-none-eabihf
           cargo check
 
   fmt:
