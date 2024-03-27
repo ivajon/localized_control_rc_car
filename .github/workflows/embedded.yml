@@ -34,6 +34,7 @@ jobs:
           override: true
       - name: cargo_check
         run: |
+          rustup target add thumbv7em-none-eabihf
           ls -la
           cargo clippy
   check:
@@ -80,6 +81,6 @@ jobs:
           override: true
       - name: cargo_check
         run: |
+          rustup target add thumbv7em-none-eabihf
           ls -la
-          cargo install clippy
-          cargo clippy
+          cargo build --release
