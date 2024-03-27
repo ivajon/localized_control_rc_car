@@ -13,16 +13,33 @@ on:
   push:
     branches:
       - main
-      - '*ci*'
+      - "*ci*"
+    paths:
+      - folder1/**
 
-name: Check and Lint for hosted
+name: Check and Lint for embedded
 
 defaults:
   run:
-    working-directory: hosted
+    working-directory: embedded_rtic
 
 jobs:
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: cargo_check
+        run: |
+          rustup target add thumbv7em-none-eabihf
+          cargo clippy
   check:
+    needs: [clippy]
     name: Check
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +51,7 @@ jobs:
           override: true
       - name: cargo_check
         run: |
-          ls -la
+          rustup target add thumbv7em-none-eabihf
           cargo check
 
   fmt:
@@ -52,10 +69,9 @@ jobs:
           rustup component add rustfmt
           cargo fmt --all -- --check
 
-  test:
-    name: Test
-    env:
-      PROJECT_NAME_UNDERSCORE: rust_ci_github_actions_workflow
+  build:
+    needs: [check, clippy]
+    name: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -64,6 +80,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - name: Test
+      - name: cargo_check
         run: |
-          cargo test
+          rustup target add thumbv7em-none-eabihf
+          ls -la
+          cargo build --release

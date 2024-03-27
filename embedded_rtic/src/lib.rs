@@ -1,7 +1,6 @@
 //! Defines some drivers and panic behavior for our app
 #![no_main]
 #![no_std]
-
 #![deny(warnings)]
 #![deny(missing_docs)]
 #![deny(clippy::all)]
