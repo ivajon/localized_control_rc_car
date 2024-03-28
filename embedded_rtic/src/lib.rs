@@ -6,14 +6,14 @@
 #![deny(clippy::all)]
 
 use core::sync::atomic::{AtomicUsize, Ordering};
+
 use defmt_brtt as _; // global logger
-
-use panic_probe as _;
-
-use nrf52840_hal as _; // memory layout
+use nrf52840_hal as _;
+use panic_probe as _; // memory layout
 
 // same panicking *behavior* as `panic-probe` but doesn't print a panic message
-// this prevents the panic message being printed *twice* when `defmt::panic` is invoked
+// this prevents the panic message being printed *twice* when `defmt::panic` is
+// invoked
 #[defmt::panic_handler]
 fn panic() -> ! {
     cortex_m::asm::udf()
