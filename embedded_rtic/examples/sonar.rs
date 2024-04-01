@@ -59,6 +59,7 @@ mod app {
         previous_time: Instant,
     }
 
+    // For future pin refference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
         info!("init");
