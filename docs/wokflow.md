@@ -101,7 +101,7 @@ git commit -m "added a short text about birds"
 
 # Send the changes off to the repository and create
 # the same branch on the server
-git push origin birds
+git push --set-upstream origin birds
 ```
 
 Person B can then do a similar thing
@@ -118,7 +118,7 @@ git commit -m "added a short text about dogs"
 
 # Send the changes off to the repository and create
 # the same branch on the server
-git push origin dogs
+git push --set-upstream origin dogs
 ```
 
 We can then [`pull`](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) person A's changes in to the main history and then include these changes in person B's history by doing
