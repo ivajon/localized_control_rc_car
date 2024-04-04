@@ -14,8 +14,8 @@ image2 = imresize(image2,[600 800]);
 tic 
 points1 = detectSIFTFeatures(image1);
 points2 = detectSIFTFeatures(image2);
-points1 = points1.selectStrongest(100);
-points2 = points2.selectStrongest(100);
+% points1 = points1.selectStrongest(100);
+% points2 = points2.selectStrongest(100);
 
 
 [features1, validPoints1] = extractFeatures(image1, points1,"Method","SIFT");
