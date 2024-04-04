@@ -49,6 +49,7 @@ impl Degrees {
     }
 }
 
+#[allow(dead_code)]
 impl Radians {
     // Generally we should avoid pub(crate) but we need to
     // be able to deconstruct the wrapper types.

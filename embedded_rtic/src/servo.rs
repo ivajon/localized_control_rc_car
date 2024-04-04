@@ -1,14 +1,17 @@
+//! Defines a generic servo abstraction
 use nrf52840_hal::{
     prelude::_embedded_hal_Pwm as Pwm,
     pwm::Channel,
     time::{Hertz, U32Ext},
 };
+use defmt::info;
 
 use self::sealed::{GetPwm, Remap};
 use crate::wrapper::Degrees;
 
 /// Enumerates the errors that can occur when using the [`Servo`]
 /// abstraction.
+#[derive(Debug)]
 pub enum Error<Controller: Pwm> {
     /// Thrown when the requested dutycyle is invalid for the
     /// pwm.
@@ -64,10 +67,12 @@ where
 
     fn new(pwm: Controller, channel: Controller::Channel) -> Self {
         let mut pwm = pwm;
+        pwm.disable(channel);
         // Set it to 250 hz in accordance to
         // https://www.blue-bird-model.com/index.php?/products_detail/310.htm
         pwm.set_period(250u32.hz());
         pwm.set_duty(channel, (Self::MAX_VALUE + Self::MIN_VALUE) / 2);
+        pwm.enable(channel);
 
         Self { channel, pwm }
     }
@@ -96,10 +101,15 @@ where
             .map_err(|_err| Error::InvalidAngle(value))?;
 
         let value = value
-            .remap::<-60, 60,  { ((0x7FFF as u32 * 225) / 1000) as i32 }, { ((0x7FFF as u32 * 512) / 1000) as i32 }>()
+            .remap::<-60, 60,
+        //{ ((0x7FFF as u32 * 225) / 1000) as i32 }, 
+            0,
+        // { ((0x7FFF as u32 * 512) / 1000) as i32 }>()
+            255>()
             .expect("Remap is broken");
 
         self.pwm.set_duty(self.channel, value);
+        info!("Set the duty cycle to {:?}",value);
         Ok(())
     }
 }
@@ -137,7 +147,7 @@ mod sealed {
                 "Old max cannot be larger than i16 max"
             );
             assert!(
-                OLD_MIN <= i16::MIN as i32,
+                OLD_MIN >= i16::MIN as i32,
                 "Old min cannot be less than i16 min"
             );
 

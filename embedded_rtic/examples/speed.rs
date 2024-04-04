@@ -25,6 +25,7 @@ mod app {
         prelude::*,
         pwm::{Channel, Pwm},
     };
+    use test_app::{wrapper::Exti32,servo::{Servo,ServoInterface}};
     // use rtic_monotonics::nrf::timer::Timer0 as Mono;
 
     #[shared]
@@ -42,17 +43,19 @@ mod app {
         let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
 
         let p0 = gpio::p0::Parts::new(cx.device.P0);
-        let motor = p0.p0_13.into_push_pull_output(gpio::Level::High).degrade();
+        let motor = p0.p0_14.into_push_pull_output(gpio::Level::High).degrade();
 
-        let mut pwm = Pwm::new(cx.device.PWM0);
+        let pwm = Pwm::new(cx.device.PWM0);
         pwm.set_period(50u32.hz())
             .set_output_pin(nrf52840_hal::pwm::Channel::C0, motor);
 
         let max_duty = pwm.max_duty();
-        pwm.set_duty(Channel::C0, max_duty / 2);
+        pwm.set_duty_on_common(max_duty / 2);
 
         pwm.enable();
         info!("Motor started");
+        let mut servo = Servo::new(pwm, Channel::C0);
+        servo.angle((60).deg()).unwrap();
 
         // let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
 
