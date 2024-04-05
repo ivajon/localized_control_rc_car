@@ -5,15 +5,20 @@
 image1 = imread("sample_images\20240404_111521.jpg");
 image2 = imread("sample_images\\20240404_111523.jpg");
 image1 = im2gray(image1);
-image1 = imresize(image1,[600 800]);
+image1 = imresize(image1,0.2);
+image1 = imcrop(image1,[0 200 600 600]);
 
 image2 = im2gray(image2);
-image2 = imresize(image2,[600 800]);
+image2 = imresize(image2,0.2);
+image2 = imcrop(image2,[0 200 600 600]);
 
 %Measure time to match features
 tic 
 points1 = detectSIFTFeatures(image1);
 points2 = detectSIFTFeatures(image2);
+% points1 = detectORBFeatures(image1);
+% points2 = detectORBFeatures(image2);
+
 % points1 = points1.selectStrongest(100);
 % points2 = points2.selectStrongest(100);
 

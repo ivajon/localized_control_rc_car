@@ -1,7 +1,7 @@
 %Based on the algorithm developed in
 %https://www.researchgate.net/publication/257694570_Real-time_monocular_image-based_path_detection
 
-image1 = imread("sample_images\20240404_111526.jpg");
+image1 = imread("sample_images\20240404_111337.jpg");
 image1 = imresize(image1,0.2);
 % image1 = imrotate(image1,-90);
 
