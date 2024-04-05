@@ -1,64 +1,35 @@
 //! Defines a generic servo abstraction
+
+use cortex_m::prelude::_embedded_hal_Pwm;
 use defmt::info;
 use nrf52840_hal::{
-    prelude::_embedded_hal_Pwm as Pwm,
-    pwm::Channel,
-    time::{Hertz, U32Ext},
+    gpio::{Output, Pin, PushPull},
+    pwm::{Channel, Instance, Pwm},
+    time::U32Ext,
 };
 
-use self::sealed::{GetPwm, Remap};
-use crate::wrapper::Degrees;
+use self::sealed::Remap;
 
 /// Enumerates the errors that can occur when using the [`Servo`]
 /// abstraction.
 #[derive(Debug)]
-pub enum Error<Controller: Pwm> {
+pub enum Error {
     /// Thrown when the requested dutycyle is invalid for the
     /// pwm.
-    InvalidDutyCycle(Controller::Duty),
+    InvalidDutyCycle(u16),
 
-    /// Thrown when the requested angle is not achievable.
-    InvalidAngle(i32),
-}
-
-/// A generic pwm controlled servo.
-pub trait ServoInterface<Controller>: GetPwm<Controller>
-where
-    Controller: Pwm<Time = Hertz, Channel = Channel>,
-    Controller::Duty: core::cmp::PartialOrd,
-{
-    // /// The maximum value that can be set.
-    // const MAX_VALUE: Controller::Duty;
-    // /// The minimum vaue that can be set.
-    // const MIN_VALUE: Controller::Duty;
-
-    /// Instantiates a new motor controller.
-    fn new(pwm: Controller, channel: Controller::Channel) -> Self;
+    /// Thrown when the requested velocity is not achievable.
+    InvalidVelocity(i32),
 }
 
 // ESC 1000-2000 uS 1000 is stopped or reverse and 2000 is 100% speed
 
-/// Our neat little wrapper around the servo.
-pub struct Servo<PWM: Pwm> {
-    pwm: PWM,
-    channel: PWM::Channel,
+/// Our neat little wrapper around the esc.
+pub struct Esc<PWM: Instance> {
+    pwm: Pwm<PWM>,
 }
 
-impl<PWM: Pwm> sealed::GetPwm<PWM> for Servo<PWM> {
-    fn get_pwm<'a>(&'a mut self) -> &'a mut PWM {
-        &mut self.pwm
-    }
-
-    fn get_channel<'a>(&'a self) -> &'a <PWM as Pwm>::Channel {
-        &self.channel
-    }
-}
-
-impl<Controller> ServoInterface<Controller> for Servo<Controller>
-where
-    Controller: Pwm<Time = Hertz, Channel = Channel, Duty = u16>,
-    Controller::Duty: core::cmp::PartialOrd,
-{
+impl<PWM: Instance> Esc<PWM> {
     // TODO! Set the actual max value here.
     /// MAX_VALUE for the servo is 2100 us, with a period of 250 hz.
     // const MAX_VALUE: <Controller as Pwm>::Duty = { ((0x7FFF as u32 * 512) / 1000) as u16 };
@@ -66,50 +37,44 @@ where
     // const MIN_VALUE: <Controller as Pwm>::Duty = { ((0x7FFF as u32 * 225) / 1000)
     // as u16 };
 
-    fn new(pwm: Controller, channel: Controller::Channel) -> Self {
-        let mut pwm = pwm;
-        pwm.disable(channel);
+    pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
+        let pwm = Pwm::new(pwm);
+        pwm.set_prescaler(nrf52840_hal::pwm::Prescaler::Div32);
+        pwm.set_period(500.hz()).set_output_pin(Channel::C0, pin);
+        pwm.set_max_duty(1000);
         // Set it to 250 hz in accordance to
         // https://www.blue-bird-model.com/index.php?/products_detail/310.htm
-        pwm.set_period(250u32.hz());
-        pwm.enable(channel);
+        pwm.enable();
 
-        Self { channel, pwm }
+        let period = pwm.get_period();
+        info!("Esc instantianted : with period {:?} Hz", period.0);
+        Self { pwm }
     }
 }
 
-impl<Controller> Servo<Controller>
-where
-    Controller: Pwm<Time = Hertz, Channel = Channel, Duty = u16>,
-    Controller::Duty: core::cmp::PartialOrd,
-    Self: ServoInterface<Controller>,
-{
+impl<PWM: Instance> Esc<PWM> {
     /// Sets the angle of the servo.
-    pub fn angle(&mut self, angle: Degrees) -> Result<(), Error<Controller>> {
-        let mut value = angle.consume();
-        if value < -60 || value > 60 {
-            return Err(Error::InvalidAngle(value));
+    pub fn speed(&mut self, velocity: i32) -> Result<(), Error> {
+        if velocity > 1000 || velocity < -1000 {
+            return Err(Error::InvalidVelocity(velocity));
         }
 
         // Reduce granularity around the origin.
-        if value > -5 && value < 5 {
-            value = 0;
-        }
 
-        let value: i16 = value
+        let value: i16 = velocity
             .try_into()
-            .map_err(|_err| Error::InvalidAngle(value))?;
+            .map_err(|_err| Error::InvalidVelocity(velocity))?;
 
         let value = value
-            .remap::<-60, 60,
+            .remap::<-1000, 1000,
         // { ((0x7FFF as u32 * 225) / 1000) as i32 }, 
-            225,
+            500,
         // { ((0x7FFF as u32 * 512) / 1000) as i32 }>()
-            525>()
+            1000>()
             .expect("Remap is broken");
 
-        self.pwm.set_duty(self.channel, value);
-        let real_value = self.pwm.get_duty(self.channel);
+        self.pwm.set_duty(Channel::C0, value);
+        let real_value = self.pwm.get_duty(Channel::C0);
         info!("Set the duty cycle to {:?}", real_value);
         info!("Expected the duty cycle to be {:?}", value);
         let period = self.pwm.get_period().0;
@@ -119,16 +84,6 @@ where
 }
 
 mod sealed {
-    use super::Pwm;
-
-    /// Returns a refference to the pwm interface.
-    pub trait GetPwm<Controller: Pwm> {
-        /// Returns a refference to the pwm interface.
-        fn get_pwm<'a>(&'a mut self) -> &'a mut Controller;
-
-        /// Returns the channel that the motor is connected to.
-        fn get_channel<'a>(&'a self) -> &'a Controller::Channel;
-    }
 
     pub trait Remap<Target>
     where

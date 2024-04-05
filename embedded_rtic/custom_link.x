@@ -1,3 +1,4 @@
+
 /* # Developer notes
 
 - Symbols that start with a double underscore (__) are considered "private"
@@ -90,7 +91,7 @@ SECTIONS
   PROVIDE(_stext = ADDR(.vector_table) + SIZEOF(.vector_table));
 
   /* ### .text */
-  .text ORIGIN(TEXT) :
+  .text _stext :
   {
     __stext = .;
     *(.Reset);
@@ -104,7 +105,7 @@ SECTIONS
 
     . = ALIGN(4); /* Pad .text to the alignment to workaround overlapping load section bug in old lld */
     __etext = .;
-  } > TEXT
+  } > FLASH
 
   /* ### .rodata */
   .rodata : ALIGN(4)
@@ -118,7 +119,7 @@ SECTIONS
        section will have the correct alignment. */
     . = ALIGN(4);
     __erodata = .;
-  } > RAM
+  } > FLASH
 
   /* ## Sections in RAM */
   /* ### .data */
@@ -128,7 +129,7 @@ SECTIONS
     __sdata = .;
     *(.data .data.*);
     . = ALIGN(4); /* 4-byte align the end (VMA) of this section */
-  } > RAM
+  } > RAM2 AT>FLASH
   /* Allow sections from user `memory.x` injected using `INSERT AFTER .data` to
    * use the .data loading mechanism by pushing __edata. Note: do not change
    * output region or load region in those user sections! */
@@ -148,7 +149,7 @@ SECTIONS
     __veneer_base = .;
     *(.gnu.sgstubs*)
     . = ALIGN(32);
-  } > RAM2
+  } > FLASH
   /* Place `__veneer_limit` outside the `.gnu.sgstubs` section because veneers are
    * always inserted last in the section, which would otherwise be _after_ the `__veneer_limit` symbol.
    */
@@ -250,9 +251,9 @@ ASSERT(ADDR(.vector_table) + SIZEOF(.vector_table) <= _stext, "
 ERROR(cortex-m-rt): The .text section can't be placed inside the .vector_table section
 Set _stext to an address greater than the end of .vector_table (See output of `nm`)");
 
-/*ASSERT(_stext + SIZEOF(.text) < ORIGIN(FLASH) + LENGTH(FLASH), "
+ASSERT(_stext + SIZEOF(.text) < ORIGIN(FLASH) + LENGTH(FLASH), "
 ERROR(cortex-m-rt): The .text section must be placed inside the FLASH memory.
-Set _stext to an address smaller than 'ORIGIN(FLASH) + LENGTH(FLASH)'");*/
+Set _stext to an address smaller than 'ORIGIN(FLASH) + LENGTH(FLASH)'");
 
 /* # Other checks */
 ASSERT(SIZEOF(.got) == 0, "
@@ -266,7 +267,8 @@ the -fPIC flag. See the documentation of the `cc::Build.pic` method for details.
 /* This will usually be provided by a device crate generated using svd2rust (see `device.x`) */
 INCLUDE device.x
 
-/*ASSERT(SIZEOF(.vector_table) <= 0xc0, "
-There can't be more than 32 interrupt handlers. This may be a bug in
-your device crate, or you may have registered more than 32 interrupt
-handlers.");*/
+ASSERT(SIZEOF(.vector_table) <= 0x400, "
+There can't be more than 240 interrupt handlers. This may be a bug in
+your device crate, or you may have registered more than 240 interrupt
+handlers.");
+
