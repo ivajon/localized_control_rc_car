@@ -5,13 +5,14 @@
 #![deny(missing_docs)]
 #![deny(clippy::all)]
 
-use core::sync::atomic::{AtomicUsize, Ordering};
+// use core::sync::atomic::{AtomicUsize, Ordering};
 
-use defmt_brtt as _; // global logger
-use nrf52840_hal as _;
+use defmt_rtt as _; // global logger
+use embassy_nrf as _;
 use panic_probe as _; // memory layout
 
 pub mod servo;
+pub mod esc;
 pub mod wrapper;
 
 // same panicking *behavior* as `panic-probe` but doesn't print a panic message
@@ -22,14 +23,14 @@ fn panic() -> ! {
     cortex_m::asm::udf()
 }
 
-static COUNT: AtomicUsize = AtomicUsize::new(0);
-defmt::timestamp!("{=usize}", {
-    // NOTE(no-CAS) `timestamps` runs with interrupts disabled
-    let n = COUNT.load(Ordering::Relaxed);
-    COUNT.store(n + 1, Ordering::Relaxed);
-    n
-});
-
+// static COUNT: AtomicUsize = AtomicUsize::new(0);
+// defmt::timestamp!("{=usize}", {
+//     // NOTE(no-CAS) `timestamps` runs with interrupts disabled
+//     let n = COUNT.load(Ordering::Relaxed);
+//     COUNT.store(n + 1, Ordering::Relaxed);
+//     n
+// });
+//
 /// Terminates the application and makes `probe-rs` exit with exit-code = 0
 pub fn exit() -> ! {
     loop {

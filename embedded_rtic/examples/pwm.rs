@@ -1,74 +1,56 @@
-//! Defines a simple distance measurement example.
-//!
-//! This example measures the distance to a nearby object, prefferably a wall
-//! using a sonar sensor. It then smooths the result over a few timestamps to
-//! avoid small peaks in the measured distance.
-
-#![no_main]
 #![no_std]
-#![feature(type_alias_impl_trait)]
-#![deny(clippy::all)]
-#![deny(warnings)]
+#![no_main]
 
-use test_app as _; // global logger + panicking-behavior + memory layout
+use {defmt_rtt as _, panic_probe as _};
 
-#[rtic::app(
-    device = nrf52840_hal::pac,
-    dispatchers = [RTC0,RTC1,RTC2]
-)]
+#[rtic::app(device = embassy_nrf, peripherals = false, dispatchers = [SWI0_EGU0, SWI1_EGU1])]
 mod app {
-
     use cortex_m::asm::delay;
     use defmt::info;
-    use nrf52840_hal::{clocks::Clocks, gpio, pwm::Pwm/* , time::U32Ext */};
+    use embassy_nrf::pwm::{Prescaler, SimplePwm};
+    use embassy_time::Timer;
 
     #[shared]
     struct Shared {}
 
-    // Local resources go here
     #[local]
-    #[allow(dead_code)]
     struct Local {}
 
-    // For future pin refference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[init]
-    fn init(cx: init::Context) -> (Shared, Local) {
-        info!("init");
-        let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
+    fn init(_: init::Context) -> (Shared, Local) {
+        info!("Hello World!");
 
-        let p0 = gpio::p0::Parts::new(cx.device.P0);
-        let motor = p0.p0_30.into_push_pull_output(gpio::Level::High).degrade();
+        let p = embassy_nrf::init(Default::default());
+        let mut pwm = SimplePwm::new_1ch(p.PWM0, p.P0_05);
+        // sg90 microervo requires 50hz or 20ms period
+        // set_period can only set down to 125khz so we cant use it directly
+        // Div128 is 125khz or 0.000008s or 0.008ms, 20/0.008 is 2500 is top
+        pwm.set_prescaler(Prescaler::Div128);
+        pwm.set_max_duty(2500);
+        info!("pwm initialized!");
 
-        let pwm = Pwm::new(cx.device.PWM0);
-        pwm.set_output_pin(nrf52840_hal::pwm::Channel::C0, motor);
-        pwm.enable_channel(nrf52840_hal::pwm::Channel::C0);
-
-
-        // let max_duty = pwm.max_duty();
-        pwm.enable();
-        // pwm.set_duty_on_common(max_duty / 2);
-
-        // let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
-
-        for i in 0..pwm.max_duty() {
-            pwm.set_duty_on(nrf52840_hal::pwm::Channel::C0, pwm.max_duty() - i);
-            let duty = pwm.duty_on(nrf52840_hal::pwm::Channel::C0);
-            info!("Set C0 duty to {:?}", duty);
-            delay(1000000);
-        }
-        loop {}
-
-        // Mono::start(cx.device.TIMER0, token);
-        //
-        // (Shared {}, Local {})
-    }
-
-    #[idle]
-    fn idle(_: idle::Context) -> ! {
-        info!("idle");
-
+        // 1ms 0deg (1/.008=125), 1.5ms 90deg (1.5/.008=187.5), 2ms 180deg (2/.008=250),
         loop {
-            continue;
+            info!("45 deg");
+            // poor mans inverting, subtract our value from max_duty
+            pwm.set_duty(0, 0);
+            delay(5000000);
+
+            info!("90 deg");
+            pwm.set_duty(0, 1000);
+            delay(5000000);
+
+            info!("135 deg");
+            pwm.set_duty(0, 1500);
+            delay(5000000);
+
+            info!("180 deg");
+            pwm.set_duty(0, 2000);
+            delay(5000000);
+
+            info!("0 deg");
+            pwm.set_duty(0, 2500);
+            delay(5000000);
         }
     }
 }
