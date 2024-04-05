@@ -1,5 +1,6 @@
-image1 = imread("sample_images\20240404_111345.jpg");
+image1 = imread("sample_images\20240404_111523.jpg");
 image1 = imresize(image1,0.2);
+imRGB = image1;
 
 
 tic
@@ -9,10 +10,10 @@ s = image1(:,:,2)';
 v = image1(:,:,3)';
 
 method = "canny";
+edgeGray = edge(im2gray(imRGB)',method,[0.2 0.3]);
 edge_h = edge(h,method);
 edge_s = edge(s,method);
 edge_v = edge(v,method,0.1);
-
 
 
 BW = edge_v;
@@ -26,7 +27,7 @@ imshow([h s v])
 
 
 figure(2)
-imshow([edge_h edge_s edge_v])
+imshow([edgeGray edge_h edge_s edge_v])
 
 figure(3)
 imshow(imadjust(rescale(H)),'XData',T,'YData',R,...
