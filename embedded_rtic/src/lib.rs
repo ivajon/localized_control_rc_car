@@ -4,6 +4,7 @@
 #![deny(warnings)]
 #![deny(missing_docs)]
 #![deny(clippy::all)]
+#![feature(noop_waker)]
 
 // use core::sync::atomic::{AtomicUsize, Ordering};
 
@@ -11,8 +12,8 @@ use defmt_rtt as _; // global logger
 use embassy_nrf as _;
 use panic_probe as _; // memory layout
 
-pub mod servo;
 pub mod esc;
+pub mod servo;
 pub mod wrapper;
 
 // same panicking *behavior* as `panic-probe` but doesn't print a panic message
@@ -36,4 +37,41 @@ pub fn exit() -> ! {
     loop {
         cortex_m::asm::bkpt();
     }
+}
+
+#[macro_export]
+/// Calls an async function in a blocking manner.
+macro_rules! block {
+    ($call:expr) => {
+        'a: {
+            use core::{future::Future,task::{Poll},pin::pin};
+
+            let unpinned = $call;
+            let waker = core::task::Waker::noop();
+            let mut ctx = core::task::Context::from_waker(waker);
+            loop {
+                let future_clone = pin!(unpinned.clone());
+                let ret = future_clone.poll(&mut ctx);
+                if let Poll::Ready(ret) = ret {
+                   break 'a ret;
+                }
+            }
+        }
+    };
+    ($mod:ident::$func:ident($($arg:expr),*)) => {
+        'a: {
+            use core::{future::Future,task::{Poll},pin::pin};
+
+            let unpinned = $mod::$func($($arg),*);
+            let waker = core::task::Waker::noop();
+            let mut ctx = core::task::Context::from_waker(waker);
+            let future = pin!( unpinned);
+            loop {
+                let ret = future.poll(&mut ctx);
+                if let Poll::Ready(ret) = ret {
+                   break 'a ret;
+                }
+            }
+        }
+    };
 }

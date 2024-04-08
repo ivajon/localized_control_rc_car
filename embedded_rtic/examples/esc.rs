@@ -7,10 +7,13 @@
 #![no_main]
 #![no_std]
 #![feature(type_alias_impl_trait)]
+#![feature(noop_waker)]
 #![deny(clippy::all)]
 #![deny(warnings)]
 
 use test_app as _; // global logger + panicking-behavior + memory layout
+                   //
+                   // 50 hz, 1ms -> 2ms for esc
 
 #[rtic::app(
     device = nrf52840_hal::pac,
@@ -39,15 +42,20 @@ mod app {
 
         let p0 = gpio::p0::Parts::new(cx.device.P0);
         let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
-
         let mut esc = Esc::new(cx.device.PWM0, motor);
 
         // let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
 
         loop {
-            esc.speed(-10).unwrap();
+            info!("BACKWARDS");
+            // ~-30 seems to be slow reverse
+            esc.speed(-29).unwrap();
+
             delay(50000000);
-            esc.speed(10).unwrap();
+            info!("FORWARDS!");
+            // ~2-5 seems to be slowest possible forward velocity
+            esc.speed(20).unwrap();
+
             delay(50000000);
         }
 

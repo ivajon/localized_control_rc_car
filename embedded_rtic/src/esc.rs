@@ -1,7 +1,7 @@
 //! Defines a generic servo abstraction
 
-use cortex_m::prelude::_embedded_hal_Pwm;
-use defmt::info;
+use cortex_m::{/* asm::delay, */ prelude::_embedded_hal_Pwm};
+use defmt::{trace, warn};
 use nrf52840_hal::{
     gpio::{Output, Pin, PushPull},
     pwm::{Channel, Instance, Pwm},
@@ -39,46 +39,49 @@ impl<PWM: Instance> Esc<PWM> {
 
     pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
         let pwm = Pwm::new(pwm);
-        pwm.set_prescaler(nrf52840_hal::pwm::Prescaler::Div32);
-        pwm.set_period(500.hz()).set_output_pin(Channel::C0, pin);
-        pwm.set_max_duty(1000);
-        // Set it to 250 hz in accordance to
-        // https://www.blue-bird-model.com/index.php?/products_detail/310.htm
+        pwm.set_prescaler(nrf52840_hal::pwm::Prescaler::Div128);
+        pwm.set_period(50.hz()).set_output_pin(Channel::C0, pin);
+        // pwm.set_max_duty(1000);
+        pwm.set_max_duty(2500);
         pwm.enable();
 
         let period = pwm.get_period();
-        info!("Esc instantianted : with period {:?} Hz", period.0);
-        Self { pwm }
+        trace!("Esc instantianted : with period {:?} Hz", period.0);
+        let mut ret = Self { pwm };
+
+        ret.speed(0).unwrap();
+        ret
     }
 }
 
 impl<PWM: Instance> Esc<PWM> {
     /// Sets the angle of the servo.
     pub fn speed(&mut self, velocity: i32) -> Result<(), Error> {
-        if velocity > 1000 || velocity < -1000 {
+        if velocity > 100 || velocity < -100 {
             return Err(Error::InvalidVelocity(velocity));
+        }
+        if velocity > -30 && velocity < 15 {
+            warn!("Flaky esc might cause problems around the origin, please use larger control signals.");
         }
 
         // Reduce granularity around the origin.
+        // Velocity is offset by ~15 it seems.
+        // let velocity = velocity - 15;
 
         let value: i16 = velocity
             .try_into()
             .map_err(|_err| Error::InvalidVelocity(velocity))?;
 
         let value = value
-            .remap::<-1000, 1000,
-        // { ((0x7FFF as u32 * 225) / 1000) as i32 }, 
-            500,
-        // { ((0x7FFF as u32 * 512) / 1000) as i32 }>()
-            1000>()
+            .remap::<-100, 100, 125, 250>()
             .expect("Remap is broken");
 
-        self.pwm.set_duty(Channel::C0, value);
+        self.pwm.set_duty(Channel::C0, 2500 - value);
         let real_value = self.pwm.get_duty(Channel::C0);
-        info!("Set the duty cycle to {:?}", real_value);
-        info!("Expected the duty cycle to be {:?}", value);
+        trace!("Set the duty cycle to {:?}", real_value);
+        trace!("Expected the duty cycle to be {:?}", value);
         let period = self.pwm.get_period().0;
-        info!("With period of {:?}", period);
+        trace!("With period of {:?}", period);
         Ok(())
     }
 }
@@ -96,6 +99,7 @@ mod sealed {
     }
 
     impl Remap<u16> for i16 {
+        #[inline(always)]
         fn remap<const OLD_MIN: i32, const OLD_MAX: i32, const NEW_MIN: i32, const NEW_MAX: i32>(
             self,
         ) -> Result<u16, Self> {
