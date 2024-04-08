@@ -1,15 +1,63 @@
-//! Defines some drivers and panic behavior for our app
+//! Defines some panic behaviour and common utilities for the application.
+//!
+//!
+//! ## [Esc](esc)
+//!
+//! We define a wrapper for the Electronic speed controller.
+//! You can use this abstraction like so.
+//!
+//! ```no_run
+//!         let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
+//!         let mut esc = Esc::new(cx.device.PWM0, motor);
+//!
+//!         loop {
+//!             info!("BACKWARDS");
+//!             esc.speed(-29).unwrap();
+//!
+//!             delay(50000000);
+//!             info!("FORWARDS!");
+//!             esc.speed(20).unwrap();
+//!
+//!             delay(50000000);
+//!         }
+//! ```
+//!
+//! ## [Servo](servo)
+//!
+//! We define a simple wrapper for the steering servo that only allows you to
+//! set the angle of the servo within reasonable limits.
+//! It can be used like so.
+//!
+//! ```no_run
+//!         let p0 = gpio::p0::Parts::new(cx.device.P0);
+//!         let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
+//!
+//!         let mut servo = Servo::new(cx.device.PWM0, motor);
+//!         loop {
+//!             for i in 15..(-15) {
+//!                 servo.angle(i.deg()).unwrap();
+//!                 delay(10000000);
+//!             }
+//!             for i in (-15)..15 {
+//!                 servo.angle(i.deg()).unwrap();
+//!                 delay(10000000);
+//!             }
+//!         }
+//! ```
+//!
+//! ## [Wrapper](wrapper)
+//!
+//! This module mainly exports a few helper types for unit conversion such as
+//! [degrees](wrapper::Degrees).
 #![no_main]
 #![no_std]
 #![deny(warnings)]
 #![deny(missing_docs)]
 #![deny(clippy::all)]
-#![feature(noop_waker)]
 
-// use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicUsize, Ordering};
 
 use defmt_rtt as _; // global logger
-use embassy_nrf as _;
 use panic_probe as _; // memory layout
 
 pub mod esc;
@@ -24,54 +72,17 @@ fn panic() -> ! {
     cortex_m::asm::udf()
 }
 
-// static COUNT: AtomicUsize = AtomicUsize::new(0);
-// defmt::timestamp!("{=usize}", {
-//     // NOTE(no-CAS) `timestamps` runs with interrupts disabled
-//     let n = COUNT.load(Ordering::Relaxed);
-//     COUNT.store(n + 1, Ordering::Relaxed);
-//     n
-// });
-//
+static COUNT: AtomicUsize = AtomicUsize::new(0);
+defmt::timestamp!("{=usize}", {
+    // NOTE(no-CAS) `timestamps` runs with interrupts disabled
+    let n = COUNT.load(Ordering::Relaxed);
+    COUNT.store(n + 1, Ordering::Relaxed);
+    n
+});
+
 /// Terminates the application and makes `probe-rs` exit with exit-code = 0
 pub fn exit() -> ! {
     loop {
         cortex_m::asm::bkpt();
     }
-}
-
-#[macro_export]
-/// Calls an async function in a blocking manner.
-macro_rules! block {
-    ($call:expr) => {
-        'a: {
-            use core::{future::Future,task::{Poll},pin::pin};
-
-            let unpinned = $call;
-            let waker = core::task::Waker::noop();
-            let mut ctx = core::task::Context::from_waker(waker);
-            loop {
-                let future_clone = pin!(unpinned.clone());
-                let ret = future_clone.poll(&mut ctx);
-                if let Poll::Ready(ret) = ret {
-                   break 'a ret;
-                }
-            }
-        }
-    };
-    ($mod:ident::$func:ident($($arg:expr),*)) => {
-        'a: {
-            use core::{future::Future,task::{Poll},pin::pin};
-
-            let unpinned = $mod::$func($($arg),*);
-            let waker = core::task::Waker::noop();
-            let mut ctx = core::task::Context::from_waker(waker);
-            let future = pin!( unpinned);
-            loop {
-                let ret = future.poll(&mut ctx);
-                if let Poll::Ready(ret) = ret {
-                   break 'a ret;
-                }
-            }
-        }
-    };
 }

@@ -1,6 +1,7 @@
-//! Defines a generic servo abstraction
+//! Defines a generic [`Esc`] abstraction, this allows us to
+//! easily specify the speed that the car should run at.
 
-use cortex_m::{/* asm::delay, */ prelude::_embedded_hal_Pwm};
+use cortex_m::prelude::_embedded_hal_Pwm;
 use defmt::{trace, warn};
 use nrf52840_hal::{
     gpio::{Output, Pin, PushPull},
@@ -14,7 +15,7 @@ use self::sealed::Remap;
 /// abstraction.
 #[derive(Debug)]
 pub enum Error {
-    /// Thrown when the requested dutycyle is invalid for the
+    /// Thrown when the requested duty cycle is invalid for the
     /// pwm.
     InvalidDutyCycle(u16),
 
@@ -24,26 +25,39 @@ pub enum Error {
 
 // ESC 1000-2000 uS 1000 is stopped or reverse and 2000 is 100% speed
 
-/// Our neat little wrapper around the esc.
+/// Defines an easy to use abstraction over the Electronic speed controller.
 pub struct Esc<PWM: Instance> {
     pwm: Pwm<PWM>,
 }
 
 impl<PWM: Instance> Esc<PWM> {
-    // TODO! Set the actual max value here.
-    /// MAX_VALUE for the servo is 2100 us, with a period of 250 hz.
-    // const MAX_VALUE: <Controller as Pwm>::Duty = { ((0x7FFF as u32 * 512) / 1000) as u16 };
-    /// MIN_VALUE for the servo is 2100 us, with a period of 250 hz.
-    // const MIN_VALUE: <Controller as Pwm>::Duty = { ((0x7FFF as u32 * 225) / 1000)
-    // as u16 };
+    /// The maximum duty cycle.
+    const MAXIMUM_DUTY_CYCLE: u16 = 2500;
+    /// The maximum velocity.
+    const MAX_VELOCITY: i32 = 100;
+    /// The minimum velocity.
+    const MIN_VELOCITY: i32 = -100;
 
+    /// Instantiates a new [`Esc`] that is controlled over PWM.
     pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
+        trace!(
+            "Instantiating a new ESC on pwm : {:?} and pin : {:?}",
+            pwm,
+            pin
+        );
         let pwm = Pwm::new(pwm);
-        pwm.set_prescaler(nrf52840_hal::pwm::Prescaler::Div128);
-        pwm.set_period(50.hz()).set_output_pin(Channel::C0, pin);
-        // pwm.set_max_duty(1000);
-        pwm.set_max_duty(2500);
-        pwm.enable();
+
+        // PWM configuration, sets the period to 50 Hz and specifies a duty cyle
+        // that allows us to use the desired values.
+        //
+        // 125 -> min velocity.
+        // 250 -> max velocity.
+        {
+            pwm.set_prescaler(nrf52840_hal::pwm::Prescaler::Div128);
+            pwm.set_period(50.hz()).set_output_pin(Channel::C0, pin);
+            pwm.set_max_duty(Self::MAXIMUM_DUTY_CYCLE);
+            pwm.enable();
+        }
 
         let period = pwm.get_period();
         trace!("Esc instantianted : with period {:?} Hz", period.0);
@@ -52,21 +66,19 @@ impl<PWM: Instance> Esc<PWM> {
         ret.speed(0).unwrap();
         ret
     }
-}
 
-impl<PWM: Instance> Esc<PWM> {
     /// Sets the angle of the servo.
     pub fn speed(&mut self, velocity: i32) -> Result<(), Error> {
-        if velocity > 100 || velocity < -100 {
+        trace!("Setting the speed to {:?}", velocity);
+
+        // A few safeguards.
+        if velocity > Self::MAX_VELOCITY || velocity < Self::MIN_VELOCITY {
             return Err(Error::InvalidVelocity(velocity));
         }
+
         if velocity > -30 && velocity < 15 {
             warn!("Flaky esc might cause problems around the origin, please use larger control signals.");
         }
-
-        // Reduce granularity around the origin.
-        // Velocity is offset by ~15 it seems.
-        // let velocity = velocity - 15;
 
         let value: i16 = velocity
             .try_into()
@@ -76,12 +88,9 @@ impl<PWM: Instance> Esc<PWM> {
             .remap::<-100, 100, 125, 250>()
             .expect("Remap is broken");
 
-        self.pwm.set_duty(Channel::C0, 2500 - value);
-        let real_value = self.pwm.get_duty(Channel::C0);
-        trace!("Set the duty cycle to {:?}", real_value);
-        trace!("Expected the duty cycle to be {:?}", value);
-        let period = self.pwm.get_period().0;
-        trace!("With period of {:?}", period);
+        // Dirty inversion.
+        self.pwm
+            .set_duty(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
     }
 }
@@ -103,6 +112,7 @@ mod sealed {
         fn remap<const OLD_MIN: i32, const OLD_MAX: i32, const NEW_MIN: i32, const NEW_MAX: i32>(
             self,
         ) -> Result<u16, Self> {
+            // The asserts are optimized out during release builds.
             assert!(OLD_MIN <= OLD_MAX, "Old min has to be less than Old max");
             assert!(NEW_MIN <= NEW_MAX, "New min has to be less than New max");
             assert!(
@@ -119,7 +129,7 @@ mod sealed {
             let value: i32 = self.into();
             let mut normalized = value - OLD_MIN;
 
-            // Scale ut to avoid decimals mid calculation.
+            // Scale to avoid decimals mid calculation.
             normalized *= old_range.max(new_range);
 
             normalized /= old_range;

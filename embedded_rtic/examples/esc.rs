@@ -13,7 +13,6 @@
 
 use test_app as _; // global logger + panicking-behavior + memory layout
                    //
-                   // 50 hz, 1ms -> 2ms for esc
 
 #[rtic::app(
     device = nrf52840_hal::pac,

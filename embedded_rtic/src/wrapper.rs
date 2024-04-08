@@ -7,7 +7,7 @@ pub struct Degrees(i32);
 #[derive(Clone, Copy)]
 pub struct Radians(i32);
 
-/// Probides a few helper functions, mainly semantics.
+/// Provides a few helper functions, mainly semantics.
 pub trait Exti32 {
     /// Wraps the u32 in a Degrees type.
     fn deg(self) -> Degrees;
@@ -27,7 +27,7 @@ impl Exti32 for i32 {
 
 impl From<Radians> for Degrees {
     fn from(value: Radians) -> Self {
-        // Approximate coersion.
+        // Approximate coercion.
         let value = (value.0 as i64 * 180 * 10000 / 31415) as i32;
         Self(value)
     }
@@ -35,25 +35,23 @@ impl From<Radians> for Degrees {
 
 impl From<Degrees> for Radians {
     fn from(value: Degrees) -> Self {
-        // Approximate coersion.
+        // Approximate coercion.
         let value = ((value.0 as i64 * 31415 / 100) / 1000) as i32;
         Self(value)
     }
 }
 
 impl Degrees {
-    // Generally we should avoid pub(crate) but we need to
-    // be able to deconstruct the wrapper types.
-    pub(crate) fn consume(self) -> i32 {
+    /// Unwraps the type returning the underlying value.
+    pub fn consume(self) -> i32 {
         self.0
     }
 }
 
 #[allow(dead_code)]
 impl Radians {
-    // Generally we should avoid pub(crate) but we need to
-    // be able to deconstruct the wrapper types.
-    pub(crate) fn consume(self) -> i32 {
+    /// Unwraps the type returning the underlying value.
+    pub fn consume(self) -> i32 {
         self.0
     }
 }

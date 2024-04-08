@@ -1,134 +1,100 @@
-//! Defines a generic servo abstraction
-use defmt::info;
+//! Defines a generic servo abstraction.
+
+use defmt::trace;
 use nrf52840_hal::{
-    prelude::_embedded_hal_Pwm as Pwm,
-    pwm::Channel,
-    time::{Hertz, U32Ext},
+    gpio::{Output, Pin, PushPull},
+    pwm::{Channel, Instance, Pwm},
+    time::U32Ext,
 };
 
-use self::sealed::{GetPwm, Remap};
-use crate::wrapper::Degrees;
+use self::sealed::Remap;
+use crate::wrapper::{Degrees, Exti32};
 
 /// Enumerates the errors that can occur when using the [`Servo`]
 /// abstraction.
 #[derive(Debug)]
-pub enum Error<Controller: Pwm> {
-    /// Thrown when the requested dutycyle is invalid for the
-    /// pwm.
-    InvalidDutyCycle(Controller::Duty),
+pub enum Error {
+    /// Thrown when the requested duty cycle is invalid for the
+    /// [`Pwm`].
+    InvalidDutyCycle(u16),
 
     /// Thrown when the requested angle is not achievable.
     InvalidAngle(i32),
 }
 
-/// A generic pwm controlled servo.
-pub trait ServoInterface<Controller>: GetPwm<Controller>
-where
-    Controller: Pwm<Time = Hertz, Channel = Channel>,
-    Controller::Duty: core::cmp::PartialOrd,
-{
-    // /// The maximum value that can be set.
-    // const MAX_VALUE: Controller::Duty;
-    // /// The minimum vaue that can be set.
-    // const MIN_VALUE: Controller::Duty;
-
-    /// Instantiates a new motor controller.
-    fn new(pwm: Controller, channel: Controller::Channel) -> Self;
-}
-
-// ESC 1000-2000 uS 1000 is stopped or reverse and 2000 is 100% speed
-
 /// Our neat little wrapper around the servo.
-pub struct Servo<PWM: Pwm> {
-    pwm: PWM,
-    channel: PWM::Channel,
+pub struct Servo<PWM: Instance> {
+    pwm: Pwm<PWM>,
 }
 
-impl<PWM: Pwm> sealed::GetPwm<PWM> for Servo<PWM> {
-    fn get_pwm<'a>(&'a mut self) -> &'a mut PWM {
-        &mut self.pwm
-    }
+impl<PWM: Instance> Servo<PWM> {
+    /// Maximum duty cycle for the [`Pwm`].
+    const MAXIMUM_DUTY_CYCLE: u16 = 2500;
+    /// The maximum angle for steering actuation.
+    const MAX_ANGLE: i32 = 15;
+    /// The minimum angle for steering actuation.
+    const MIN_ANGLE: i32 = -15;
+    /// The steering seems to be offset by some constant factor.
+    const STEERING_ERROR: i32 = -10;
 
-    fn get_channel<'a>(&'a self) -> &'a <PWM as Pwm>::Channel {
-        &self.channel
-    }
-}
+    /// Creates a new servo from a [`Pwm`] [`Instance`] and the associated
+    /// [`Pin`].
+    ///
+    /// This allows use of any [`Pwm`] peripheral and [`Pin`] on the board.
+    pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
+        trace!("Instantiating servo from pwm : {:?} on pin {:?}", pwm, pin);
+        let pwm = Pwm::new(pwm);
 
-impl<Controller> ServoInterface<Controller> for Servo<Controller>
-where
-    Controller: Pwm<Time = Hertz, Channel = Channel, Duty = u16>,
-    Controller::Duty: core::cmp::PartialOrd,
-{
-    // TODO! Set the actual max value here.
-    /// MAX_VALUE for the servo is 2100 us, with a period of 250 hz.
-    // const MAX_VALUE: <Controller as Pwm>::Duty = { ((0x7FFF as u32 * 512) / 1000) as u16 };
-    /// MIN_VALUE for the servo is 2100 us, with a period of 250 hz.
-    // const MIN_VALUE: <Controller as Pwm>::Duty = { ((0x7FFF as u32 * 225) / 1000)
-    // as u16 };
-
-    fn new(pwm: Controller, channel: Controller::Channel) -> Self {
-        let mut pwm = pwm;
-        pwm.disable(channel);
-        // Set it to 250 hz in accordance to
-        // https://www.blue-bird-model.com/index.php?/products_detail/310.htm
-        pwm.set_period(250u32.hz());
-        pwm.enable(channel);
-
-        Self { channel, pwm }
-    }
-}
-
-impl<Controller> Servo<Controller>
-where
-    Controller: Pwm<Time = Hertz, Channel = Channel, Duty = u16>,
-    Controller::Duty: core::cmp::PartialOrd,
-    Self: ServoInterface<Controller>,
-{
-    /// Sets the angle of the servo.
-    pub fn angle(&mut self, angle: Degrees) -> Result<(), Error<Controller>> {
-        let mut value = angle.consume();
-        if value < -60 || value > 60 {
-            return Err(Error::InvalidAngle(value));
+        // Pwm configuration.
+        //
+        // Sets the freq to 50 Hz and binds
+        // 100 -> fully extended to the left.
+        // 275 -> fully extended to the right.
+        {
+            pwm.set_prescaler(nrf52840_hal::pwm::Prescaler::Div128);
+            pwm.set_period(50.hz()).set_output_pin(Channel::C0, pin);
+            pwm.set_max_duty(Self::MAXIMUM_DUTY_CYCLE);
+            pwm.enable();
         }
 
-        // Reduce granularity around the origin.
-        if value > -5 && value < 5 {
-            value = 0;
+        let mut ret = Self { pwm };
+
+        // Center the servo after initiation.
+        ret.angle(0.deg()).unwrap();
+        ret
+    }
+
+    /// Sets the angle of the servo.
+    ///
+    /// The angle has to be between -15 to 15 degrees, this is simply because
+    /// this is the maximum actuation distance for the turning.
+    pub fn angle(&mut self, angle: Degrees) -> Result<(), Error> {
+        let mut value = angle.consume();
+        trace!("Setting angle to {}", value);
+        value += Self::STEERING_ERROR;
+        if value < Self::MIN_ANGLE + Self::STEERING_ERROR || value > Self::MAX_ANGLE {
+            return Err(Error::InvalidAngle(value + Self::STEERING_ERROR));
         }
 
         let value: i16 = value
             .try_into()
             .map_err(|_err| Error::InvalidAngle(value))?;
 
+        // If rust ever expands the const generics functionality we could
+        // ensure that this is valid at compile-time but for now we have to
+        // unwrap here.
         let value = value
-            .remap::<-60, 60,
-        // { ((0x7FFF as u32 * 225) / 1000) as i32 }, 
-            225,
-        // { ((0x7FFF as u32 * 512) / 1000) as i32 }>()
-            525>()
-            .expect("Remap is broken");
+            .remap::<-60, 60, 100, 275>()
+            .expect("Servo Remap Broken");
 
-        self.pwm.set_duty(self.channel, value);
-        let real_value = self.pwm.get_duty(self.channel);
-        info!("Set the duty cycle to {:?}", real_value);
-        info!("Expected the duty cycle to be {:?}", value);
-        let period = self.pwm.get_period().0;
-        info!("With period of {:?}", period);
+        // Dirty inversion.
+        self.pwm
+            .set_duty_on(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
     }
 }
 
 mod sealed {
-    use super::Pwm;
-
-    /// Returns a refference to the pwm interface.
-    pub trait GetPwm<Controller: Pwm> {
-        /// Returns a refference to the pwm interface.
-        fn get_pwm<'a>(&'a mut self) -> &'a mut Controller;
-
-        /// Returns the channel that the motor is connected to.
-        fn get_channel<'a>(&'a self) -> &'a Controller::Channel;
-    }
 
     pub trait Remap<Target>
     where
