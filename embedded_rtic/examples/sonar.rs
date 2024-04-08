@@ -1,6 +1,6 @@
 //! Defines a simple distance measurement example.
 //!
-//! This example measures the distance to a nearby object, prefferably a wall
+//! This example measures the distance to a nearby object, preferably a wall
 //! using a sonar sensor. It then smooths the result over a few timestamps to
 //! avoid small peaks in the measured distance.
 
@@ -59,7 +59,7 @@ mod app {
         previous_time: Instant,
     }
 
-    // For future pin refference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
+    // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
         info!("init");

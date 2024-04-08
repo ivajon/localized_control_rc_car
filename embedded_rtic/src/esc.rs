@@ -60,7 +60,7 @@ impl<PWM: Instance> Esc<PWM> {
         }
 
         let period = pwm.get_period();
-        trace!("Esc instantianted : with period {:?} Hz", period.0);
+        trace!("Esc instantiated : with period {:?} Hz", period.0);
         let mut ret = Self { pwm };
 
         ret.speed(0).unwrap();
@@ -102,6 +102,15 @@ mod sealed {
         Self: Sized,
     {
         /// Remaps the value in to the new specified range.
+        /// 
+        /// Using floating point this would be equivalent to
+        /// 
+        /// ```no_run
+        /// let mut ret = (value - OLD_MIN)/(OLD_MAX - OLD_MIN);
+        /// ret = ret*(NEW_MAX-NEW_MIN) + NEW_MIN; 
+        /// ```
+        /// 
+        /// If the operation is not successful the variable `value` will be returned as an error.
         fn remap<const OLD_MIN: i32, const OLD_MAX: i32, const NEW_MIN: i32, const NEW_MAX: i32>(
             self,
         ) -> Result<Target, Self>;

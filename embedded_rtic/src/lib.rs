@@ -1,4 +1,4 @@
-//! Defines some panic behaviour and common utilities for the application.
+//! Defines some panic behavior and common utilities for the application.
 //!
 //!
 //! ## [Esc](esc)

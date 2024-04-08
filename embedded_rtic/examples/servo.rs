@@ -1,8 +1,6 @@
-//! Defines a simple distance measurement example.
+//! This example shows how to use [`Servo`](test_app::servo::Servo).
 //!
-//! This example measures the distance to a nearby object, prefferably a wall
-//! using a sonar sensor. It then smooths the result over a few timestamps to
-//! avoid small peaks in the measured distance.
+//! It simply steps the angle from the right most turn to the left most turn.
 
 #![no_main]
 #![no_std]
@@ -21,7 +19,6 @@ mod app {
     use defmt::info;
     use nrf52840_hal::{clocks::Clocks, gpio};
     use test_app::{servo::Servo, wrapper::Exti32};
-    // use rtic_monotonics::nrf::timer::Timer0 as Mono;
 
     #[shared]
     struct Shared {}
@@ -31,7 +28,7 @@ mod app {
     #[allow(dead_code)]
     struct Local {}
 
-    // For future pin refference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
+    // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[init]
     #[no_mangle]
     fn init(cx: init::Context) -> (Shared, Local) {
@@ -49,20 +46,12 @@ mod app {
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
             }
+
             for i in (-15)..15 {
                 servo.angle(i.deg()).unwrap();
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
             }
-        }
-    }
-
-    #[idle]
-    fn idle(_: idle::Context) -> ! {
-        info!("idle");
-
-        loop {
-            continue;
         }
     }
 }
