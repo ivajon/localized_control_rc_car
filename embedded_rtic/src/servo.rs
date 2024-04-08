@@ -68,7 +68,8 @@ impl<PWM: Instance> Servo<PWM> {
     ///
     /// The angle has to be between -15 to 15 degrees, this is simply because
     /// this is the maximum actuation distance for the turning.
-    pub fn angle(&mut self, angle: Degrees) -> Result<(), Error> {
+    pub fn angle<T: Into<Degrees>>(&mut self, angle: T) -> Result<(), Error> {
+        let angle = angle.into();
         let mut value = angle.consume();
         trace!("Setting angle to {}", value);
         value += Self::STEERING_ERROR;

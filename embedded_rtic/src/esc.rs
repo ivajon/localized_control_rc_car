@@ -47,7 +47,7 @@ impl<PWM: Instance> Esc<PWM> {
         );
         let pwm = Pwm::new(pwm);
 
-        // PWM configuration, sets the period to 50 Hz and specifies a duty cyle
+        // PWM configuration, sets the period to 50 Hz and specifies a duty cycle
         // that allows us to use the desired values.
         //
         // 125 -> min velocity.

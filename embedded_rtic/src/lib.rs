@@ -49,12 +49,13 @@
 //!
 //! This module mainly exports a few helper types for unit conversion such as
 //! [degrees](wrapper::Degrees).
+
 #![no_main]
 #![no_std]
 #![deny(warnings)]
 #![deny(missing_docs)]
 #![deny(clippy::all)]
-
+#![allow(clippy::manual_range_contains)]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use defmt_rtt as _; // global logger
