@@ -10,7 +10,7 @@
 #![deny(clippy::all)]
 #![deny(warnings)]
 
-use test_app as _; // global logger + panicking-behavior + memory layout
+use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     device = nrf52840_hal::pac,
@@ -130,8 +130,8 @@ mod app {
             });
             return;
         }
-        // If not we compute the distance based on the datasheet.
-        let start = cx.local.previous_time.clone();
+        // If not we compute the distance based on the data sheet.
+        let start = *cx.local.previous_time;
         *cx.local.previous_time = zero;
 
         let distance = time.checked_duration_since(start).unwrap().to_micros() / 56;
@@ -156,15 +156,15 @@ mod app {
     /// Send a small pulse to the sonar.
     ///
     /// The sonar will then notify us in echo when the sound wave is
-    /// recieved.
+    /// received.
     async fn trigger(cx: trigger::Context) {
-        // Set high is allways valid.
+        // Set high is always valid.
         cx.local.trig.set_high().unwrap();
 
         let now = Mono::now();
         Mono::delay_until(now + 20.micros()).await;
 
-        // Set low is allways valid.
+        // Set low is always valid.
         cx.local.trig.set_low().unwrap();
     }
 
@@ -200,7 +200,7 @@ mod app {
                     // );
                 }
                 _ => {
-                    // If no task is spawned we need to wait a bit before respawning it.
+                    // If no task is spawned we need to wait a bit before re-spawning it.
                     Mono::delay(500.micros()).await;
                 }
             }

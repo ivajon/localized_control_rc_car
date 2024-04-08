@@ -6,7 +6,7 @@
 #![deny(clippy::all)]
 #![deny(warnings)]
 
-use test_app as _; // global logger + panicking-behavior + memory layout
+use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     // TODO: Replace `some_hal::pac` with the path to the PAC

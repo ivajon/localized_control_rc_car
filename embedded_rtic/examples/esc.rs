@@ -1,4 +1,4 @@
-//! Defines a simple showcase for how to use the [`Esc`](test_app::esc::Esc).
+//! Defines a simple showcase for how to use the [`Esc`](controller::esc::Esc).
 //!
 //! It simply changes the direction we are moving in.
 
@@ -9,17 +9,17 @@
 #![deny(clippy::all)]
 #![deny(warnings)]
 
-use test_app as _; // global logger + panicking-behavior + memory layout
+use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     device = nrf52840_hal::pac,
     dispatchers = [RTC0,RTC1,RTC2]
 )]
 mod app {
+    use controller::esc::Esc;
     use cortex_m::asm::delay;
     use defmt::info;
     use nrf52840_hal::{clocks::Clocks, gpio};
-    use test_app::esc::Esc;
 
     #[shared]
     struct Shared {}

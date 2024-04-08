@@ -1,4 +1,4 @@
-//! This example shows how to use [`Servo`](test_app::servo::Servo).
+//! This example shows how to use [`Servo`](controller::servo::Servo).
 //!
 //! It simply steps the angle from the right most turn to the left most turn.
 
@@ -8,17 +8,17 @@
 #![deny(clippy::all)]
 #![deny(warnings)]
 
-use test_app as _; // global logger + panicking-behavior + memory layout
+use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     device = nrf52840_hal::pac,
     dispatchers = [RTC0,RTC1,RTC2]
 )]
 mod app {
+    use controller::{servo::Servo, wrapper::Exti32};
     use cortex_m::asm::delay;
     use defmt::info;
     use nrf52840_hal::{clocks::Clocks, gpio};
-    use test_app::{servo::Servo, wrapper::Exti32};
 
     #[shared]
     struct Shared {}
@@ -41,13 +41,13 @@ mod app {
         info!("Motor started");
         let mut servo = Servo::new(cx.device.PWM0, motor);
         loop {
-            for i in 15..(-15) {
+            for i in ((-15)..15).rev() {
                 servo.angle(i.deg()).unwrap();
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
             }
 
-            for i in (-15)..15 {
+            for i in ((-15)..15).rev() {
                 servo.angle(i.deg()).unwrap();
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
