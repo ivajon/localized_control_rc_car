@@ -38,7 +38,7 @@ jobs:
         run: |
           rustup toolchain install nightly-2024-04-07 --force
           rustup target add thumbv7em-none-eabihf
-          cargo clippy
+          cargo +nightly clippy
   check:
     needs: [clippy]
     name: Check
@@ -54,7 +54,7 @@ jobs:
         run: |
           rustup toolchain install nightly-2024-04-07 --force
           rustup target add thumbv7em-none-eabihf
-          cargo check
+          cargo +nightly check
 
   fmt:
     name: Rustfmt
@@ -88,4 +88,4 @@ jobs:
           rustup toolchain install nightly-2024-04-07 --force
           rustup target add thumbv7em-none-eabihf
           ls -la
-          cargo build --release
+          cargo +nightly build --release
