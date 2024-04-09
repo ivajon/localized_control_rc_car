@@ -35,7 +35,7 @@ impl<PWM: Instance> Servo<PWM> {
     /// The minimum angle for steering actuation.
     const MIN_ANGLE: i32 = -15;
     /// The steering seems to be offset by some constant factor.
-    const STEERING_ERROR: i32 = -10;
+    const STEERING_ERROR: i32 = -19;
 
     /// Creates a new servo from a [`Pwm`] [`Instance`] and the associated
     /// [`Pin`].
@@ -66,14 +66,15 @@ impl<PWM: Instance> Servo<PWM> {
 
     /// Sets the angle of the servo.
     ///
-    /// The angle has to be between -15 to 15 degrees, this is simply because
+    /// The angle has to be between [`MIN_ANGLE`](Self::MIN_ANGLE) to
+    /// [`MAX_ANGLE`](Self::MAX_ANGLE) degrees, this is simply because
     /// this is the maximum actuation distance for the turning.
     pub fn angle<T: Into<Degrees>>(&mut self, angle: T) -> Result<(), Error> {
         let angle = angle.into();
-        let mut value = angle.consume();
+        let value = angle.consume();
         trace!("Setting angle to {}", value);
-        value += Self::STEERING_ERROR;
-        if value < Self::MIN_ANGLE + Self::STEERING_ERROR || value > Self::MAX_ANGLE {
+        // value += Self::STEERING_ERROR;
+        if value < Self::MIN_ANGLE /* + Self::STEERING_ERROR */ || value > Self::MAX_ANGLE {
             return Err(Error::InvalidAngle(value + Self::STEERING_ERROR));
         }
 
@@ -85,7 +86,8 @@ impl<PWM: Instance> Servo<PWM> {
         // ensure that this is valid at compile-time but for now we have to
         // unwrap here.
         let value = value
-            .remap::<-60, 60, 100, 275>()
+            // .remap::<-60, 60, 100, 275>()
+            .remap::<-60, 60, 0, 325>()
             .expect("Servo Remap Broken");
 
         // Dirty inversion.
