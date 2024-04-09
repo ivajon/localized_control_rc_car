@@ -68,8 +68,7 @@ mod app {
         };
 
         let systick_token = rtic_monotonics::create_systick_token!();
-        let systick = unsafe { core::mem::transmute(()) };
-        Mono::start(systick, 12_000_000, systick_token);
+        Mono::start(cx.core.SYST, 12_000_000, systick_token);
         esc.speed(-29).unwrap();
 
         let queue = ArrayDeque::new();
