@@ -42,12 +42,12 @@ mod app {
         loop {
             info!("BACKWARDS");
             // ~-30 seems to be slow reverse
-            esc.speed(-29).unwrap();
+            esc.speed(-30).unwrap();
             delay(50000000);
 
             info!("FORWARDS!");
             // ~2-5 seems to be slowest possible forward velocity
-            esc.speed(20).unwrap();
+            esc.speed(-4).unwrap();
             delay(50000000);
         }
     }
