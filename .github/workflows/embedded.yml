@@ -10,12 +10,14 @@
 
 on:
   pull_request:
+    paths:
+      - embedded_rtic/**
   push:
     branches:
       - main
       - "*ci*"
     paths:
-      - folder1/**
+      - embedded_rtic/**
 
 name: Check and Lint for embedded
 

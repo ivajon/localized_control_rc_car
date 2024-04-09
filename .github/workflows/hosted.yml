@@ -10,10 +10,14 @@
 
 on:
   pull_request:
+    paths:
+      - hosted/**
   push:
     branches:
       - main
       - '*ci*'
+    paths:
+      - hosted/**
 
 name: Check and Lint for hosted
 
