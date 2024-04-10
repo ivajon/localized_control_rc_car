@@ -41,13 +41,13 @@ mod app {
         info!("Motor started");
         let mut servo = Servo::new(cx.device.PWM0, motor);
         loop {
-            for i in ((-15)..15).rev() {
+            for i in ((-13)..13).rev() {
                 servo.angle(i.deg()).unwrap();
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
             }
 
-            for i in ((-15)..15).rev() {
+            for i in ((-13)..13).rev() {
                 servo.angle(i.deg()).unwrap();
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
