@@ -109,7 +109,7 @@ impl<
 
         self.previous = error;
 
-        let output = (p + i + d).max(THRESHOLD_MAX).min(THRESHOLD_MIN);
+        let output = (p + i + d).max(THRESHOLD_MIN).min(THRESHOLD_MAX);
 
         self.out.set(output).map_err(|err| err.into())
     }
