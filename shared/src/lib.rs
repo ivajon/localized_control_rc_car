@@ -4,3 +4,4 @@
 #![deny(clippy::all)]
 #![deny(rustdoc::all)]
 #![deny(warnings)]
+pub mod controller;
