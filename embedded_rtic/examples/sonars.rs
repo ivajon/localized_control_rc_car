@@ -357,7 +357,6 @@ mod app {
                     }
                     let avg = window.iter().sum::<u32>() / (window.len() as u32);
                     prev_avg = avg;
-
                     info!(
                         "Sonar 1 Distance : {:?} cm (average : {:?} cm)",
                         distance, avg
