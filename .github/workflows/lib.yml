@@ -10,10 +10,14 @@
 
 on:
   pull_request:
+    paths:
+      - shared/**
   push:
     branches:
       - main
       - "*ci*"
+    paths:
+      - shared/**
 
 defaults:
   run:
