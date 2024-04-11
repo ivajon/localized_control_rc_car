@@ -19,7 +19,7 @@ use controller as _; // global logger + panicking-behavior + memory layout
 mod app {
     use arraydeque::{behavior::Wrapping, ArrayDeque};
     use controller::{esc::Esc, servo::Servo, wrapper::Exti32};
-    // use cortex_m::asm::delay;
+    use cortex_m::asm::delay;
     use defmt::info;
     use nrf52840_hal::{
         clocks::Clocks,
@@ -139,31 +139,31 @@ mod app {
 
     #[idle(local = [esc,servo])]
     fn idle(_cx: idle::Context) -> ! {
-        // let servo = cx.local.servo;
+        let servo = cx.local.servo;
         loop {
-            // for i in 20..23 {
-            //     cx.local.esc.speed(i).unwrap();
-            //     info!("Set speed to {:?}", i);
-            //
-            //     delay(10000000);
-            // }
-            // for i in ((-10)..10).rev() {
-            //     servo.angle(i.deg()).unwrap();
-            //     info!("Set angle to {:?} degrees", i);
-            //     delay(10000000);
-            // }
-            //
-            // for i in (-10)..10 {
-            //     servo.angle(i.deg()).unwrap();
-            //     info!("Set angle to {:?} degrees", i);
-            //     delay(10000000);
-            // }
-            //
-            // for i in (20..23).rev() {
-            //     cx.local.esc.speed(i).unwrap();
-            //     info!("Set speed to {:?}", i);
-            //     delay(10000000);
-            // }
+            for i in 20..23 {
+                cx.local.esc.speed(i).unwrap();
+                info!("Set speed to {:?}", i);
+
+                delay(10000000);
+            }
+            for i in ((-10)..10).rev() {
+                servo.angle(i.deg()).unwrap();
+                info!("Set angle to {:?} degrees", i);
+                delay(10000000);
+            }
+
+            for i in (-10)..10 {
+                servo.angle(i.deg()).unwrap();
+                info!("Set angle to {:?} degrees", i);
+                delay(10000000);
+            }
+
+            for i in (20..23).rev() {
+                cx.local.esc.speed(i).unwrap();
+                info!("Set speed to {:?}", i);
+                delay(10000000);
+            }
         }
     }
 }
