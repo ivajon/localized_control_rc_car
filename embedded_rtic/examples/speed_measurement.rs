@@ -138,7 +138,7 @@ mod app {
     }
 
     #[idle(local = [esc,servo])]
-    fn idle(_cx: idle::Context) -> ! {
+    fn idle(cx: idle::Context) -> ! {
         let servo = cx.local.servo;
         loop {
             for i in 20..23 {
