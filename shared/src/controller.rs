@@ -40,7 +40,7 @@ pub enum ControllerError<Error: Debug, ConversionError: Debug> {
     BufferEmpty,
     /// The value written to the channel caused some error.
     ChannelError(Error),
-    /// Thrown when a conversion is non successfull.
+    /// Thrown when a conversion is non successful.
     ConversionError(ConversionError),
     /// Value to large.
     ///
@@ -65,7 +65,7 @@ pub struct Pid<
 > {
     err: PhantomData<Error>,
     out: Interface,
-    refference: ArrayDeque<Output, BUFFER>,
+    reference: ArrayDeque<Output, BUFFER>,
     previous: Output,
     // This might need to be changed in to i64 to not cause errors.
     integral: Output,
@@ -77,7 +77,7 @@ pub struct Pid<
 #[derive(Debug)]
 pub struct ControlInfo<Output: Sized> {
     /// The expected value.
-    pub refference: Output,
+    pub reference: Output,
     /// The actual value read from the [`Channel`].
     pub measured: Output,
     /// The actuation applied to the [`Channel`].
@@ -141,7 +141,7 @@ where
         Self {
             out: channel,
             err: PhantomData,
-            refference: ArrayDeque::new(),
+            reference: ArrayDeque::new(),
             previous: Output::default(),
             integral: Output::default(),
             measurement: (0, Output::default()),
@@ -151,13 +151,13 @@ where
 
     /// Completely erases previous control signals.
     pub fn follow<I: IntoIterator<Item = Output>>(&mut self, values: I) {
-        self.refference.clear();
-        self.refference.extend(values);
+        self.reference.clear();
+        self.reference.extend(values);
     }
 
-    /// Extends the refference signal with new values.
+    /// Extends the reference signal with new values.
     pub fn extend<I: IntoIterator<Item = Output>>(&mut self, values: I) {
-        self.refference.extend(values);
+        self.reference.extend(values);
     }
 
     /// Registers the most recent measurement.
@@ -167,7 +167,7 @@ where
 
     /// Computes the control signal using a PID control strategy.
     ///
-    /// if successfull it returns the expected value and the read value.
+    /// if successful it returns the expected value and the read value.
     pub fn actuate_rate_limited(
         &mut self,
         rate_limit: Output,
@@ -197,7 +197,7 @@ where
 
     /// Computes the control signal using a PID control strategy.
     ///
-    /// if successfull it returns the expected value and the read value.
+    /// if successful it returns the expected value and the read value.
     pub fn actuate(
         &mut self,
     ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>>
@@ -216,7 +216,7 @@ where
     fn compute_output(
         &mut self,
     ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>> {
-        let target: Output = match self.refference.pop_front() {
+        let target: Output = match self.reference.pop_front() {
             Some(value) => value,
             None => return Err(ControllerError::BufferEmpty),
         };
@@ -248,7 +248,7 @@ where
                 / time_scale;
         let i = self.integral * ki;
 
-        // Compute the rate of change between previous timestep and this timestep.
+        // Compute the rate of change between previous time-step and this time-step.
         let d = kd * time_scale * (error - self.previous) / ts;
 
         self.previous = error;
@@ -258,7 +258,7 @@ where
             .min(threshold_max);
 
         Ok(ControlInfo {
-            refference: target,
+            reference: target,
             measured: actual,
             actuation: output,
             p,
@@ -294,13 +294,13 @@ where
 ///
 ///   pid.register_measurement(1f32, 0);
 ///   let actuation = pid.actuate().unwrap();
-///   let expected = 2f32 * (actuation.refference - actuation.measured) + 5f32 / 2f32 + 5f32;
+///   let expected = 2f32 * (actuation.reference - actuation.measured) + 5f32 / 2f32 + 5f32;
 ///   assert!(actuation.actuation == expected);
 ///
 ///   pid.register_measurement(2f32, 1);
 ///   let actuation = pid.actuate().unwrap();
 ///   let expected =
-///     2f32 * (actuation.refference - actuation.measured) + (5f32 + 4f32) / 2f32 + 2.5f32 - 1f32;
+///     2f32 * (actuation.reference - actuation.measured) + (5f32 + 4f32) / 2f32 + 2.5f32 - 1f32;
 ///   // Accumulated sum + average from previous time step to the current time step.
 ///   assert!(actuation.actuation == expected);
 /// ```
@@ -474,7 +474,7 @@ mod test {
         pid.follow(target);
 
         while let Ok(actuation) = pid.actuate() {
-            assert!(actuation.actuation == 2 * (actuation.refference - actuation.measured));
+            assert!(actuation.actuation == 2 * (actuation.reference - actuation.measured));
         }
     }
 
@@ -487,14 +487,14 @@ mod test {
 
         pid.register_measurement(1, 0);
         let actuation = pid.actuate().unwrap();
-        assert!(actuation.actuation == 2 * (actuation.refference - actuation.measured) + 5 / 2);
+        assert!(actuation.actuation == 2 * (actuation.reference - actuation.measured) + 5 / 2);
 
         pid.register_measurement(2, 1);
         let actuation = pid.actuate().unwrap();
         // Accumulated sum + average from previous time step to the current time step.
         assert!(
             actuation.actuation
-                == 2 * (actuation.refference - actuation.measured) + (5 + 4) / 2 + 2
+                == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2
         );
     }
 
@@ -507,14 +507,14 @@ mod test {
 
         pid.register_measurement(1, 0);
         let actuation = pid.actuate().unwrap();
-        assert!(actuation.actuation == 2 * (actuation.refference - actuation.measured) + 5 / 2 + 5);
+        assert!(actuation.actuation == 2 * (actuation.reference - actuation.measured) + 5 / 2 + 5);
 
         pid.register_measurement(2, 1);
         let actuation = pid.actuate().unwrap();
         // Accumulated sum + average from previous time step to the current time step.
         assert!(
             actuation.actuation
-                == 2 * (actuation.refference - actuation.measured) + (5 + 4) / 2 + 2 - 1
+                == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2 - 1
         );
     }
 
@@ -528,14 +528,14 @@ mod test {
         pid.register_measurement(1, 0);
         let actuation = pid.actuate().unwrap();
         let expected =
-            (21 * (actuation.refference - actuation.measured) + 21 * (5 / 2) + 11 * 5) / 10;
+            (21 * (actuation.reference - actuation.measured) + 21 * (5 / 2) + 11 * 5) / 10;
         println!("Actuation : {:?} == {expected:?}", actuation);
         assert!(actuation.actuation == expected);
 
         pid.register_measurement(2, 1);
         let actuation = pid.actuate().unwrap();
         let expected =
-            (21 * (actuation.refference - actuation.measured) + 21 * ((5 + 4) / 2) + 11 * 2) / 10;
+            (21 * (actuation.reference - actuation.measured) + 21 * ((5 + 4) / 2) + 11 * 2) / 10;
         println!("Actuation : {:?} == {expected:?}", actuation);
         // Accumulated sum + average from previous time step to the current time step.
         assert!(actuation.actuation == expected);
@@ -561,14 +561,14 @@ mod test {
 
         pid.register_measurement(1f32, 0);
         let actuation = pid.actuate().unwrap();
-        let expected = 2f32 * (actuation.refference - actuation.measured) + 5f32 / 2f32 + 5f32;
+        let expected = 2f32 * (actuation.reference - actuation.measured) + 5f32 / 2f32 + 5f32;
         println!("Actuation : {:?} == {expected:?}", actuation);
         assert!(actuation.actuation == expected);
 
         pid.register_measurement(2f32, 1);
         let actuation = pid.actuate().unwrap();
         let expected =
-            2f32 * (actuation.refference - actuation.measured) + (5f32 + 4f32) / 2f32 + 2.5f32
+            2f32 * (actuation.reference - actuation.measured) + (5f32 + 4f32) / 2f32 + 2.5f32
                 - 1f32;
         println!("Actuation : {:?} == {expected:?}", actuation);
         // Accumulated sum + average from previous time step to the current time step.

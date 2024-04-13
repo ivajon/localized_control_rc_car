@@ -86,16 +86,6 @@ mod app {
         servo.angle((-7i32).deg()).unwrap();
 
         let queue = ArrayDeque::new();
-        // loop {
-        //     info!("BACKWARDS");
-        //     // ~-30 seems to be slow reverse
-        //     delay(50000000);
-        //
-        //     info!("FORWARDS!");
-        //     // ~2-5 seems to be slowest possible forward velocity
-        //     esc.speed(20).unwrap();
-        //     delay(50000000);
-        // }
 
         (Shared { velocity: 0 }, Local {
             queue,
@@ -106,6 +96,7 @@ mod app {
     }
 
     #[task(local=[gpiote,queue,prev_time:Option<u32> = None,flank:bool = false],shared=[velocity],binds=GPIOTE)]
+    /// Computes the velocity using a rotary encoder.
     fn compute_vel(cx: compute_vel::Context) {
         let time = Mono::now().duration_since_epoch().to_micros();
 

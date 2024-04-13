@@ -1,6 +1,8 @@
-//! Defines a simple showcase for how to use the [`Esc`](controller::esc::Esc).
+//! Defines a simple showcase for how to use the [`Esc`](controller::esc::Esc)
+//! with a [`PID`](shared::controller::Pid) controller.
 //!
-//! It simply changes the direction we are moving in.
+//! It sets a few reference velocities and tries to reach the velocity using a
+//! PID control law.
 
 #![no_main]
 #![no_std]
@@ -58,7 +60,7 @@ mod app {
     #[shared]
     struct Shared {
         measurement: (i32, u32),
-        refference: i32,
+        reference: i32,
     }
 
     // Local resources go here
@@ -74,7 +76,7 @@ mod app {
         // Sends velocity updates
         sender: Sender<'static, i32, 10>,
 
-        reciever: Receiver<'static, i32, 10>,
+        receiver: Receiver<'static, i32, 10>,
     }
 
     const DIFF: u32 = 2 * 31415 / 3;
@@ -119,18 +121,18 @@ mod app {
 
         let controller = Pid::new(esc);
 
-        let (sender, reciever) = make_channel!(i32, 10);
+        let (sender, receiver) = make_channel!(i32, 10);
 
         let systick_token = rtic_monotonics::create_systick_token!();
         Mono::start(cx.core.SYST, 12_000_000, systick_token);
         (
             Shared {
                 measurement: (0, 0),
-                refference: 0,
+                reference: 0,
             },
             Local {
                 sender,
-                reciever,
+                receiver,
                 queue,
                 controller,
                 gpiote,
@@ -175,9 +177,9 @@ mod app {
         cx.local.gpiote.port().reset_events();
     }
 
-    #[task(local = [queue, reciever], shared = [measurement],priority=2)]
+    #[task(local = [queue, receiver], shared = [measurement],priority=2)]
     async fn intermediary(mut cx: intermediary::Context) {
-        while let Ok(vel) = cx.local.reciever.recv().await {
+        while let Ok(vel) = cx.local.receiver.recv().await {
             cx.local.queue.push_back(vel);
             let avg = cx.local.queue.iter().sum::<i32>() / cx.local.queue.len() as i32;
             cx.shared
@@ -187,28 +189,28 @@ mod app {
         debug!("Channel closed, returning from intermediary");
     }
 
-    #[task(local = [controller], shared = [measurement,refference],priority=5)]
-    async fn controll_loop(mut cx: controll_loop::Context) {
+    #[task(local = [controller], shared = [measurement,reference],priority=5)]
+    async fn control_loop(mut cx: control_loop::Context) {
         let measurement = cx.shared.measurement.lock(|measurement| *measurement);
-        let refference = cx.shared.refference.lock(|refference| *refference);
+        let reference = cx.shared.reference.lock(|reference| *reference);
         let controller = cx.local.controller;
 
         controller.register_measurement(measurement.0, measurement.1);
-        controller.follow([refference]);
+        controller.follow([reference]);
         controller
             .actuate()
             .expect("Example is broken this should work");
 
         Mono::delay({ TS as u32 }.micros()).await;
-        controll_loop::spawn().ok();
+        control_loop::spawn().ok();
     }
 
-    #[task(shared = [refference],priority=1)]
-    async fn set_refference(mut cx: set_refference::Context) {
-        let refferences = [200, 400, 600, 800, 1000, 1500, 2000, 1500, 1000, 0, 0];
+    #[task(shared = [reference],priority=1)]
+    async fn set_reference(mut cx: set_reference::Context) {
+        let references = [200, 400, 600, 800, 1000, 1500, 2000, 1500, 1000, 0, 0];
         loop {
-            for vel in refferences {
-                cx.shared.refference.lock(|refference| *refference = vel);
+            for vel in references {
+                cx.shared.reference.lock(|reference| *reference = vel);
                 Mono::delay(5.secs()).await;
             }
         }

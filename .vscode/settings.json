@@ -1,0 +1,16 @@
+{
+    "cSpell.words": [
+        "angvel",
+        "arraydeque",
+        "bkpt",
+        "defmt",
+        "Exti",
+        "gpio",
+        "gpiote",
+        "hfosc",
+        "monotonics",
+        "pullup",
+        "rtic",
+        "Systick"
+    ]
+}
