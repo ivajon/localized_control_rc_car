@@ -11,7 +11,7 @@ use nrf52840_hal::{
 
 use self::sealed::Remap;
 
-/// Enumerates the errors that can occur when using the [`Servo`]
+/// Enumerates the errors that can occur when using the [`Esc`]
 /// abstraction.
 #[derive(Debug)]
 pub enum Error {
@@ -92,6 +92,14 @@ impl<PWM: Instance> Esc<PWM> {
         self.pwm
             .set_duty(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
+    }
+}
+
+impl<PWM: Instance> shared::controller::Channel<Error> for Esc<PWM> {
+    type Output = i32;
+
+    fn set(&mut self, value: Self::Output) -> Result<(), Error> {
+        self.speed(value)
     }
 }
 
