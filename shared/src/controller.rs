@@ -1,6 +1,7 @@
 //! Defines a PID controller.
 
 use core::{
+    convert::Infallible,
     fmt::Debug,
     marker::PhantomData,
     ops::{Add, AddAssign, Div, Mul, Sub},
@@ -19,13 +20,15 @@ pub trait Channel<Error: Debug> {
 pub trait DoubleSize {
     /// A type with double the size of self.
     type Ret: Sized;
+    /// Potential errors that can occur.
+    type Error: Debug;
     /// Doubles the size of self.
     fn double_size(self) -> Self::Ret;
 
     /// Halves the size of the value.
     ///
     /// Returns error if the value does not fit.
-    fn half_size(value: Self::Ret) -> Result<Self, ()>
+    fn half_size(value: Self::Ret) -> Result<Self, Self::Error>
     where
         Self: Sized;
 }
@@ -149,12 +152,12 @@ where
     /// Completely erases previous control signals.
     pub fn follow<I: IntoIterator<Item = Output>>(&mut self, values: I) {
         self.refference.clear();
-        self.refference.extend(values.into_iter());
+        self.refference.extend(values);
     }
 
     /// Extends the refference signal with new values.
     pub fn extend<I: IntoIterator<Item = Output>>(&mut self, values: I) {
-        self.refference.extend(values.into_iter());
+        self.refference.extend(values);
     }
 
     /// Registers the most recent measurement.
@@ -372,7 +375,7 @@ mod sealed {
     impl Convert<i32> for i32 {
         type Error = Infallible;
         fn convert(self) -> Result<i32, Self::Error> {
-            self.try_into()
+            Ok(self)
         }
     }
 
@@ -424,10 +427,11 @@ use sealed::*;
 
 impl DoubleSize for i32 {
     type Ret = i64;
+    type Error = ();
     fn double_size(self) -> Self::Ret {
         self.into()
     }
-    fn half_size(value: Self::Ret) -> Result<Self, ()>
+    fn half_size(value: Self::Ret) -> Result<Self, Self::Error>
     where
         Self: Sized,
     {
@@ -437,10 +441,11 @@ impl DoubleSize for i32 {
 
 impl DoubleSize for f32 {
     type Ret = f64;
+    type Error = Infallible;
     fn double_size(self) -> Self::Ret {
         self.into()
     }
-    fn half_size(value: Self::Ret) -> Result<Self, ()>
+    fn half_size(value: Self::Ret) -> Result<Self, Self::Error>
     where
         Self: Sized,
     {
