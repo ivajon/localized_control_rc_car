@@ -493,8 +493,7 @@ mod test {
         let actuation = pid.actuate().unwrap();
         // Accumulated sum + average from previous time step to the current time step.
         assert!(
-            actuation.actuation
-                == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2
+            actuation.actuation == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2
         );
     }
 
