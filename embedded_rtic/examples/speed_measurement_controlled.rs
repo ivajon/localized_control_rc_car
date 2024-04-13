@@ -57,7 +57,6 @@ mod app {
 
     #[shared]
     struct Shared {
-        velocity: u32,
         measurement: (i32, u32),
         refference: i32,
     }
@@ -126,7 +125,6 @@ mod app {
         Mono::start(cx.core.SYST, 12_000_000, systick_token);
         (
             Shared {
-                velocity: 0,
                 measurement: (0, 0),
                 refference: 0,
             },
@@ -141,7 +139,7 @@ mod app {
         )
     }
 
-    #[task(local=[gpiote,prev_time:Option<u32> = None,flank:bool = false,sender],shared=[velocity],binds=GPIOTE)]
+    #[task(local=[gpiote,prev_time:Option<u32> = None,flank:bool = false,sender],binds=GPIOTE)]
     fn compute_vel(cx: compute_vel::Context) {
         let time = Mono::now().duration_since_epoch().to_micros();
 

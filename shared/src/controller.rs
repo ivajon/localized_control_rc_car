@@ -448,7 +448,7 @@ impl DoubleSize for f32 {
     }
 }
 
-#[cfg(feature = "use-std")]
+#[cfg(feature = "std")]
 #[cfg(test)]
 mod test {
     use super::prelude::*;
