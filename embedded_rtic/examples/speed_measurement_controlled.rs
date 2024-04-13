@@ -189,11 +189,8 @@ mod app {
 
     #[task(local = [controller], shared = [measurement,refference],priority=5)]
     async fn controll_loop(mut cx: controll_loop::Context) {
-        let measurement = cx
-            .shared
-            .measurement
-            .lock(|measurement| measurement.clone());
-        let refference = cx.shared.refference.lock(|refference| refference.clone());
+        let measurement = cx.shared.measurement.lock(|measurement| *measurement);
+        let refference = cx.shared.refference.lock(|refference| *refference);
         let controller = cx.local.controller;
 
         controller.register_measurement(measurement.0, measurement.1);
