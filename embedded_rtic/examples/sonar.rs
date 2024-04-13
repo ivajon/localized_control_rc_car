@@ -45,7 +45,6 @@ mod app {
     #[shared]
     struct Shared {
         gpiote: Gpiote,
-        // TODO! Add in temperature
     }
 
     // Local resources go here

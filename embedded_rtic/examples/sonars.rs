@@ -1,8 +1,9 @@
-//! Defines a simple distance measurement example.
+//! Defines a distance measurement example for multiple sonars.
 //!
-//! This example measures the distance to a nearby object, prefferably a wall
-//! using a sonar sensor. It then smooths the result over a few timestamps to
-//! avoid small peaks in the measured distance.
+//! This example measures the distance to nearby objects, prefferably a wall
+//! using a sonar sensors on the front, left and right side of the car. It then
+//! smooths the result over a few timestamps to avoid small peaks in the
+//! measured distance.
 
 #![no_main]
 #![no_std]
@@ -22,7 +23,11 @@ mod app {
     use arraydeque::{behavior::Wrapping, ArrayDeque};
     use defmt::{error, info};
     use nrf52840_hal::{
-        clocks::Clocks, gpio::{self, Input, Output, Pin, PullDown, PushPull}, gpiote::*, ppi, prelude::*
+        clocks::Clocks,
+        gpio::{self, Input, Output, Pin, PullDown, PushPull},
+        gpiote::*,
+        ppi,
+        prelude::*,
     };
     use rtic_monotonics::{
         nrf::timer::{fugit::ExtU64, Timer0 as Mono},
@@ -32,6 +37,7 @@ mod app {
         channel::{Receiver, Sender},
         make_channel,
     };
+    use test_app::car::Sonar;
 
     /// The message queue capacity
     const CAPACITY: usize = 5;
@@ -51,26 +57,23 @@ mod app {
         //Sonar 1
         trig: Pin<Output<PushPull>>,
         echo: Pin<Input<PullDown>>,
-        sender: Sender<'static, u32, CAPACITY>,
-        receiver: Receiver<'static, u32, CAPACITY>,
-        previous_time: Instant,
+        receiver_forward: Receiver<'static, u32, CAPACITY>,
 
         // Sonar 2
-        trig2: Pin<Output<PushPull>>, 
+        trig2: Pin<Output<PushPull>>,
         echo2: Pin<Input<PullDown>>,
-        sender2: Sender<'static, u32, CAPACITY>,
-        receiver2: Receiver<'static, u32, CAPACITY>,
-        previous_time2: Instant,
+        receiver_left: Receiver<'static, u32, CAPACITY>,
 
         // Sonar 3
         trig3: Pin<Output<PushPull>>,
         echo3: Pin<Input<PullDown>>,
-        sender3: Sender<'static, u32, CAPACITY>,
-        receiver3: Receiver<'static, u32, CAPACITY>,
-        previous_time3: Instant,
+        receiver_right: Receiver<'static, u32, CAPACITY>,
 
-        times: [Instant;3],
+        senders: [Sender<'static, u32, CAPACITY>; 3],
+        times: [Instant; 3],
     }
+
+    const NUM_SONARS: usize = 3; // Number of sonars
 
     // For future pin refference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[allow(dead_code)]
@@ -96,7 +99,7 @@ mod app {
         // Enable interrupts
         //
         // The nrf52840 is a bit strange when it comes to pin interrupts,
-        // but for now we simply connect the echo pin to the channel 1.
+        // but for now we simply connect the echo pins to the channel 0, 1 and 2.
 
         // Configure GPIOTE and PPI for all sonars
         let gpiote = Gpiote::new(cx.device.GPIOTE);
@@ -143,16 +146,20 @@ mod app {
             gpiote
         };
 
-        let (sender, receiver) = make_channel!(u32, CAPACITY);
-        let previous_time = Instant::from_ticks(0);
+        // Pair forward sonars sender and reciever
+        let (sender, receiver_forward) = make_channel!(u32, CAPACITY);
 
-        let (sender2, receiver2) = make_channel!(u32, CAPACITY);
-        let previous_time2 = Instant::from_ticks(0);
+        // Pair left sonars sender and reciever
+        let (sender2, receiver_left) = make_channel!(u32, CAPACITY);
 
-        let (sender3, receiver3) = make_channel!(u32, CAPACITY);
-        let previous_time3 = Instant::from_ticks(0);
+        // Pair right sonars sender and reciever
+        let (sender3, receiver_right) = make_channel!(u32, CAPACITY);
 
-        let times = [Instant::from_ticks(0);3];
+        // Array with respective senders
+        let senders = [sender, sender2, sender3];
+
+        //
+        let times = [Instant::from_ticks(0); 3];
 
         let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
         Mono::start(cx.device.TIMER0, token);
@@ -168,31 +175,20 @@ mod app {
             echo2,
             trig3,
             echo3,
-            sender,
-            receiver,
-            sender2,
-            receiver2,
-            sender3,
-            receiver3,
-            previous_time,
-            previous_time2,
-            previous_time3,
+            receiver_forward,
+            receiver_left,
+            receiver_right,
+            senders,
             times,
         })
     }
 
-    const NUM_SONARS: usize = 3; // Number of sonars
-    #[derive(Copy, Clone)]
-    enum SonarChannel {
-        Forward,
-        Left,
-        Right,
-    }
-
-    #[task(binds = GPIOTE,priority = 4, local=[echo,sender,previous_time,echo2,sender2,previous_time2,echo3,sender3,previous_time3,times],shared = [gpiote])]
-    /// Reads the echo pin
+    //#[task(binds local=[echo,sender,echo2,sender2,echo3,sender3,senders,times],
+    #[task(binds = GPIOTE,priority = 4, local=[echo,echo2,echo3,senders,times],shared = [gpiote])]
+    /// Reads the echo pin and check which sonar that triggered an event using
+    /// their channels
     ///
-    /// When ever the echo pin goes high or low this interrupt is triggered.
+    /// Whenever the echo pin goes high or low this interrupt is triggered.
     /// On the falling edge this interrupt computes the "width" in time
     /// of the square wave thus allowing us to compute the time it took
     /// to echo back to us.
@@ -205,70 +201,85 @@ mod app {
         let mut triggered_sonars = [None; NUM_SONARS];
 
         // Check which sonar triggered the event and store it in the array
-        let debug_time = time.duration_since_epoch().to_micros();
+        //let debug_time = time.duration_since_epoch().to_micros();
         cx.shared.gpiote.lock(|gpiote| {
             if gpiote.channel0().is_event_triggered() {
-                info!("Interrupt on channel 0, {:?}", debug_time);
-                triggered_sonars[0] = Some(SonarChannel::Forward);
+                //info!("Interrupt on channel 0, {:?}", debug_time);
+                triggered_sonars[0] = Some(Sonar::Forward);
             }
             if gpiote.channel1().is_event_triggered() {
-                info!("Interrupt on channel 1, {:?}", debug_time);
-                triggered_sonars[1] = Some(SonarChannel::Left);
+                //info!("Interrupt on channel 1, {:?}", debug_time);
+                triggered_sonars[1] = Some(Sonar::Left);
             }
             if gpiote.channel2().is_event_triggered() {
-                info!("Interrupt on channel 2, {:?}",debug_time);
-                triggered_sonars[2] = Some(SonarChannel::Right);
+                //info!("Interrupt on channel 2, {:?}", debug_time);
+                triggered_sonars[2] = Some(Sonar::Right);
             }
         });
 
         // Print messages for each triggered sonar
         for sonar in triggered_sonars.iter().filter_map(|x| *x) {
             match sonar {
-                SonarChannel::Forward => {
-                    //info!("Event triggered by Sonar 1 (Forward)");
+                Sonar::Forward => {
+                    //trace!("Event triggered by Sonar 1 (Forward)");
                     if cx.local.times[0] == zero {
                         cx.local.times[0] = time;
                     } else {
-                        let distance = time.checked_duration_since(cx.local.times[0]).unwrap().to_micros() / 56;
-                        match cx.local.sender.try_send(distance as u32) {
+                        let distance = time
+                            .checked_duration_since(cx.local.times[0])
+                            .unwrap()
+                            .to_micros()
+                            / 56;
+                        match cx.local.senders[0].try_send(distance as u32) {
                             Ok(_) => {}
                             _ => {
                                 error!("Distance FORWARD did not fit in to the buffer, scheduling is probably broken.");
-                                // This is not fatal so we simply continue with our life
+                                // This is not fatal so we simply continue with
+                                // our life
                             }
                         }
                         cx.local.times[0] = zero;
                     }
                 }
-                SonarChannel::Left => {
-                    //info!("Event triggered by Sonar 2 (Left)");
+                Sonar::Left => {
+                    //trace!("Event triggered by Sonar 2 (Left)");
                     if cx.local.times[1] == zero {
                         cx.local.times[1] = time;
                     } else {
-                        let distance2 = time.checked_duration_since(cx.local.times[1]).unwrap().to_micros() / 56;
+                        let distance2 = time
+                            .checked_duration_since(cx.local.times[1])
+                            .unwrap()
+                            .to_micros()
+                            / 56;
                         cx.local.times[1] = zero;
-                        match cx.local.sender2.try_send(distance2 as u32) {
+                        match cx.local.senders[1].try_send(distance2 as u32) {
                             Ok(_) => {}
                             _ => {
                                 error!("Distance LEFT did not fit in to the buffer, scheduling is probably broken.");
-                                // This is not fatal so we simply continue with our life
+                                // This is not fatal so we simply continue with
+                                // our life
                             }
                         }
                     }
                 }
-                SonarChannel::Right => {
-                    //info!("Event triggered by Sonar 3 (Right)");
+                Sonar::Right => {
+                    //trace!("Event triggered by Sonar 3 (Right)");
                     if cx.local.times[2] == zero {
                         cx.local.times[2] = time;
                     } else {
-                        let distance3 = time.checked_duration_since(cx.local.times[2]).unwrap().to_micros() / 56;
-                        info!("distance 3 before sending: {:?}", distance3);
+                        let distance3 = time
+                            .checked_duration_since(cx.local.times[2])
+                            .unwrap()
+                            .to_micros()
+                            / 56;
+                        //trace!("distance 3 before sending: {:?}", distance3);
                         cx.local.times[2] = zero;
-                        match cx.local.sender3.try_send(distance3 as u32) {
+                        match cx.local.senders[2].try_send(distance3 as u32) {
                             Ok(_) => {}
                             _ => {
                                 error!("Distance RIGHT did not fit in to the buffer, scheduling is probably broken.");
-                                // This is not fatal so we simply continue with our life
+                                // This is not fatal so we simply continue with
+                                // our life
                             }
                         }
                     }
@@ -317,10 +328,9 @@ mod app {
     }
 
     #[task(priority = 2, local = [trig3], shared = [gpiote])]
-    /// Send a small pulse to the sonars.
+    /// Send a small pulse to sonar 3.
     ///
-    /// The sonars will then notify us in echo when the sound waves are
-    /// recieved.
+    /// The sonar will then notify us in echo when the sound wave is recieved.
     async fn trigger3(cx: trigger3::Context) {
         // Set high is always valid.
         cx.local.trig3.set_high().unwrap();
@@ -332,7 +342,7 @@ mod app {
         cx.local.trig3.set_low().unwrap();
     }
 
-    #[task(priority = 1,local = [receiver])] // Split into separate trigger_trampolines since they cokblock atm
+    #[task(priority = 1,local = [receiver_forward])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_trampoline1(cx: trigger_trampoline1::Context) {
         // Apply a sliding window-like smoothing to the measurements
@@ -343,14 +353,14 @@ mod app {
             // Receive data from the first sonar
             match trigger1::spawn() {
                 Ok(_) => {
-                    let distance = cx.local.receiver.recv().await.unwrap();
+                    let distance = cx.local.receiver_forward.recv().await.unwrap();
                     // Discard outliers
                     if distance < prev_avg + outlier_offset {
                         let _ = window.push_back(distance);
                     }
                     let avg = window.iter().sum::<u32>() / (window.len() as u32);
                     prev_avg = avg;
-    
+
                     info!(
                         "Sonar 1 Distance : {:?} cm (average : {:?} cm)",
                         distance, avg
@@ -360,72 +370,70 @@ mod app {
                     error!("Failed to receive data from sonar 1");
                 }
             }
-            Mono::delay(500.millis()).await; // Adjust delay as needed
+            Mono::delay(1000.millis()).await; // Adjust delay as needed
         }
     }
 
-    #[task(priority = 1,local = [receiver2])] // Split into separate trigger_trampolines since they cokblock atm
+    #[task(priority = 1,local = [receiver_left])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_trampoline2(cx: trigger_trampoline2::Context) {
-        // Apply a sliding window-like smoothing to the measurements
-        let mut window2: ArrayDeque<u32, 20, Wrapping> = ArrayDeque::new();
+        let mut window: ArrayDeque<u32, 20, Wrapping> = ArrayDeque::new();
         let outlier_offset = 100;
-        let mut prev_avg2 = u32::MAX - outlier_offset;
+        let mut prev_avg = u32::MAX - outlier_offset;
         loop {
-            // Receive data from the first sonar
+            // Receive data from the second sonar
             match trigger2::spawn() {
                 Ok(_) => {
-                    let distance2 = cx.local.receiver2.recv().await.unwrap();
+                    let distance = cx.local.receiver_left.recv().await.unwrap();
                     // Discard outliers
-                    if distance2 < prev_avg2 + outlier_offset {
-                        let _ = window2.push_back(distance2);
+                    if distance < prev_avg + outlier_offset {
+                        let _ = window.push_back(distance);
                     }
-                    let avg2 = window2.iter().sum::<u32>() / (window2.len() as u32);
-                    prev_avg2 = avg2;
-    
+                    let avg = window.iter().sum::<u32>() / (window.len() as u32);
+                    prev_avg = avg;
+
                     info!(
                         "Sonar 2 Distance : {:?} cm (average : {:?} cm)",
-                        distance2, avg2
+                        distance, avg
                     );
                 }
                 Err(_) => {
                     error!("Failed to receive data from sonar 2");
                 }
             }
-            Mono::delay(500.millis()).await; // Adjust delay as needed
+            Mono::delay(1000.millis()).await; // Adjust delay as needed
         }
     }
 
-    #[task(priority = 1,local = [receiver3])] // Split into separate trigger_trampolines since they cokblock atm
+    #[task(priority = 1,local = [receiver_right])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_trampoline3(cx: trigger_trampoline3::Context) {
         // Apply a sliding window-like smoothing to the measurements
-        let mut window3: ArrayDeque<u32, 20, Wrapping> = ArrayDeque::new();
+        let mut window: ArrayDeque<u32, 20, Wrapping> = ArrayDeque::new();
         let outlier_offset = 100;
-        let mut prev_avg3 = u32::MAX - outlier_offset;
+        let mut prev_avg = u32::MAX - outlier_offset;
         loop {
-            // Receive data from the first sonar
+            // Receive data from the third sonar
             match trigger3::spawn() {
                 Ok(_) => {
-                    let distance3 = cx.local.receiver3.recv().await.unwrap();
-                    info!("distance3 = {:?}", distance3);
+                    let distance = cx.local.receiver_right.recv().await.unwrap();
                     // Discard outliers
-                    if distance3 < prev_avg3 + outlier_offset {
-                        let _ = window3.push_back(distance3);
+                    if distance < prev_avg + outlier_offset {
+                        let _ = window.push_back(distance);
                     }
-                    let avg3 = window3.iter().sum::<u32>() / (window3.len() as u32);
-                    prev_avg3 = avg3;
-    
+                    let avg = window.iter().sum::<u32>() / (window.len() as u32);
+                    prev_avg = avg;
+
                     info!(
                         "Sonar 3 Distance : {:?} cm (average : {:?} cm)",
-                        distance3, avg3
+                        distance, avg
                     );
                 }
                 Err(_) => {
                     error!("Failed to receive data from sonar 3");
                 }
             }
-            Mono::delay(500.millis()).await; // Adjust delay as needed
+            Mono::delay(1000.millis()).await; // Adjust delay as needed
         }
     }
 
