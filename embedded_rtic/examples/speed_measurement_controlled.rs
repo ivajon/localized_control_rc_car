@@ -105,8 +105,8 @@ mod app {
             gpiote
         };
 
-        esc.speed(25).unwrap();
-        servo.angle((-7i32).deg()).unwrap();
+        esc.speed(0).unwrap();
+        servo.angle(0.deg()).unwrap();
 
         let queue = ArrayDeque::new();
 
@@ -132,7 +132,18 @@ mod app {
         )
     }
 
-    #[task(local=[gpiote,prev_time:Option<u32> = None,flank:bool = false,sender],binds=GPIOTE)]
+    #[task(
+        local=[
+            gpiote,
+            sender,
+            // The time for the previous magnet.
+            prev_time:Option<u32> = None,
+            // Wether or not we are on a rising or falling edge of the signal.
+            flank:bool = false
+        ],
+        binds=GPIOTE,
+        priority = 6
+    )]
     fn compute_vel(cx: compute_vel::Context) {
         let time = Mono::now().duration_since_epoch().to_micros();
 
@@ -169,7 +180,11 @@ mod app {
     }
 
     #[task(local = [queue, receiver], shared = [measurement],priority=2)]
+    /// Acts as a trampoline for data processing thus, hopefully reducing the
+    /// time spent in `compute_vel`.
     async fn intermediary(mut cx: intermediary::Context) {
+        // Wait for a new velocity reading, smooth it using the queue and then set the
+        // average value in measurement.
         while let Ok(vel) = cx.local.receiver.recv().await {
             cx.local.queue.push_back(vel);
             let avg = cx.local.queue.iter().sum::<i32>() / cx.local.queue.len() as i32;
@@ -181,6 +196,14 @@ mod app {
     }
 
     #[task(local = [controller], shared = [measurement,reference],priority=5)]
+    /// Highest priority as this should be ran no matter what is running (aside
+    /// from measurements).
+    ///
+    /// Uses the PID to set an appropriate control signal for the motor.
+    /// Will re-run every sample time.
+    ///
+    /// NOTE! If we notice that we this takes too long, use [`Symex`](https://github.com/ivario123/symex) to get the
+    /// longest possible time the PID takes and subtract that form TS.
     async fn control_loop(mut cx: control_loop::Context) {
         let measurement = cx.shared.measurement.lock(|measurement| *measurement);
         let reference = cx.shared.reference.lock(|reference| *reference);
@@ -197,6 +220,8 @@ mod app {
     }
 
     #[task(shared = [reference],priority=1)]
+    /// Sets the new reference value, this should probably be done using SPI and
+    /// DMA for the real thing.
     async fn set_reference(mut cx: set_reference::Context) {
         let references = [200, 400, 600, 800, 1000, 1500, 2000, 1500, 1000, 0, 0];
         loop {
@@ -208,6 +233,7 @@ mod app {
     }
 
     #[idle(local = [servo])]
+    /// Turns a bit every now and then.
     fn idle(cx: idle::Context) -> ! {
         let servo = cx.local.servo;
         loop {
@@ -216,7 +242,6 @@ mod app {
                 info!("Set angle to {:?} degrees", i);
                 delay(10000000);
             }
-
             for i in (-10)..10 {
                 servo.angle(i.deg()).unwrap();
                 info!("Set angle to {:?} degrees", i);
