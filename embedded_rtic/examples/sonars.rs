@@ -38,6 +38,7 @@ mod app {
         channel::{Receiver, Sender},
         make_channel,
     };
+    use test_app::car::Sonar;
 
     /// The message queue capacity
     const CAPACITY: usize = 5;
