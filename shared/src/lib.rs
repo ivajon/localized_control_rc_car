@@ -1,7 +1,7 @@
 //! Defines some shared dependencies such as
 //! communications protocols and the methods for parsing them.
 
-#![cfg_attr(not(flag = "use-std"), no_std)]
+#![cfg_attr(not(feature = "use-std"), no_std)]
 #![deny(clippy::all)]
 #![deny(rustdoc::all)]
 #![deny(warnings)]

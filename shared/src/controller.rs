@@ -67,6 +67,7 @@ pub struct Pid<
     // This might need to be changed in to i64 to not cause errors.
     integral: Output,
     measurement: (u32, Output),
+    previous_actuation: Output,
 }
 
 /// Wraps the info about a specific time step in the control sequence.
@@ -141,6 +142,7 @@ where
             previous: Output::default(),
             integral: Output::default(),
             measurement: (0, Output::default()),
+            previous_actuation: Output::default(),
         }
     }
 
@@ -163,6 +165,36 @@ where
     /// Computes the control signal using a PID control strategy.
     ///
     /// if successfull it returns the expected value and the read value.
+    pub fn actuate_rate_limited(
+        &mut self,
+        rate_limit: Output,
+    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>>
+    where
+        <Output as DoubleSize>::Ret: Debug + Copy,
+        Output: Debug + Copy,
+    {
+        let mut output_pre_rate_limit = self.compute_output()?;
+
+        let output = match (
+            output_pre_rate_limit.actuation > (self.previous_actuation + rate_limit),
+            output_pre_rate_limit.actuation < (self.previous_actuation - rate_limit),
+        ) {
+            (true, _) => self.previous_actuation + rate_limit,
+            (_, true) => self.previous_actuation - rate_limit,
+            (_, _) => output_pre_rate_limit.actuation,
+        };
+
+        self.out
+            .set(output)
+            .map_err(|err| ControllerError::ChannelError(err))?;
+        self.previous_actuation = output;
+        output_pre_rate_limit.actuation = output;
+        Ok(output_pre_rate_limit)
+    }
+
+    /// Computes the control signal using a PID control strategy.
+    ///
+    /// if successfull it returns the expected value and the read value.
     pub fn actuate(
         &mut self,
     ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>>
@@ -170,6 +202,17 @@ where
         <Output as DoubleSize>::Ret: Debug + Copy,
         Output: Debug + Copy,
     {
+        let output = self.compute_output()?;
+        self.out
+            .set(output.actuation)
+            .map_err(|err| ControllerError::ChannelError(err))?;
+        self.previous_actuation = output.actuation;
+
+        Ok(output)
+    }
+    fn compute_output(
+        &mut self,
+    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>> {
         let target: Output = match self.refference.pop_front() {
             Some(value) => value,
             None => return Err(ControllerError::BufferEmpty),
@@ -210,10 +253,6 @@ where
         let output = ((p + i + d) / fixed_point)
             .max(threshold_min)
             .min(threshold_max);
-
-        self.out
-            .set(output)
-            .map_err(|err| ControllerError::ChannelError(err))?;
 
         Ok(ControlInfo {
             refference: target,
@@ -409,7 +448,7 @@ impl DoubleSize for f32 {
     }
 }
 
-#[cfg(all(flag = "use-std"))]
+#[cfg(feature = "use-std")]
 #[cfg(test)]
 mod test {
     use super::prelude::*;
