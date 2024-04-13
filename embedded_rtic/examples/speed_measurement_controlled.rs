@@ -22,7 +22,11 @@ mod app {
 
     use arraydeque::{behavior::Wrapping, ArrayDeque};
     use controller::{
-        esc::{Error, Esc},
+        car::{
+            constants::{ESC_PID_PARAMS, MAGNET_SPACING, RADIUS},
+            wrappers::MotorController,
+        },
+        esc::Esc,
         servo::Servo,
         wrapper::Exti32,
     };
@@ -46,17 +50,6 @@ mod app {
     };
     use shared::controller::Pid;
 
-    const KP: i32 = 23;
-    const KI: i32 = 21;
-    const KD: i32 = 11;
-    // 10 ^ 1
-    const SCALE: u32 = 1;
-
-    // Sample time
-    const TS: i32 = 200;
-    // us
-    const TIMESCALE: i32 = 1_000_000;
-
     #[shared]
     struct Shared {
         measurement: (i32, u32),
@@ -66,7 +59,7 @@ mod app {
     // Local resources go here
     #[local]
     struct Local {
-        controller: Pid<Error, Esc<PWM0>, i32, 1, KP, KI, KD, TS, -100, 100, TIMESCALE, SCALE>,
+        controller: MotorController<PWM0>,
         servo: Servo<PWM1>,
         gpiote: Gpiote,
 
@@ -78,8 +71,6 @@ mod app {
 
         receiver: Receiver<'static, i32, 10>,
     }
-
-    const DIFF: u32 = 2 * 31415 / 3;
 
     // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[init]
@@ -155,10 +146,10 @@ mod app {
             Some(value) => {
                 // info!("value : {:?} time : {:?}", value, time);
                 let dt = time - *value;
-                let angvel = (DIFF as u64) * 1_000_000 / (dt as u64);
+                let angvel = (MAGNET_SPACING as u64) * 1_000_000 / (dt as u64);
                 let angvel = angvel / 10_000/* (DIFF as u64 / 3) */;
                 info!("Angular velocity {:?}", angvel);
-                let vel = 3 * angvel;
+                let vel = RADIUS * angvel;
                 info!("Velocity : {:?} cm/s", vel);
                 *cx.local.prev_time = Some(time);
 
@@ -201,7 +192,7 @@ mod app {
             .actuate()
             .expect("Example is broken this should work");
 
-        Mono::delay({ TS as u32 }.micros()).await;
+        Mono::delay({ ESC_PID_PARAMS.TS as u32 }.micros()).await;
         control_loop::spawn().ok();
     }
 
