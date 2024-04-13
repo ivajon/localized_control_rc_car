@@ -78,6 +78,14 @@ pub struct ControlInfo<Output: Sized> {
     pub measured: Output,
     /// The actuation applied to the [`Channel`].
     pub actuation: Output,
+    /// The contribution from the p term.
+    pub p: Output,
+    /// The contribution from the i term.
+    pub i: Output,
+    /// The contribution from the d term.
+    pub d: Output,
+    /// The output pre-threshold.
+    pub pre_threshold: Output,
 }
 
 impl<
@@ -157,7 +165,11 @@ where
     /// if successfull it returns the expected value and the read value.
     pub fn actuate(
         &mut self,
-    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>> {
+    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>>
+    where
+        <Output as DoubleSize>::Ret: Debug + Copy,
+        Output: Debug + Copy,
+    {
         let target: Output = match self.refference.pop_front() {
             Some(value) => value,
             None => return Err(ControllerError::BufferEmpty),
@@ -195,7 +207,9 @@ where
 
         self.previous = error;
 
-        let output = (p + i + d).max(threshold_min).min(threshold_max) / fixed_point;
+        let output = ((p + i + d) / fixed_point)
+            .max(threshold_min)
+            .min(threshold_max);
 
         self.out
             .set(output)
@@ -205,6 +219,10 @@ where
             refference: target,
             measured: actual,
             actuation: output,
+            p,
+            i,
+            d,
+            pre_threshold: (p + i + d) / fixed_point,
         })
     }
 }
@@ -300,7 +318,7 @@ pub mod prelude {
 
 mod sealed {
     use core::convert::Infallible;
-    use std::fmt::Debug;
+    use core::fmt::Debug;
 
     use super::ControllerError;
 
@@ -391,6 +409,7 @@ impl DoubleSize for f32 {
     }
 }
 
+#[cfg(all(flag = "use-std"))]
 #[cfg(test)]
 mod test {
     use super::prelude::*;
@@ -453,6 +472,29 @@ mod test {
             actuation.actuation
                 == 2 * (actuation.refference - actuation.measured) + (5 + 4) / 2 + 2 - 1
         );
+    }
+
+    #[test]
+    fn test_pid_fixed_point() {
+        let channel = ([1, 2].into_iter(), 0);
+        let target = [6, 6];
+        let mut pid: Pid<(), _, i32, 2, 21, 21, 11, 1, 100, 0, 1, 1> = Pid::new(channel);
+        pid.follow(target);
+
+        pid.register_measurement(1, 0);
+        let actuation = pid.actuate().unwrap();
+        let expected =
+            (21 * (actuation.refference - actuation.measured) + 21 * (5 / 2) + 11 * 5) / 10;
+        println!("Actuation : {:?} == {expected:?}", actuation);
+        assert!(actuation.actuation == expected);
+
+        pid.register_measurement(2, 1);
+        let actuation = pid.actuate().unwrap();
+        let expected =
+            (21 * (actuation.refference - actuation.measured) + 21 * ((5 + 4) / 2) + 11 * 2) / 10;
+        println!("Actuation : {:?} == {expected:?}", actuation);
+        // Accumulated sum + average from previous time step to the current time step.
+        assert!(actuation.actuation == expected);
     }
 
     #[test]

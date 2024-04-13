@@ -16,7 +16,7 @@ rtic-monotonics = { version = "1.0.0", features = [
 ] }
 rtic-sync = "1.3.0"
 
-shared = {path = "../shared"}
+shared = {path = "../shared", defualt-flags = false}
 
 
 # Helpers
