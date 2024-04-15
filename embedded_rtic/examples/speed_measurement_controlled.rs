@@ -23,15 +23,15 @@ mod app {
     use arraydeque::{behavior::Wrapping, ArrayDeque};
     use controller::{
         car::{
-            constants::{ESC_PID_PARAMS, MAGNET_SPACING, RADIUS},
+            constants::{ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
             wrappers::MotorController,
         },
         esc::Esc,
         servo::Servo,
         wrapper::Exti32,
     };
-    use cortex_m::asm::delay;
-    use defmt::{debug, info};
+    use cortex_m::asm::{/* delay, */ nop};
+    use defmt::{debug, info, trace};
     use nrf52840_hal::{
         clocks::Clocks,
         gpio,
@@ -49,11 +49,12 @@ mod app {
         make_channel,
     };
     use shared::controller::Pid;
+    const SMOOTHING: usize = 10;
 
     #[shared]
     struct Shared {
-        measurement: (i32, u32),
-        reference: i32,
+        measurement: (f32, u32),
+        reference: f32,
     }
 
     // Local resources go here
@@ -64,12 +65,12 @@ mod app {
         gpiote: Gpiote,
 
         // Sliding smoothing.
-        queue: ArrayDeque<i32, 10, Wrapping>,
+        queue: ArrayDeque<i32, SMOOTHING, Wrapping>,
 
         // Sends velocity updates
-        sender: Sender<'static, i32, 10>,
+        sender: Sender<'static, i32, 30>,
 
-        receiver: Receiver<'static, i32, 10>,
+        receiver: Receiver<'static, i32, 30>,
     }
 
     // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
@@ -112,14 +113,17 @@ mod app {
 
         let controller = Pid::new(esc);
 
-        let (sender, receiver) = make_channel!(i32, 10);
+        let (sender, receiver) = make_channel!(i32, 30);
 
         let systick_token = rtic_monotonics::create_systick_token!();
         Mono::start(cx.core.SYST, 12_000_000, systick_token);
+        intermediary::spawn().ok();
+        control_loop::spawn().ok();
+        set_reference::spawn().ok();
         (
             Shared {
-                measurement: (0, 0),
-                reference: 0,
+                measurement: (0f32, 0),
+                reference: 0f32,
             },
             Local {
                 sender,
@@ -159,9 +163,9 @@ mod app {
                 let dt = time - *value;
                 let angvel = (MAGNET_SPACING as u64) * 1_000_000 / (dt as u64);
                 let angvel = angvel / 10_000/* (DIFF as u64 / 3) */;
-                info!("Angular velocity {:?}", angvel);
+                trace!("Angular velocity {:?}", angvel);
                 let vel = RADIUS * angvel;
-                info!("Velocity : {:?} cm/s", vel);
+                trace!("Velocity : {:?} cm/s", vel);
                 *cx.local.prev_time = Some(time);
 
                 cx.local
@@ -179,20 +183,22 @@ mod app {
         cx.local.gpiote.port().reset_events();
     }
 
-    #[task(local = [queue, receiver], shared = [measurement],priority=2)]
+    #[task(local = [queue, receiver], shared = [measurement],priority=4)]
     /// Acts as a trampoline for data processing thus, hopefully reducing the
     /// time spent in `compute_vel`.
     async fn intermediary(mut cx: intermediary::Context) {
+        info!("Waiting for message");
         // Wait for a new velocity reading, smooth it using the queue and then set the
         // average value in measurement.
+
         while let Ok(vel) = cx.local.receiver.recv().await {
             cx.local.queue.push_back(vel);
-            let avg = cx.local.queue.iter().sum::<i32>() / cx.local.queue.len() as i32;
+            let avg = cx.local.queue.iter().sum::<i32>() / { SMOOTHING as i32 };
             cx.shared
                 .measurement
-                .lock(|measurement| *measurement = (avg, measurement.1 + 1));
+                .lock(|measurement| *measurement = (avg as f32, measurement.1 + 1));
         }
-        debug!("Channel closed, returning from intermediary");
+        debug!("Channel closed.");
     }
 
     #[task(local = [controller], shared = [measurement,reference],priority=5)]
@@ -205,48 +211,70 @@ mod app {
     /// NOTE! If we notice that we this takes too long, use [`Symex`](https://github.com/ivario123/symex) to get the
     /// longest possible time the PID takes and subtract that form TS.
     async fn control_loop(mut cx: control_loop::Context) {
-        let measurement = cx.shared.measurement.lock(|measurement| *measurement);
-        let reference = cx.shared.reference.lock(|reference| *reference);
         let controller = cx.local.controller;
+        let mut previous = (0f32, 0);
+        loop {
+            let time = Mono::now();
+            let mut measurement = cx.shared.measurement.lock(|measurement| *measurement);
+            let reference = cx.shared.reference.lock(|reference| *reference);
 
-        controller.register_measurement(measurement.0, measurement.1);
-        controller.follow([reference]);
-        controller
-            .actuate()
-            .expect("Example is broken this should work");
+            if measurement == previous {
+                debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
+                // Go a litle bit closer to 0 as we are sampeling faster than
+                // the wheel rotates.
+                measurement.0 /= 1.1;
+            } else {
+                previous = measurement;
+            }
 
-        Mono::delay({ ESC_PID_PARAMS.TS as u32 }.micros()).await;
-        control_loop::spawn().ok();
+            info!("Previous speed {:?} target : {:?}", measurement, reference);
+
+            controller.register_measurement(measurement.0, measurement.1);
+            controller.follow([reference]);
+            let actuation = controller
+                .actuate()
+                .expect("Example is broken this should work");
+
+            let actuation = actuation.actuation;
+            info!("Applied {:?}", actuation);
+
+            // Delay between entry time and actuation time.
+            Mono::delay_until(time + { ESC_PID_PARAMS.TS as u32 }.micros()).await;
+        }
     }
 
     #[task(shared = [reference],priority=1)]
     /// Sets the new reference value, this should probably be done using SPI and
     /// DMA for the real thing.
     async fn set_reference(mut cx: set_reference::Context) {
-        let references = [200, 400, 600, 800, 1000, 1500, 2000, 1500, 1000, 0, 0];
+        let references = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 0];
         loop {
             for vel in references {
-                cx.shared.reference.lock(|reference| *reference = vel);
-                Mono::delay(5.secs()).await;
+                info!("Setting target speed to {:?} cm/s", vel);
+                cx.shared
+                    .reference
+                    .lock(|reference| *reference = vel as f32);
+                Mono::delay(10.secs()).await;
             }
         }
     }
 
     #[idle(local = [servo])]
     /// Turns a bit every now and then.
-    fn idle(cx: idle::Context) -> ! {
-        let servo = cx.local.servo;
+    fn idle(_cx: idle::Context) -> ! {
+        // let servo = cx.local.servo;
         loop {
-            for i in ((-10)..10).rev() {
-                servo.angle(i.deg()).unwrap();
-                info!("Set angle to {:?} degrees", i);
-                delay(10000000);
-            }
-            for i in (-10)..10 {
-                servo.angle(i.deg()).unwrap();
-                info!("Set angle to {:?} degrees", i);
-                delay(10000000);
-            }
+            // for i in ((-10)..10).rev() {
+            //     servo.angle(i.deg()).unwrap();
+            //     info!("Set angle to {:?} degrees", i);
+            //     delay(10000000);
+            // }
+            // for i in (-10)..10 {
+            //     servo.angle(i.deg()).unwrap();
+            //     info!("Set angle to {:?} degrees", i);
+            //     delay(10000000);
+            // }
+            nop();
         }
     }
 }

@@ -2,7 +2,7 @@
 //! easily specify the speed that the car should run at.
 
 use cortex_m::prelude::_embedded_hal_Pwm;
-use defmt::{trace, warn};
+use defmt::{info, trace, warn};
 use nrf52840_hal::{
     gpio::{Output, Pin, PushPull},
     pwm::{Channel, Instance, Pwm},
@@ -96,11 +96,13 @@ impl<PWM: Instance> Esc<PWM> {
 }
 
 impl<PWM: Instance> shared::controller::Channel<Error> for Esc<PWM> {
-    type Output = i32;
+    type Output = f32;
 
     fn set(&mut self, value: Self::Output) -> Result<(), Error> {
-        self.speed(value)
+        info!("Setting vel to {:?}", value);
+        self.speed(value as i32)
     }
+
 }
 
 mod sealed {

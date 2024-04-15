@@ -206,6 +206,7 @@ where
         Output: Debug + Copy,
     {
         let output = self.compute_output()?;
+
         self.out
             .set(output.actuation)
             .map_err(|err| ControllerError::ChannelError(err))?;
@@ -213,6 +214,7 @@ where
 
         Ok(output)
     }
+
     fn compute_output(
         &mut self,
     ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>> {
@@ -276,6 +278,7 @@ where
 ///
 /// ```rust
 ///   use shared::controller::prelude::*;
+///   // Note that the channel here is probably some output thing, esc, servo etc.
 ///   let channel = 0f32;
 ///   let target = [6f32, 6f32];
 ///   let mut pid = pid!(
@@ -466,6 +469,14 @@ mod test {
         }
     }
 
+    impl Channel<()> for i32 {
+        type Output = f32;
+        fn set(&mut self, value: f32) -> Result<(), ()> {
+            *self = value as i32;
+            Ok(())
+        }
+    }
+
     #[test]
     fn test_p() {
         let channel = ([1, 2, 3, 5, 6].into_iter(), 0);
@@ -515,6 +526,94 @@ mod test {
             actuation.actuation
                 == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2 - 1
         );
+    }
+
+    // #[allow(non_snake_case)]
+    // /// A collection of PID parameters.
+    // pub struct PidParams {
+    //     /// The proportional error coefficient.
+    //     pub KP: i32,
+    //     /// The integral of error coefficient.
+    //     pub KI: i32,
+    //     /// The derivative of error coefficient.
+    //     pub KD: i32,
+    //     // 10 ^ 1
+    //     /// log 10 of scale.
+    //     pub SCALE: u32,
+    //
+    //     /// Sample time.
+    //     pub TS: i32,
+    //     /// Fraction of seconds, so uS => 10^6.
+    //     pub TIMESCALE: i32,
+    // }
+    //
+    // /// The PID parameters for the ESC.
+    // pub const ESC_PID_PARAMS: PidParams = PidParams {
+    //     KP: 23,
+    //     KI: 30,
+    //     KD: 31,
+    //     // 10^2
+    //     SCALE: 2,
+    //     TS: 50_000,
+    //     TIMESCALE: 1_000_000,
+    // };
+    //
+    // /// A wrapper around the [`Pid`] controller with predefined coefficients.
+    // pub type MotorController = Pid<
+    //     (),
+    //     i32,
+    //     f32,
+    //     100,
+    //     { ESC_PID_PARAMS.KP },
+    //     { ESC_PID_PARAMS.KI },
+    //     { ESC_PID_PARAMS.KD },
+    //     { ESC_PID_PARAMS.TS },
+    //     100,
+    //     -100,
+    //     { ESC_PID_PARAMS.TIMESCALE },
+    //     { ESC_PID_PARAMS.SCALE },
+    // >;
+    //
+    // #[test]
+    // fn test_pid_esc() {
+    //     let target = [100f32; 70].into_iter().chain([70f32; 30].into_iter());
+    //     let mut pid: MotorController = Pid::new(0i32);
+    //     pid.follow(target);
+    //
+    //     pid.register_measurement(1f32, 0);
+    //     let mut counter = 30;
+    //     while let Ok(actuation) = pid.actuate() {
+    //         counter += 1;
+    //         pid.register_measurement(counter as f32, 0);
+    //         println!("Actuation : {actuation:?}");
+    //     }
+    //     // assert!(actuation.actuation == 2 * (actuation.reference - actuation.measured) + 5 / 2 + 5);
+    //
+    //     pid.register_measurement(2f32, 1);
+    //     let actuation = pid.actuate().unwrap();
+    //     println!("First actuation : {actuation:?}");
+    //     // Accumulated sum + average from previous time step to the current time step.
+    //     // assert!(
+    //     //     actuation.actuation // == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2 - 1
+    //     // );
+    //     assert!(false);
+    // }
+
+    #[test]
+    fn test_pid_no_diff() {
+        let channel = ([0].into_iter(), 0);
+        let target = [0, 0];
+        let mut pid: Pid<(), _, i32, 2, 2, 1, 1, 1, 100, 0, 1, 0> = Pid::new(channel);
+        pid.follow(target);
+
+        pid.register_measurement(0, 0);
+        let actuation = pid.actuate().unwrap();
+        assert!(actuation.actuation == 0);
+
+        pid.register_measurement(0, 1);
+        let actuation = pid.actuate().unwrap();
+        // Accumulated sum + average from previous time step to the current time step.
+        assert!(actuation.actuation == 0);
     }
 
     #[test]

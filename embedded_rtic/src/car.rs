@@ -29,14 +29,13 @@ pub mod constants {
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
         KP: 23,
-        KI: 21,
-        KD: 11,
-        // 10^1
-        SCALE: 1,
-        TS: 200,
+        KI: 30,
+        KD: 31,
+        // 10^2
+        SCALE: 2,
+        TS: 50_000,
         TIMESCALE: 1_000_000,
     };
-
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 2 * 31415 / 3;
 
@@ -53,6 +52,17 @@ pub mod constants {
         /// Sonar positions: Right
         Right,
     }
+    
+    /// The minimum measureable velocity in cm / s.
+    ///
+    /// Any velocity lower than this will potentailly cause
+    /// re-use of previous velocity when controlling.
+    ///
+    /// One possible fix for this is to apply an averaging filter but this
+    pub const MIN_VEL: i32 = ((RADIUS as f32
+        * ((MAGNET_SPACING as f32 / 10_000f32)
+            / (ESC_PID_PARAMS.TS as f32 / ESC_PID_PARAMS.TIMESCALE as f32)))
+        * 100f32) as i32;
 }
 
 /// Defines wrapper types that make the [`rtic`] code easier to read.
@@ -63,14 +73,14 @@ pub mod wrappers {
     pub type MotorController<PWM> = Pid<
         crate::esc::Error,
         crate::esc::Esc<PWM>,
-        i32,
+        f32,
         1,
         { ESC_PID_PARAMS.KP },
         { ESC_PID_PARAMS.KI },
         { ESC_PID_PARAMS.KD },
         { ESC_PID_PARAMS.TS },
-        -100,
         100,
+        -100,
         { ESC_PID_PARAMS.TIMESCALE },
         { ESC_PID_PARAMS.SCALE },
     >;
