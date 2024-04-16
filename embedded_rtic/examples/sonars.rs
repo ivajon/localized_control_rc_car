@@ -217,11 +217,10 @@ mod app {
             }
         });
 
-        // Print messages for each triggered sonar
+        // Map triggered sonars and match with respective one to track distance
         for sonar in triggered_sonars.iter().filter_map(|x| *x) {
             match sonar {
                 Sonar::Forward => {
-                    //trace!("Event triggered by Sonar 1 (Forward)");
                     if cx.local.times[0] == zero {
                         cx.local.times[0] = time;
                     } else {
@@ -242,7 +241,6 @@ mod app {
                     }
                 }
                 Sonar::Left => {
-                    //trace!("Event triggered by Sonar 2 (Left)");
                     if cx.local.times[1] == zero {
                         cx.local.times[1] = time;
                     } else {
@@ -263,7 +261,6 @@ mod app {
                     }
                 }
                 Sonar::Right => {
-                    //trace!("Event triggered by Sonar 3 (Right)");
                     if cx.local.times[2] == zero {
                         cx.local.times[2] = time;
                     } else {
@@ -272,7 +269,6 @@ mod app {
                             .unwrap()
                             .to_micros()
                             / 56;
-                        //trace!("distance 3 before sending: {:?}", distance3);
                         cx.local.times[2] = zero;
                         match cx.local.senders[2].try_send(distance3 as u32) {
                             Ok(_) => {}
@@ -330,7 +326,8 @@ mod app {
     #[task(priority = 2, local = [trig3], shared = [gpiote])]
     /// Send a small pulse to sonar 3.
     ///
-    /// The sonar will then notify us in echo when the sound wave is recieved.
+    /// The sonar will then notify us in echo when the sound wave are
+    /// recieved.
     async fn trigger3(cx: trigger3::Context) {
         // Set high is always valid.
         cx.local.trig3.set_high().unwrap();
