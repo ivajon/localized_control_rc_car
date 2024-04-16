@@ -11,7 +11,7 @@
 #![deny(clippy::all)]
 #![deny(warnings)]
 
-use test_app as _; // global logger + panicking-behavior + memory layout
+use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     device = nrf52840_hal::pac,
@@ -21,6 +21,7 @@ use test_app as _; // global logger + panicking-behavior + memory layout
 mod app {
 
     use arraydeque::{behavior::Wrapping, ArrayDeque};
+    use controller::car::Sonar;
     use defmt::{error, info};
     use nrf52840_hal::{
         clocks::Clocks,
@@ -37,7 +38,6 @@ mod app {
         channel::{Receiver, Sender},
         make_channel,
     };
-    use test_app::car::Sonar;
 
     /// The message queue capacity
     const CAPACITY: usize = 5;

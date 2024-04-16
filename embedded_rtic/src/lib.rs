@@ -61,6 +61,7 @@ use core::sync::atomic::{AtomicUsize, Ordering};
 use defmt_rtt as _; // global logger
 use panic_probe as _; // memory layout
 
+pub mod car;
 pub mod esc;
 pub mod servo;
 pub mod wrapper;
