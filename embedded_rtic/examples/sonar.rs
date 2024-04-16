@@ -189,14 +189,6 @@ mod app {
                     prev_avg = avg;
 
                     info!("Distance : {:?} cm (average : {:?} cm)", distance, avg);
-                    // let dt = end.checked_duration_since(start).unwrap().
-                    // to_millis(); info!("Measurement took
-                    // : {:?} ms", dt);
-
-                    // info!(
-                    //     "This gives us {:?} samples/second",
-                    //     100/dt,
-                    // );
                 }
                 _ => {
                     // If no task is spawned we need to wait a bit before re-spawning it.

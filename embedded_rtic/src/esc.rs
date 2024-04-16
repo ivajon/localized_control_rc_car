@@ -11,7 +11,7 @@ use nrf52840_hal::{
 
 use self::sealed::Remap;
 
-/// Enumerates the errors that can occur when using the [`Servo`]
+/// Enumerates the errors that can occur when using the [`Esc`]
 /// abstraction.
 #[derive(Debug)]
 pub enum Error {
@@ -34,9 +34,9 @@ impl<PWM: Instance> Esc<PWM> {
     /// The maximum duty cycle.
     const MAXIMUM_DUTY_CYCLE: u16 = 2500;
     /// The maximum velocity.
-    const MAX_VELOCITY: i32 = 100;
+    const MAX_VELOCITY: i32 = 1000;
     /// The minimum velocity.
-    const MIN_VELOCITY: i32 = -100;
+    const MIN_VELOCITY: i32 = -1000;
 
     /// Instantiates a new [`Esc`] that is controlled over PWM.
     pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
@@ -85,13 +85,22 @@ impl<PWM: Instance> Esc<PWM> {
             .map_err(|_err| Error::InvalidVelocity(velocity))?;
 
         let value = value
-            .remap::<-100, 100, 125, 250>()
+            .remap::<-1000, 1000, 125, 250>()
             .expect("Remap is broken");
 
         // Dirty inversion.
         self.pwm
             .set_duty(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
+    }
+}
+
+impl<PWM: Instance> shared::controller::Channel<Error> for Esc<PWM> {
+    type Output = f32;
+
+    fn set(&mut self, value: Self::Output) -> Result<(), Error> {
+        trace!("Setting vel to {:?}", value);
+        self.speed(value as i32)
     }
 }
 
