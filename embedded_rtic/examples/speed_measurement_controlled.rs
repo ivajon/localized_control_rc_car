@@ -87,13 +87,13 @@ mod app {
         let mut esc = Esc::new(cx.device.PWM0, motor);
         let mut servo = Servo::new(cx.device.PWM1, servo_motor);
 
-        let echo = p0.p0_11.into_pullup_input().degrade();
+        let hal_effect = p0.p0_11.into_pullup_input().degrade();
 
         let gpiote = {
             let gpiote = Gpiote::new(cx.device.GPIOTE);
             gpiote
                 .channel0()
-                .input_pin(&echo)
+                .input_pin(&hal_effect)
                 .lo_to_hi()
                 .enable_interrupt();
 
@@ -159,7 +159,6 @@ mod app {
         }
         match cx.local.prev_time {
             Some(value) => {
-                // info!("value : {:?} time : {:?}", value, time);
                 let dt = time - *value;
                 let angvel = (MAGNET_SPACING as u64) * 1_000_000 / (dt as u64);
                 let angvel = angvel / 10_000/* (DIFF as u64 / 3) */;
@@ -248,8 +247,6 @@ mod app {
             let _actuation = controller
                 .actuate()
                 .expect("Example is broken this should work");
-
-            // let actuation = actuation.actuation;
 
             let outer = measurement;
 
