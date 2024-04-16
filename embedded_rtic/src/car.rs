@@ -28,14 +28,15 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 23,
-        KI: 30,
+        KP: 150,
+        KI: 80,
         KD: 31,
         // 10^2
         SCALE: 2,
         TS: 50_000,
         TIMESCALE: 1_000_000,
     };
+
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 2 * 31415 / 3;
 
@@ -79,8 +80,8 @@ pub mod wrappers {
         { ESC_PID_PARAMS.KI },
         { ESC_PID_PARAMS.KD },
         { ESC_PID_PARAMS.TS },
-        100,
-        -100,
+        1000,
+        -1000,
         { ESC_PID_PARAMS.TIMESCALE },
         { ESC_PID_PARAMS.SCALE },
     >;

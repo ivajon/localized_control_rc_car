@@ -218,11 +218,25 @@ mod app {
             let mut measurement = cx.shared.measurement.lock(|measurement| *measurement);
             let reference = cx.shared.reference.lock(|reference| *reference);
 
-            if measurement == previous {
+            if measurement.1 == previous.1 {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
+
+                // Lets say that the minimum speed we want to achive is 10 cm/s.
+                let angle = { 0.001f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angvel =
+                    angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
+
+                let vel = RADIUS as f32 * angvel;
+                info!("Expected min vel to be  {:?}", vel);
                 // Go a litle bit closer to 0 as we are sampeling faster than
                 // the wheel rotates.
-                measurement.0 /= 1.1;
+                //
+                // We could do something like subtract towards the minimum speed here.
+                // I am not sure on how we do this in a good way.
+                measurement.0 -= vel;
+                if measurement.0 < 0f32 {
+                    measurement.0 = 0f32;
+                }
             } else {
                 previous = measurement;
             }
@@ -231,30 +245,37 @@ mod app {
 
             controller.register_measurement(measurement.0, measurement.1);
             controller.follow([reference]);
-            let actuation = controller
+            let _actuation = controller
                 .actuate()
                 .expect("Example is broken this should work");
 
-            let actuation = actuation.actuation;
-            info!("Applied {:?}", actuation);
+            // let actuation = actuation.actuation;
+
+            let outer = measurement;
+
+            cx.shared
+                .measurement
+                .lock(|measurement| *measurement = outer);
 
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u32 }.micros()).await;
         }
     }
 
-    #[task(shared = [reference],priority=1)]
+    #[task(shared = [reference], priority=1)]
     /// Sets the new reference value, this should probably be done using SPI and
     /// DMA for the real thing.
     async fn set_reference(mut cx: set_reference::Context) {
-        let references = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 0];
+        let references = [0, 10, 50, 100, 150, 100, 50, 10, 0];
+        let c = references.clone();
         loop {
+            let references = references.into_iter().chain(c.into_iter().rev());
             for vel in references {
                 info!("Setting target speed to {:?} cm/s", vel);
                 cx.shared
                     .reference
                     .lock(|reference| *reference = vel as f32);
-                Mono::delay(10.secs()).await;
+                Mono::delay(50.secs()).await;
             }
         }
     }
@@ -262,18 +283,7 @@ mod app {
     #[idle(local = [servo])]
     /// Turns a bit every now and then.
     fn idle(_cx: idle::Context) -> ! {
-        // let servo = cx.local.servo;
         loop {
-            // for i in ((-10)..10).rev() {
-            //     servo.angle(i.deg()).unwrap();
-            //     info!("Set angle to {:?} degrees", i);
-            //     delay(10000000);
-            // }
-            // for i in (-10)..10 {
-            //     servo.angle(i.deg()).unwrap();
-            //     info!("Set angle to {:?} degrees", i);
-            //     delay(10000000);
-            // }
             nop();
         }
     }
