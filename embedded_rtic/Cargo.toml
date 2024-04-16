@@ -6,11 +6,14 @@ version = "0.1.0"
 [dependencies]
 cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 defmt = { version = "0.3", features = ["encoding-rzcobs"] }
-defmt-rtt = { version = "0.4"}
+defmt-rtt = { version = "0.4" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
-rtic = { version = "2.0.0", features = [ "thumbv7-backend" ] }
-nrf52840-hal = {version = "0.16.1", features = ["rt"]}
-rtic-monotonics = { version = "1.0.0", features = [ "cortex-m-systick","nrf52840" ]}
+rtic = { version = "2.0.0", features = ["thumbv7-backend"] }
+nrf52840-hal = { version = "0.16.1", features = ["rt"] }
+rtic-monotonics = { version = "1.0.0", features = [
+    "cortex-m-systick",
+    "nrf52840",
+] }
 rtic-sync = "1.3.0"
 
 
@@ -25,8 +28,8 @@ codegen-units = 1
 debug = 2
 debug-assertions = true # <-
 incremental = false
-opt-level = "s" # <-
-overflow-checks = true # <-
+opt-level = "s"         # <-
+overflow-checks = true  # <-
 
 # cargo test
 [profile.test]
@@ -34,8 +37,8 @@ codegen-units = 1
 debug = 2
 debug-assertions = true # <-
 incremental = false
-opt-level = "s" # <-
-overflow-checks = true # <-
+opt-level = "s"         # <-
+overflow-checks = true  # <-
 
 # cargo build/run --release
 [profile.release]
@@ -44,8 +47,8 @@ debug = 2
 debug-assertions = false # <-
 incremental = false
 lto = 'fat'
-opt-level = "s" # <-
-overflow-checks = false # <-
+opt-level = "s"          # <-
+overflow-checks = false  # <-
 strip = "debuginfo"
 
 # cargo test --release
@@ -55,8 +58,8 @@ debug = 2
 debug-assertions = false # <-
 incremental = false
 lto = 'fat'
-opt-level = "s" # <-
-overflow-checks = false # <-
+opt-level = "s"          # <-
+overflow-checks = false  # <-
 
 # uncomment this to switch from the crates.io version of defmt to its git version
 # check app-template's README for instructions
