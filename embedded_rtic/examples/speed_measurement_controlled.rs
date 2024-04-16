@@ -264,7 +264,7 @@ mod app {
     /// DMA for the real thing.
     async fn set_reference(mut cx: set_reference::Context) {
         let references = [0, 10, 50, 100, 150, 100, 50, 10, 0];
-        let c = references.clone();
+        let c = references;
         loop {
             let references = references.into_iter().chain(c.into_iter().rev());
             for vel in references {
