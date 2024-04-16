@@ -23,8 +23,9 @@ pub struct PidParams {
 
 /// Defines a few intrinsic constants for the car.
 pub mod constants {
-    use super::PidParams;
     use defmt::Format;
+
+    use super::PidParams;
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
@@ -53,10 +54,10 @@ pub mod constants {
         /// Sonar positions: Right
         Right,
     }
-    
-    /// The minimum measureable velocity in cm / s.
+
+    /// The minimum measurable velocity in cm / s.
     ///
-    /// Any velocity lower than this will potentailly cause
+    /// Any velocity lower than this will potentially cause
     /// re-use of previous velocity when controlling.
     ///
     /// One possible fix for this is to apply an averaging filter but this

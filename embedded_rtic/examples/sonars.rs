@@ -1,6 +1,6 @@
 //! Defines a distance measurement example for multiple sonars.
 //!
-//! This example measures the distance to nearby objects, prefferably a wall
+//! This example measures the distance to nearby objects, preferably a wall
 //! using a sonar sensors on the front, left and right side of the car. It then
 //! smooths the result over a few timestamps to avoid small peaks in the
 //! measured distance.
@@ -21,7 +21,7 @@ use controller as _; // global logger + panicking-behavior + memory layout
 mod app {
 
     use arraydeque::{behavior::Wrapping, ArrayDeque};
-    use controller::car::Sonar;
+    use controller::car::constants::Sonar;
     use defmt::{error, info};
     use nrf52840_hal::{
         clocks::Clocks,
@@ -75,7 +75,7 @@ mod app {
 
     const NUM_SONARS: usize = 3; // Number of sonars
 
-    // For future pin refference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
+    // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[allow(dead_code)]
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
@@ -146,13 +146,13 @@ mod app {
             gpiote
         };
 
-        // Pair forward sonars sender and reciever
+        // Pair forward sonars sender and receiver
         let (sender, receiver_forward) = make_channel!(u32, CAPACITY);
 
-        // Pair left sonars sender and reciever
+        // Pair left sonars sender and receiver
         let (sender2, receiver_left) = make_channel!(u32, CAPACITY);
 
-        // Pair right sonars sender and reciever
+        // Pair right sonars sender and receiver
         let (sender3, receiver_right) = make_channel!(u32, CAPACITY);
 
         // Array with respective senders
@@ -295,7 +295,7 @@ mod app {
     /// Send a small pulse to the sonars.
     ///
     /// The sonars will then notify us in echo when the sound waves are
-    /// recieved.
+    /// received.
     async fn trigger1(cx: trigger1::Context) {
         // Set high is always valid.
         cx.local.trig.set_high().unwrap();
@@ -311,7 +311,7 @@ mod app {
     /// Send a small pulse to the sonars.
     ///
     /// The sonars will then notify us in echo when the sound waves are
-    /// recieved.
+    /// received.
     async fn trigger2(cx: trigger2::Context) {
         // Set high is always valid.
         cx.local.trig2.set_high().unwrap();
@@ -327,7 +327,7 @@ mod app {
     /// Send a small pulse to sonar 3.
     ///
     /// The sonar will then notify us in echo when the sound wave are
-    /// recieved.
+    /// received.
     async fn trigger3(cx: trigger3::Context) {
         // Set high is always valid.
         cx.local.trig3.set_high().unwrap();
