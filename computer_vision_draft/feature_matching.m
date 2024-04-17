@@ -21,9 +21,10 @@ matches = zeros(length(Methods),length(imds.Files)-1);
 for m = 1:length(Methods)
     for i = 1:length(imds.Files)-1
         image1 = imds.readimage(i);
+        image1 = imresize(image1,1/2);
         
         image2 = imds.readimage(i+1);
-        
+        image2 = imresize(image2,1/2);
         
     
         %Measure time to match features
