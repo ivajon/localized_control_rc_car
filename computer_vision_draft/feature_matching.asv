@@ -1,11 +1,10 @@
-imds = imageDatastore("capture2\");
+imds = imageDatastore("capture2\")
 %I will 
 Methods = ["SIFT", "SIFT";
            "SURF", "SURF";
            "BRISK","BRISK";
            "FAST", "FREAK";
-            "MSER","KAZE";
-            "KAZE","KAZE"];
+            "MSER","KAZE";]
 for m = 1:length(Methods)
     for i = 1:length(imds.Files)
         image1 = imds.readimage(i);
@@ -15,8 +14,8 @@ for m = 1:length(Methods)
     
         %Measure time to match features
         tic 
-        points1 = featureMethod(image1,Methods(m,1));
-        points2 = featureMethod(image2,Methods(m,1));
+        points1 = featureMethod(image1,"SIFT");
+        points2 = featureMethod(image2,"SIFT");
     
         % points1 = points1.selectStrongest(100);
         % points2 = points2.selectStrongest(100);
@@ -29,7 +28,6 @@ for m = 1:length(Methods)
         t = toc;
         
         matchingFrequency = 1/t;
-        disp(Methods(m,:))
         fprintf("The matching frequency is : %.2f Hz \n",matchingFrequency)
         fprintf("Total number of matches is : %i \n",length(indexPairs))
         
