@@ -1,11 +1,18 @@
 imds = imageDatastore("capture2\");
 %I will 
-Methods = ["SIFT", "SIFT";
-           % "SURF", "SURF";
-           % "FAST", "FREAK";
-           "FAST", "SURF";
-            % "KAZE","KAZE";
-            "ORB","ORB"];
+% Methods = ["SIFT", "SIFT";
+%            % "SURF", "SURF";
+%            % "FAST", "FREAK";
+%            "FAST", "SURF";
+%             % "KAZE","KAZE";
+%             "ORB","ORB"];
+
+Methods = [
+    % "SURF", "SURF"; 
+    % "FAST", "SURF";
+    "ORB","ORB"
+    ];
+
 avgSpeed = zeros(length(Methods),1);
 speed = zeros(length(Methods),length(imds.Files)-1);
 avgMatches = zeros(length(Methods),1);
@@ -14,17 +21,24 @@ matches = zeros(length(Methods),length(imds.Files)-1);
 for m = 1:length(Methods)
     for i = 1:length(imds.Files)-1
         image1 = imds.readimage(i);
-        image1 = im2gray(image1);
+        
         image2 = imds.readimage(i+1);
-        image2 = im2gray(image2);
+        
+        
     
         %Measure time to match features
         tic 
+
+        image1 = im2gray(image1);
+        % image1 = imgaussfilt(image1,2);
+        
+        image2 = im2gray(image2);
+        % image2 = imgaussfilt(image2,2);
         points1 = featureMethod(image1,Methods(m,1));
         points2 = featureMethod(image2,Methods(m,1));
     
-        % points1 = points1.selectStrongest(100);
-        % points2 = points2.selectStrongest(100);
+        points1 = points1.selectStrongest(200);
+        points2 = points2.selectStrongest(200);
         
         
         [features1, validPoints1] = extractFeatures(image1, points1,"Method",Methods(m,2));
@@ -75,11 +89,11 @@ for m = 1:length(Methods)
     title("Frequency distribution")
 end
     
-    pause(5)
-   figure(4)
-    histogram(matches(2,:),20)
-    title("Match distribution")
-
-    figure(5)
-    histogram(1./speed(2,:),20)
-    title("Frequency distribution")
+   %  pause(5)
+   % figure(4)
+   %  histogram(matches(2,:),20)
+   %  title("Match distribution")
+   % 
+   %  figure(5)
+   %  histogram(1./speed(2,:),20)
+   %  title("Frequency distribution")
