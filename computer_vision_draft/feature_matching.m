@@ -8,7 +8,7 @@ imds = imageDatastore("capture2\");
 %             "ORB","ORB"];
 
 Methods = [
-    % "SURF", "SURF"; 
+    "SURF", "SURF"; 
     % "FAST", "SURF";
     "ORB","ORB"
     ];
@@ -36,6 +36,7 @@ for m = 1:length(Methods)
         % image2 = imgaussfilt(image2,2);
         points1 = featureMethod(image1,Methods(m,1));
         points2 = featureMethod(image2,Methods(m,1));
+        disp(length(points1))
     
         points1 = points1.selectStrongest(200);
         points2 = points2.selectStrongest(200);
