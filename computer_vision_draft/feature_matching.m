@@ -1,6 +1,4 @@
-%Simple script for determining feasability of using SIFT features
-%Note that the distance between the images is several meters,
-%A worst case scenario
+imds = imageDatastore("computer_vision_draft\capture2\")
 
 image1 = imread("sample_images\20240404_111521.jpg");
 image2 = imread("sample_images\\20240404_111523.jpg");
