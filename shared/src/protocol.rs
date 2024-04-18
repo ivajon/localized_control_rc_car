@@ -1,6 +1,9 @@
 //! Defines the binary protocol used in communication inbetween the boards.
 
-use core::marker::PhantomData;
+use core::{marker::PhantomData, mem::size_of, slice::Iter};
+
+use crate::OwnedItterator;
+
 pub mod v0_0_1;
 
 pub trait Version {
@@ -10,43 +13,15 @@ pub trait Version {
 
     type BusItem: Sized + Clone + PartialEq;
     /// The payload can be converted to a u8
-    type Payload: IntoIterator<Item = Self::BusItem>
-        + Parse<Item = Self::BusItem>
-        + Clone
-        + defmt::Format;
+    type Payload: IntoIterator<Item = Self::BusItem> + Parse<Item = Self::BusItem> + Clone;
 }
 
 // A generic message.
-#[derive(Clone)]
-pub struct Message<V: Version>
-where
-    <V::Payload as IntoIterator>::IntoIter: Clone,
-{
+pub struct Message<V: Version> {
     version: PhantomData<V>,
     payload: V::Payload,
     version_sent: bool,
     iterator: Option<<V::Payload as IntoIterator>::IntoIter>,
-}
-
-impl<V: Version> Message<V>
-where
-    <V::Payload as IntoIterator>::IntoIter: Clone,
-{
-    /// The maximum packet size.
-    pub const MAX_SIZE: usize = { V::PACKET_SIZE + 1 };
-
-    pub fn new(payload: V::Payload) -> Self {
-        Self {
-            version: PhantomData,
-            payload,
-            version_sent: false,
-            iterator: None,
-        }
-    }
-
-    pub fn payload(self) -> V::Payload {
-        self.payload
-    }
 }
 
 pub trait Parse {
@@ -57,12 +32,8 @@ pub trait Parse {
         Self: Sized;
 }
 
-impl<V: Version> Iterator for Message<V>
-where
-    <V::Payload as IntoIterator>::IntoIter: Clone,
-{
+impl<V: Version> Iterator for Message<V> {
     type Item = <V::Payload as IntoIterator>::Item;
-
     fn next(&mut self) -> Option<Self::Item> {
         if !self.version_sent {
             self.version_sent = true;
@@ -83,12 +54,8 @@ where
     }
 }
 
-impl<V: Version> Parse for Message<V>
-where
-    <V::Payload as IntoIterator>::IntoIter: Clone,
-{
+impl<V: Version> Parse for Message<V> {
     type Item = V::BusItem;
-
     fn try_parse<T: Iterator<Item = Self::Item>>(stream: &mut T) -> Option<Self>
     where
         Self: Sized,
@@ -100,5 +67,16 @@ where
         }
 
         Some(Self::new(V::Payload::try_parse(stream)?))
+    }
+}
+
+impl<V: Version> Message<V> {
+    fn new(payload: V::Payload) -> Self {
+        Self {
+            version: PhantomData,
+            payload,
+            version_sent: false,
+            iterator: None,
+        }
     }
 }
