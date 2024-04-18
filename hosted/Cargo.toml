@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 ratatui = "0.26.2"
-crossterm = {path = "../../crossterm_async", features = ["event-stream"]}
+crossterm = {git = "https://github.com/ivario123/crossterm_async", features = ["event-stream"]}
 tokio = { version = "1.37.0", features = ["full","time"] }
 #opencv = "0.89.0"
 futures-core = "0.3.30"
