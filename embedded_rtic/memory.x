@@ -16,5 +16,5 @@ MEMORY
   TEXT 	: ORIGIN = 0x00820000, LENGTH = 64K
 
   /* This is where we are going to store the control signal buffer */
-  BUFFER : ORIGIN = 0x00838000, LENGTH = 32K
+  BUFFER : ORIGIN =0x20030000, LENGTH = 32K
 }
