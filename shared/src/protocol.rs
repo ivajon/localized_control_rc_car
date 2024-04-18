@@ -1,8 +1,6 @@
 //! Defines the binary protocol used in communication inbetween the boards.
 
-use core::{marker::PhantomData, mem::size_of, slice::Iter};
-
-use crate::OwnedItterator;
+use core::marker::PhantomData;
 
 pub mod v0_0_1;
 

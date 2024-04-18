@@ -4,7 +4,7 @@
 #![cfg_attr(all(feature = "no_std", not(test)), no_std)]
 #![deny(clippy::all)]
 #![deny(rustdoc::all)]
-// #![deny(warnings)]
+#![deny(warnings)]
 #![feature(iter_next_chunk)]
 #![feature(associated_type_defaults)]
 
