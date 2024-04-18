@@ -1,7 +1,6 @@
 //! Defines a generic [`Esc`] abstraction, this allows us to
 //! easily specify the speed that the car should run at.
 
-use cortex_m::prelude::_embedded_hal_Pwm;
 use defmt::{trace, warn};
 use nrf52840_hal::{
     gpio::{Output, Pin, PushPull},
@@ -59,7 +58,8 @@ impl<PWM: Instance> Esc<PWM> {
             pwm.enable();
         }
 
-        let period = pwm.get_period();
+        let period = pwm.period();
+
         trace!("Esc instantiated : with period {:?} Hz", period.0);
         let mut ret = Self { pwm };
 
@@ -90,7 +90,7 @@ impl<PWM: Instance> Esc<PWM> {
 
         // Dirty inversion.
         self.pwm
-            .set_duty(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
+            .set_duty_on(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
     }
 }
