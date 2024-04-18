@@ -187,3 +187,86 @@ impl Parse for Payload {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use crate::protocol::Parse;
+
+    use super::Payload;
+
+    #[test]
+    fn test_set_speed() {
+        let source = Payload::SetSpeed {
+            velocity: 123,
+            hold_for_us: 10_000,
+        };
+        let mut to_send = source.clone().into_iter();
+
+        let received = Payload::try_parse(&mut to_send).unwrap();
+
+        assert!(source == received);
+    }
+
+    #[test]
+    fn test_set_angle() {
+        let source = Payload::SetSteeringAngle {
+            angle: 123,
+            hold_for_us: 10_000,
+        };
+        let mut to_send = source.clone().into_iter();
+
+        let received = Payload::try_parse(&mut to_send).unwrap();
+
+        assert!(source == received);
+    }
+
+    #[test]
+    fn test_get_speed() {
+        let source = Payload::CurrentVelocity {
+            velocity: 123,
+            time_us: 10_000,
+        };
+        let mut to_send = source.clone().into_iter();
+
+        let received = Payload::try_parse(&mut to_send).unwrap();
+
+        assert!(source == received);
+    }
+
+    #[test]
+    fn test_get_angle() {
+        let source = Payload::CurrentAngle {
+            angle: 123,
+            time_us: 10_000,
+        };
+        let mut to_send = source.clone().into_iter();
+
+        let received = Payload::try_parse(&mut to_send).unwrap();
+
+        assert!(source == received);
+    }
+
+    #[test]
+    fn test_get_distance() {
+        let source = Payload::CurrentDistance {
+            distance: 123,
+            time_us: 10_000,
+        };
+        let mut to_send = source.clone().into_iter();
+
+        let received = Payload::try_parse(&mut to_send).unwrap();
+
+        assert!(source == received);
+    }
+
+    #[test]
+    fn test_clear_queue() {
+        let source = Payload::ClearQueue;
+        let mut to_send = source.clone().into_iter();
+
+        let received = Payload::try_parse(&mut to_send).unwrap();
+
+        assert!(source == received);
+    }
+}
