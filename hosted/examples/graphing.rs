@@ -1,32 +1,33 @@
-//! Defines a short example that uses the [`Spi`] to read data using our
-//! [`protocol`](shared::protocol). It then plots the data using our [`tui`](hosted::tui)
-//! abstractions.
+//! # [Ratatui] Chart example
+//!
+//! The latest version of this example is available in the [examples] folder in the repository.
+//!
+//! Please note that the examples are designed to be run against the `main` branch of the Github
+//! repository. This means that you may not be able to compile with the latest release version on
+//! crates.io, or the one that you have installed locally.
+//!
+//! See the [examples readme] for more information on finding examples that match the version of the
+//! library you are using.
+//!
+//! [Ratatui]: https://github.com/ratatui-org/ratatui
+//! [examples]: https://github.com/ratatui-org/ratatui/blob/main/examples
+//! [examples readme]: https://github.com/ratatui-org/ratatui/blob/main/examples/README.md
 
-#![feature(ascii_char)]
-
-use hosted::{
-    spi::Spi,
-    tui::{
-        graph::{Graph, MeasurementWriter},
-        initiate_terminal,
-        input_box::{CommitReader, InputBox, KillReader},
-        TerminalWrapper,
-    },
-};
-use ratatui::layout::{Constraint, Layout};
-use shared::protocol::v0_0_1::{Payload, V0_0_1};
-use std::{error::Error, sync::Arc};
-
-use tokio::{
-    sync::{mpsc, Mutex},
-    task::JoinHandle,
-    time::Duration,
+use std::{
+    error::Error,
+    io,
+    time::{Duration, Instant},
 };
 
-pub struct MockSpi {
-    target_value: f64,
-    spi: Spi<V0_0_1>,
-}
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{
+    prelude::*,
+    widgets::{block::Title, Axis, Block, Borders, Chart, Dataset, GraphType, LegendPosition},
+};
 
 macro_rules! unwrap_or_break {
     ($tokens:expr) => {
@@ -100,131 +101,147 @@ impl MockSpi {
     }
 }
 
-async fn thread_manager(
-    threads: Vec<JoinHandle<()>>,
-    mut kill_command: KillReader,
-    frontend_killer: mpsc::Sender<()>,
-) {
-    let _ = kill_command.recv().await;
-
-    // Do not unwrap would be strange if the thread managed died due to a process having died.
-    let _ = frontend_killer.send(()).await;
-    threads.into_iter().for_each(|handle| {
-        handle.abort();
-    });
+enum InputMode {
+    Normal,
+    Editing,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    // console_subscriber::init();
+struct App {}
 
-    let _ = start_app().await;
-    Ok(())
+impl App {
+    fn new() -> Self {
+        todo!()
+    }
+    fn on_tick(&mut self) {}
+
+    fn move_cursor_left(&mut self) {}
+
+    fn move_cursor_right(&mut self) {}
+
+    fn enter_char(&mut self, new_char: char) {}
+
+    fn delete_char(&mut self) {}
+
+    fn clamp_cursor(&self, new_cursor_pos: usize) -> usize {
+        todo!()
+    }
+
+    fn reset_cursor(&mut self) {}
+
+    fn submit_message(&mut self) {}
 }
 
-/// Spawns all of the threads that are needed for the app to work
-/// and does not return until all threads have exited.
-async fn start_app() -> Result<(), ()> {
-    let (redraw_writer, redraw_reader) = mpsc::channel(1024);
-
+fn main() -> Result<(), Box<dyn Error>> {
     // setup terminal
-    let terminal = initiate_terminal();
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
 
-    let terminal = Arc::new(Mutex::new(terminal.map_err(|_| ())?));
+    // create app and run it
+    let tick_rate = Duration::from_millis(250);
+    let app = App::new();
+    let res = run_app(&mut terminal, app, tick_rate);
 
-    // Spawn everything for the graph.
-    let (graph, register_channel, graph_handles) = Graph::init(redraw_writer.clone());
-    // Spawn everything for the input box.
-    let (input, commit, kill, input_handles) = InputBox::init(redraw_writer);
+    // restore terminal
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
 
-    // TODO! Replace this with the real SPI manager.
-    let mock_spi_channels: Vec<JoinHandle<()>> = match MockSpi::init(register_channel, commit) {
-        Some(value) => value,
-        None => {
-            // Kill all threads if we encountered an error.
-            for el in graph_handles {
-                el.abort();
-            }
-            for el in input_handles {
-                el.abort();
-            }
-            return Err(());
-        }
-    };
+    if let Err(err) = res {
+        println!("{err:?}");
+    }
 
-    /*
-       Manages all of the tasks, if the frontend_killer gets a message the thread_manager exists the program by aborting
-       all of the tasks.
-    */
-    let (frontend_killer, reader) = mpsc::channel(1);
-
-    // Spawn the frontend renderer.
-    let mut handles = vec![tokio::spawn(run_frontend(
-        terminal.clone(),
-        graph,
-        input,
-        reader,
-        redraw_reader,
-    ))];
-
-    // Combine all handles.
-    graph_handles.into_iter().for_each(|el| handles.push(el));
-    mock_spi_channels
-        .into_iter()
-        .for_each(|el| handles.push(el));
-    input_handles.into_iter().for_each(|el| handles.push(el));
-    // Spawn the thread manager.
-    let kill_handle = tokio::spawn(thread_manager(handles, kill, frontend_killer));
-
-    // Block until all threads exit
-    let _ = kill_handle.await;
     Ok(())
 }
 
-/// Draws the frontend of the application.
-async fn run_frontend(
-    terminal: Arc<Mutex<TerminalWrapper>>,
-    graph: Arc<Mutex<Box<Graph>>>,
-    input: Arc<Mutex<Box<InputBox>>>,
-    mut kill_reader: mpsc::Receiver<()>,
-    mut redraw_reader: mpsc::Receiver<()>,
-) {
+fn run_app<B: Backend>(
+    terminal: &mut Terminal<B>,
+    mut app: App,
+    tick_rate: Duration,
+) -> io::Result<()> {
+    let mut last_tick = Instant::now();
     loop {
-        if kill_reader.try_recv().is_ok() {
-            break;
-        }
-        {
-            // Acquire terminal first for the shortest possible critical sections.
-            let mut terminal = terminal.lock().await;
+        terminal.draw(|f| ui(f, &app))?;
 
-            // Grab the two widgets.
-
-            let input = {
-                let input = input.lock().await;
-                input.widget()
-            };
-
-            let graph = {
-                let graph = graph.lock().await;
-
-                graph.widget()
-            };
-
-            let vertical =
-                Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
-
-            let res = terminal.draw(|frame| {
-                let [chart, text_area] = vertical.areas(frame.size());
-                frame.render_widget(graph, chart);
-                frame.render_widget(input, text_area);
-            });
-
-            if res.is_err() {
-                return;
+        let timeout = tick_rate.saturating_sub(last_tick.elapsed());
+        if crossterm::event::poll(timeout)? {
+            if let Event::Key(key) = event::read()? {
+                if key.code == KeyCode::Char('q') {
+                    return Ok(());
+                }
             }
         }
-        if redraw_reader.recv().await.is_none() {
-            break;
+        if last_tick.elapsed() >= tick_rate {
+            app.on_tick();
+            last_tick = Instant::now();
         }
     }
+}
+
+// Look in to https://github.com/ratatui-org/ratatui/blob/main/examples/user_input.rs
+fn ui(frame: &mut Frame, app: &App) {
+    let area = frame.size();
+
+    let vertical = Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
+    let [chart1, bottom] = vertical.areas(area);
+    // let [line_chart, scatter] = horizontal.areas(bottom);
+
+    render_chart1(frame, chart1, app);
+}
+
+fn render_input(f: &mut Frame, area: Rect, app: &App) {}
+
+fn render_chart1(f: &mut Frame, area: Rect, app: &App) {
+    let x_labels = vec![
+        Span::styled(
+            format!("{}", app.window[0]),
+            Style::default().add_modifier(Modifier::BOLD),
+        ),
+        Span::raw(format!("{}", (app.window[0] + app.window[1]) / 2.0)),
+        Span::styled(
+            format!("{}", app.window[1]),
+            Style::default().add_modifier(Modifier::BOLD),
+        ),
+    ];
+    let datasets = vec![
+        Dataset::default()
+            .name("Measured")
+            .marker(symbols::Marker::Dot)
+            .style(Style::default().fg(Color::Cyan))
+            .data(&app.data1),
+        Dataset::default()
+            .name("Refference")
+            .marker(symbols::Marker::Dot)
+            .style(Style::default().fg(Color::Yellow))
+            .data(&app.data2),
+    ];
+
+    let chart = Chart::new(datasets)
+        .block(
+            Block::default()
+                .title("Chart 1".cyan().bold())
+                .borders(Borders::ALL),
+        )
+        .x_axis(
+            Axis::default()
+                .title("[s]")
+                .style(Style::default().fg(Color::Gray))
+                .labels(x_labels)
+                .bounds(app.window),
+        )
+        .y_axis(
+            Axis::default()
+                .title("[cm/s]")
+                .style(Style::default().fg(Color::Gray))
+                .labels(vec!["-20".bold(), "0".into(), "20".bold()])
+                .bounds([-20.0, 20.0]),
+        );
+
+    f.render_widget(chart, area);
 }
