@@ -20,22 +20,17 @@ use std::{
     error::Error,
     io::{self, Stdout},
     pin::pin,
-    sync::{
-        mpsc::{channel, Sender},
-        Arc, RwLock,
-    },
+    sync::Arc,
 };
 
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyModifiers},
+    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers},
     execute,
-    terminal::{
-        self, disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
-    },
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{
     prelude::*,
-    widgets::{block::Title, Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph},
+    widgets::{block::Title, Axis, Block, Borders, Chart, Dataset, Paragraph},
 };
 use tokio::{
     sync::{mpsc, Mutex},
@@ -140,10 +135,18 @@ impl InputBox {
     ) {
         let ret = Arc::new(Mutex::new(Box::new(Self {
             input: String::new(),
-            cursor: 0,
             log: Vec::new(),
             mode: false,
-            widget: Paragraph::new(Text::default()),
+            widget: Paragraph::new(format!("> ")).yellow().block(
+                Block::default()
+                    .title(
+                        Title::default()
+                            .content("Input box".cyan().bold())
+                            .alignment(Alignment::Center),
+                    )
+                    .borders(Borders::ALL)
+                    .gray(),
+            ),
         })));
         let (mode_writer, mode_reader) = mpsc::channel(10);
         let (num_writer, num_reader) = mpsc::channel(10);
@@ -180,13 +183,47 @@ impl InputBox {
     }
 
     fn redraw(&mut self) {
-        self.widget = Paragraph::new(self.input.clone()).yellow();
+        self.widget = Paragraph::new(format!(
+            "> {}\n{} [cm/s]",
+            self.input,
+            self.log.join(" [cm/s]\n")
+        ))
+        .gray()
+        .block(
+            Block::default()
+                .title(
+                    Title::default()
+                        .content("Input box".cyan().bold())
+                        .alignment(Alignment::Center),
+                )
+                .borders(Borders::ALL)
+                .gray(),
+        );
+
+        if self.mode {
+            self.widget = self
+                .widget
+                .clone()
+                .block(
+                    Block::default()
+                        .title(
+                            Title::default()
+                                .content("Input box".cyan().bold())
+                                .alignment(Alignment::Center),
+                        )
+                        .borders(Borders::ALL)
+                        .yellow()
+                        .slow_blink(),
+                )
+                .yellow();
+        }
     }
 
     async fn mode_switcher(text_box: Arc<Mutex<Box<Self>>>, mut reader: ModeSwitchReader) {
         while let Some(mode) = reader.recv().await {
             let mut input_box = text_box.lock().await;
             input_box.mode = mode;
+            input_box.redraw();
         }
     }
 
@@ -244,6 +281,9 @@ impl InputBox {
                 Err(_) => continue,
             };
 
+            let to_append = locked_box.input.clone();
+
+            locked_box.log.insert(0, to_append);
             locked_box.input = String::new();
 
             commit_channel.send(number as f64).await.unwrap();
@@ -389,11 +429,9 @@ async fn thread_manager(
     threads: Vec<JoinHandle<()>>,
     mut kill_command: KillReader,
     frontend_killer: mpsc::Sender<()>,
-    mut killer_sync: mpsc::Receiver<()>,
 ) {
     while let Some(_) = kill_command.recv().await {
         frontend_killer.send(()).await.unwrap();
-        killer_sync.recv().await.unwrap();
         time::sleep(Duration::from_millis(500)).await;
         threads.into_iter().for_each(|handle| {
             let _ = handle.abort();
@@ -404,7 +442,6 @@ async fn thread_manager(
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // setup terminal
-
     let (terminal, chart_area, input_area) = initiate_terminal();
 
     let terminal = Arc::new(Mutex::new(terminal));
@@ -417,7 +454,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mock_spi_channels: Vec<JoinHandle<()>> = MockSpi::init(register_channel, commit);
 
     let (frontend_killer, reader) = mpsc::channel(1);
-    let (killer_ack, killer_sync) = mpsc::channel(1);
     // Spawn a task that manages killing all tasks
     let mut handles = vec![tokio::spawn(run_frontend(
         terminal.clone(),
@@ -427,14 +463,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         input,
         tick_rate,
         reader,
-        killer_ack,
     ))];
     graph_handles.into_iter().for_each(|el| handles.push(el));
     mock_spi_channels
         .into_iter()
         .for_each(|el| handles.push(el));
     input_handles.into_iter().for_each(|el| handles.push(el));
-    let kill_handle = tokio::spawn(thread_manager(handles, kill, frontend_killer, killer_sync));
+    let kill_handle = tokio::spawn(thread_manager(handles, kill, frontend_killer));
 
     // Block until all threads exit
 
@@ -480,7 +515,6 @@ async fn run_frontend<'a, B: Backend>(
     input: Arc<Mutex<Box<InputBox>>>,
     tick_rate: Duration,
     mut reader: mpsc::Receiver<()>,
-    killer_ack: mpsc::Sender<()>,
 ) {
     let mut last_tick = Instant::now();
     while let Err(_) = reader.try_recv() {
@@ -501,7 +535,6 @@ async fn run_frontend<'a, B: Backend>(
                 }
             }) {
                 Err(_) => {
-                    killer_ack.send(()).await.unwrap();
                     return;
                 }
                 Ok(_) => {}
@@ -510,5 +543,4 @@ async fn run_frontend<'a, B: Backend>(
         tokio::time::sleep_until(last_tick + tick_rate).await;
         last_tick = Instant::now();
     }
-    killer_ack.send(()).await.unwrap();
 }
