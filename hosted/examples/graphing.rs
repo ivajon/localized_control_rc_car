@@ -35,7 +35,7 @@ use ratatui::{
 use tokio::{
     sync::{mpsc, Mutex},
     task::JoinHandle,
-    time::{self, Duration, Instant},
+    time::{Duration, Instant},
 };
 
 macro_rules! unwrap_or_break {
@@ -127,7 +127,9 @@ pub type KillReader = mpsc::Receiver<()>;
 pub type KillWriter = mpsc::Sender<()>;
 
 impl InputBox {
-    fn init() -> (
+    fn init(
+        redraw_writer: RedrawWriter,
+    ) -> (
         Arc<Mutex<Box<Self>>>,
         CommitReader,
         KillReader,
@@ -147,15 +149,16 @@ impl InputBox {
                     .borders(Borders::ALL)
                     .gray(),
             ),
+            redraw_writer,
         })));
-        let (mode_writer, mode_reader) = mpsc::channel(10);
-        let (num_writer, num_reader) = mpsc::channel(10);
-        let (backspace_writer, backspace_reader) = mpsc::channel(10);
-        let (enter_writer, enter_reader) = mpsc::channel(10);
-        let (q_writer, q_reader) = mpsc::channel(10);
+        let (mode_writer, mode_reader) = mpsc::channel(1024);
+        let (num_writer, num_reader) = mpsc::channel(1024);
+        let (backspace_writer, backspace_reader) = mpsc::channel(1024);
+        let (enter_writer, enter_reader) = mpsc::channel(1024);
+        let (q_writer, q_reader) = mpsc::channel(1024);
 
-        let (commit_writer, commit_reader) = mpsc::channel(10);
-        let (kill_writer, kill_reader) = mpsc::channel(10);
+        let (commit_writer, commit_reader) = mpsc::channel(1024);
+        let (kill_writer, kill_reader) = mpsc::channel(1024);
 
         (
             ret.clone(),
@@ -178,8 +181,8 @@ impl InputBox {
         )
     }
 
-    fn draw<'a>(&self, frame: &mut Frame<'a>, area: Rect) {
-        frame.render_widget(self.widget.clone(), area);
+    fn widget<'a>(&self) -> impl Widget {
+        self.widget.clone()
     }
 
     fn redraw(&mut self) {
@@ -224,6 +227,7 @@ impl InputBox {
             let mut input_box = text_box.lock().await;
             input_box.mode = mode;
             input_box.redraw();
+            input_box.redraw_writer.send(()).await.unwrap();
         }
     }
 
@@ -240,6 +244,7 @@ impl InputBox {
             };
             locked_box.input.push(c);
             locked_box.redraw();
+            locked_box.redraw_writer.send(()).await.unwrap();
         }
     }
 
@@ -264,7 +269,7 @@ impl InputBox {
                     locked_box.input.pop();
                 }
             };
-            locked_box.redraw();
+            locked_box.redraw_writer.send(()).await.unwrap();
         }
     }
 
@@ -288,6 +293,7 @@ impl InputBox {
 
             commit_channel.send(number as f64).await.unwrap();
             locked_box.redraw();
+            locked_box.redraw_writer.send(()).await.unwrap();
         }
     }
 
@@ -432,7 +438,6 @@ async fn thread_manager(
 ) {
     while let Some(_) = kill_command.recv().await {
         frontend_killer.send(()).await.unwrap();
-        time::sleep(Duration::from_millis(500)).await;
         threads.into_iter().for_each(|handle| {
             let _ = handle.abort();
         });
@@ -441,44 +446,59 @@ async fn thread_manager(
 }
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    console_subscriber::init();
+
+    start_app().await;
+    Ok(())
+}
+
+async fn start_app() {
+    let (redraw_writer, redraw_reader) = mpsc::channel(1024);
+
     // setup terminal
     let (terminal, chart_area, input_area) = initiate_terminal();
 
     let terminal = Arc::new(Mutex::new(terminal));
-    // create app and run it
-    let tick_rate = Duration::from_millis(250);
 
-    // Spawn all of the tasks
-    let (graph, register_channel, graph_handles) = Graph::init();
-    let (input, commit, kill, input_handles) = InputBox::init();
+    // Spawn everything for the graph.
+    let (graph, register_channel, graph_handles) = Graph::init(redraw_writer.clone());
+    // Spawn everything for the input box.
+    let (input, commit, kill, input_handles) = InputBox::init(redraw_writer);
+
+    // TODO! Replace this with the real SPI manager.
     let mock_spi_channels: Vec<JoinHandle<()>> = MockSpi::init(register_channel, commit);
 
+    /*
+       Manages all of the tasks, if the frontend_killer gets a message the thread_manager exists the program by aborting
+       all of the tasks.
+    */
     let (frontend_killer, reader) = mpsc::channel(1);
-    // Spawn a task that manages killing all tasks
+
+    // Spawn the frontend renderer.
     let mut handles = vec![tokio::spawn(run_frontend(
         terminal.clone(),
         chart_area,
         input_area,
         graph,
         input,
-        tick_rate,
         reader,
+        redraw_reader,
     ))];
+
+    // Combine all handles.
     graph_handles.into_iter().for_each(|el| handles.push(el));
     mock_spi_channels
         .into_iter()
         .for_each(|el| handles.push(el));
     input_handles.into_iter().for_each(|el| handles.push(el));
+    // Spawn the thread manager.
     let kill_handle = tokio::spawn(thread_manager(handles, kill, frontend_killer));
 
     // Block until all threads exit
-
-    while !kill_handle.is_finished() {}
+    let _ = kill_handle.await;
 
     let mut terminal = terminal.lock().await;
     restore_terminal(&mut terminal);
-
-    Ok(())
 }
 
 fn initiate_terminal() -> (Terminal<CrosstermBackend<Stdout>>, Rect, Rect) {
@@ -513,34 +533,40 @@ async fn run_frontend<'a, B: Backend>(
     _input_area: Rect,
     graph: Arc<Mutex<Box<Graph>>>,
     input: Arc<Mutex<Box<InputBox>>>,
-    tick_rate: Duration,
-    mut reader: mpsc::Receiver<()>,
+    mut kill_reader: mpsc::Receiver<()>,
+    mut redraw_reader: mpsc::Receiver<()>,
 ) {
-    let mut last_tick = Instant::now();
-    while let Err(_) = reader.try_recv() {
+    while let Some(_) = redraw_reader.recv().await {
+        if kill_reader.try_recv().is_ok() {
+            break;
+        }
         {
             let mut terminal = terminal.lock().await;
-            let graph = graph.lock().await;
-            let input = input.lock().await;
 
-            match terminal.draw(|frame| {
-                let vertical =
-                    Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
-
-                let size = frame.size();
-                if size.height != 0 {
-                    let [chart, text_area] = vertical.areas(frame.size());
-                    graph.draw(frame, chart);
-                    input.draw(frame, text_area);
-                }
-            }) {
-                Err(_) => {
-                    return;
-                }
-                Ok(_) => {}
+            let input = {
+                let input = input.lock().await;
+                input.widget()
             };
+
+            let graph = {
+                let graph = graph.lock().await;
+
+                graph.widget()
+            };
+
+            let vertical =
+                Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
+
+            if terminal
+                .draw(|frame| {
+                    let [chart, text_area] = vertical.areas(frame.size());
+                    frame.render_widget(graph, chart);
+                    frame.render_widget(input, text_area);
+                })
+                .is_err()
+            {
+                return;
+            }
         }
-        tokio::time::sleep_until(last_tick + tick_rate).await;
-        last_tick = Instant::now();
     }
 }
