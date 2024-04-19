@@ -5,8 +5,32 @@ edition = "2021"
 
 [dependencies]
 ratatui = "0.26.2"
-crossterm = {git = "https://github.com/ivario123/crossterm_async", features = ["event-stream"]}
-tokio = { version = "1.37.0", features = ["full","time","tracing"] }
+crossterm = { git = "https://github.com/ivario123/crossterm_async", features = [
+    "event-stream",
+] }
+tokio = { version = "1.37.0", features = ["full", "time", "tracing"] }
+cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
+defmt = { version = "0.3", features = ["encoding-rzcobs"] }
+defmt-rtt = { version = "0.4" }
+panic-probe = { version = "0.3", features = ["print-defmt"] }
+rtic = { version = "2.0.0", features = ["thumbv7-backend"] }
+nrf52840-hal = { git = "https://github.com/ivario123/nrf-hal-monotonic", branch = "async_dma", features = [
+    "rt",
+], default-features = false }
+rtic-monotonics = { version = "1.0.0", features = [
+    "cortex-m-systick",
+    "nrf52840",
+] }
+rtic-sync = "1.3.0"
+embedded-hal = "1.0.0"
+shared = { path = "../shared", defualt-features = false, features = ["no_std"] }
+spidev = "0.6.0"
+
+
+# Helpers
+
+## Defines a double ended queue implementation of arrays instead of vectors
+arraydeque = { version = "0.5.1", default-features = false }
 #opencv = "0.89.0"
 futures-core = "0.3.30"
 rand = "0.8"

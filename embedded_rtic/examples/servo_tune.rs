@@ -47,6 +47,7 @@ impl<I: Iterator + Clone> Iterator for CircularBuffer<I> {
 mod app {
     use controller::{servo::Servo, wrapper::Exti32};
     use defmt::info;
+    use embedded_hal::digital::InputPin;
     use nrf52840_hal::{clocks::Clocks, gpio, prelude::InputPin};
 
     use crate::CircularBuffer;
