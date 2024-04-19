@@ -48,7 +48,7 @@ mod app {
     use controller::{servo::Servo, wrapper::Exti32};
     use defmt::info;
     use embedded_hal::digital::InputPin;
-    use nrf52840_hal::{clocks::Clocks, gpio, prelude::InputPin};
+    use nrf52840_hal::{clocks::Clocks, gpio};
 
     use crate::CircularBuffer;
 
@@ -71,7 +71,7 @@ mod app {
         let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
 
         // Button 1
-        let button = p0.p0_11.into_pullup_input().degrade();
+        let mut button = p0.p0_11.into_pullup_input().degrade();
         let buffer = CircularBuffer::new(
             (0..15)
                 .chain((0..15).rev())

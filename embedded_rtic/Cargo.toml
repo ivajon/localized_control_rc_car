@@ -9,11 +9,9 @@ defmt = { version = "0.3", features = ["encoding-rzcobs"] }
 defmt-rtt = { version = "0.4" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 rtic = { version = "2.0.0", features = ["thumbv7-backend"] }
-<<<<<<< HEAD
-nrf52840-hal = { version="0.17.1", features = ["rt"],default-features = false }
-=======
-nrf52840-hal = { version = "0.16.1", features = ["rt"] }
->>>>>>> 79f9ea3 (initial work on sonar)
+nrf52840-hal = { version = "0.17.1", features = [
+    "rt",
+], default-features = false }
 rtic-monotonics = { version = "1.0.0", features = [
     "cortex-m-systick",
     "nrf52840",
