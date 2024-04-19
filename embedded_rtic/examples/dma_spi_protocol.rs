@@ -15,7 +15,7 @@
 
 use controller as _; // global logger + panicking-behavior + memory layout
 
-const BUFFER_SIZE: usize = 10;
+const BUFFER_SIZE: usize = 100;
 
 // #[link_section = ".uninit.buffer"]
 // static mut WRITE_BUFFER: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
@@ -30,7 +30,6 @@ const BUFFER_SIZE: usize = 10;
     dispatchers = [RTC0,RTC1,RTC2]
 )]
 mod app {
-    use cortex_m::asm::delay;
     use defmt::info;
     use nrf52840_hal::{
         clocks::Clocks,
@@ -39,6 +38,15 @@ mod app {
         spim::{self, Frequency},
         spis,
         Spim,
+    };
+    use rtic_sync::{
+        channel::{Receiver, Sender},
+        make_channel,
+    };
+    use shared::protocol::{
+        v0_0_1::{Payload, V0_0_1},
+        Message,
+        Parse,
     };
 
     #[shared]
@@ -51,6 +59,8 @@ mod app {
         spis: Option<spis::Transfer<SPIS0, &'static mut [u8; super::BUFFER_SIZE]>>,
         spim: Spim<SPIM0>,
         spim_cs: Pin<Output<PushPull>>,
+        sender: Sender<'static, Payload, 100>,
+        receiver: Receiver<'static, Payload, 100>,
     }
 
     // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
@@ -93,47 +103,86 @@ mod app {
 
         register_measurement::spawn().ok();
         send_directive::spawn().ok();
+
+        let (sender, receiver) = make_channel!(Payload, 100);
+
         (Shared {}, Local {
             spis: Some(spis),
             spim,
             spim_cs,
+            sender,
+            receiver,
         })
     }
 
-    #[task(shared = [], local = [spis],priority = 1)]
+    #[task(shared = [], local = [spis,receiver],priority = 1)]
     async fn register_measurement(cx: register_measurement::Context) {
         loop {
             info!("Waiting for message");
             let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
-            if buff[0] == 0 {
-                info!("Read {:?}", buff);
-            }
-            buff.copy_from_slice(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-            *cx.local.spis = transfer.transfer(buff).ok();
+            info!("Read {:?}", buff);
 
-            delay(1000000);
+            let next_msg = cx.local.receiver.recv().await.unwrap_or_else(|_| panic!());
+
+            let iter = Message::<V0_0_1>::new(next_msg);
+            let iter = iter.into_iter();
+            let mut ptr = 0;
+            for el in iter {
+                buff[ptr] = el;
+                ptr += 1;
+            }
+            *cx.local.spis = transfer.transfer(buff).ok()
         }
     }
 
     #[task(shared = [], local = [spim,spim_cs],priority= 2)]
     async fn send_directive(cx: send_directive::Context) {
         loop {
-            let mut transfer_buffer = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let mut transfer_buffer = [0; super::BUFFER_SIZE];
             info!("Writing {:?}", transfer_buffer);
             cx.local
                 .spim
                 .transfer(cx.local.spim_cs, &mut transfer_buffer)
                 .ok();
+
+            let data = Message::<V0_0_1>::try_parse(&mut transfer_buffer.into_iter());
+            match data {
+                Some(message) => info!("Got message {:?}", message.payload()),
+                None => {}
+            };
             info!("Buffer after transfer {:?}", transfer_buffer);
-            if !transfer_buffer.map(|val| val == 0).iter().all(|val| *val) {
-                info!("Transfer did not work");
-                return;
-            }
         }
     }
 
+    #[task(local=[sender],priority = 1)]
+    async fn sender(cx: sender::Context) {
+        let sender = cx.local.sender;
+        sender
+            .send(Payload::CurrentVelocity {
+                velocity: 10,
+                time_us: 1,
+            })
+            .await
+            .unwrap_or_else(|_| panic!());
+        sender
+            .send(Payload::CurrentAngle {
+                angle: -10,
+                time_us: 1,
+            })
+            .await
+            .unwrap_or_else(|_| panic!());
+        sender
+            .send(Payload::CurrentDistance {
+                distance: 10,
+                time_us: 1,
+            })
+            .await
+            .unwrap_or_else(|_| panic!());
+        loop {}
+    }
     #[idle]
     fn idle(_cx: idle::Context) -> ! {
+        sender::spawn().unwrap_or_else(|_| panic!());
         loop {}
     }
 }
