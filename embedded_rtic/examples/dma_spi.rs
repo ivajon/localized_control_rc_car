@@ -30,6 +30,7 @@ const BUFFER_SIZE: usize = 10;
     dispatchers = [RTC0,RTC1,RTC2]
 )]
 mod app {
+    use cortex_m::asm::delay;
     use defmt::info;
     use nrf52840_hal::{
         clocks::Clocks,
@@ -104,10 +105,13 @@ mod app {
         loop {
             info!("Waiting for message");
             let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
-            info!("Read {:?}", buff);
-
+            if buff[0] == 0 {
+                info!("Read {:?}", buff);
+            }
             buff.copy_from_slice(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-            *cx.local.spis = transfer.transfer(buff).ok()
+            *cx.local.spis = transfer.transfer(buff).ok();
+
+            delay(1000000);
         }
     }
 
