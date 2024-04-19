@@ -35,13 +35,14 @@ use ratatui::{
 use tokio::{
     sync::{mpsc, Mutex},
     task::JoinHandle,
-    time::{Duration, Instant},
+    time::Duration,
 };
 
+pub type GraphValue = (Vec<(f64, f64)>, Style, f64, f64);
 #[derive(Clone)]
 pub struct Graph {
     /// Time to leak some memory boys.
-    values: HashMap<String, (Vec<(f64, f64)>, Style, f64, f64)>,
+    values: HashMap<String, GraphValue>,
     latest: f64,
     widget: Chart<'static>,
     redraw_writer: RedrawWriter,
@@ -62,14 +63,14 @@ pub type MeasurementWriter = mpsc::Sender<(String, (f64, f64))>;
 pub type RedrawWriter = mpsc::Sender<()>;
 pub type RedrawReader = mpsc::Receiver<()>;
 
+pub type GraphConstructor = (
+    Arc<Mutex<Box<Graph>>>,
+    MeasurementWriter,
+    Vec<tokio::task::JoinHandle<()>>,
+);
+
 impl Graph {
-    fn init(
-        redraw_writer: RedrawWriter,
-    ) -> (
-        Arc<Mutex<Box<Self>>>,
-        MeasurementWriter,
-        Vec<tokio::task::JoinHandle<()>>,
-    ) {
+    fn init(redraw_writer: RedrawWriter) -> GraphConstructor {
         let ret = Arc::new(Mutex::new(Box::new(Self {
             values: HashMap::new(),
             latest: 0.,
@@ -94,13 +95,13 @@ impl Graph {
         )
     }
 
-    fn widget<'a>(&self) -> impl Widget {
+    fn widget(&self) -> impl Widget {
         self.widget.clone()
     }
 
     async fn plot(graph: Arc<Mutex<Box<Self>>>, mut reader: mpsc::Receiver<()>) {
         // Only re-draw the ui when ever a new measurement is registered.
-        while let Some(_) = reader.recv().await {
+        while reader.recv().await.is_some() {
             {
                 let graph_inner = &mut graph.lock().await;
 
@@ -123,7 +124,7 @@ impl Graph {
                                 // This scares me.
                                 // Not as much when we re-draw only on measurements
                                 .data(data.leak())
-                                .style(style.clone())
+                                .style(style)
                                 .marker(Marker::Dot)
                                 .clone(),
                         )
@@ -165,7 +166,7 @@ impl Graph {
         mut reader: MeasurementReader,
         sender: mpsc::Sender<()>,
     ) {
-        let styles = vec![
+        let styles = [
             Style::default().green(),
             Style::default().yellow(),
             Style::default().blue(),
@@ -225,20 +226,20 @@ pub type CommitWriter = mpsc::Sender<f64>;
 pub type KillReader = mpsc::Receiver<()>;
 pub type KillWriter = mpsc::Sender<()>;
 
+pub type InputConstructor = (
+    Arc<Mutex<Box<InputBox>>>,
+    CommitReader,
+    KillReader,
+    Vec<tokio::task::JoinHandle<()>>,
+);
+
 impl InputBox {
-    fn init(
-        redraw_writer: RedrawWriter,
-    ) -> (
-        Arc<Mutex<Box<Self>>>,
-        CommitReader,
-        KillReader,
-        Vec<tokio::task::JoinHandle<()>>,
-    ) {
+    fn init(redraw_writer: RedrawWriter) -> InputConstructor {
         let ret = Arc::new(Mutex::new(Box::new(Self {
             input: String::new(),
             log: Vec::new(),
             mode: false,
-            widget: Paragraph::new(format!("> ")).yellow().block(
+            widget: Paragraph::new("> ".to_string()).yellow().block(
                 Block::default()
                     .title(
                         Title::default()
@@ -280,7 +281,7 @@ impl InputBox {
         )
     }
 
-    fn widget<'a>(&self) -> impl Widget {
+    fn widget(&self) -> impl Widget {
         self.widget.clone()
     }
 
@@ -377,7 +378,7 @@ impl InputBox {
         mut reader: EnterReader,
         commit_channel: CommitWriter,
     ) {
-        while let Some(_) = reader.recv().await {
+        while reader.recv().await.is_some() {
             let mut locked_box = text_box.lock().await;
 
             let number: u32 = match locked_box.input.parse() {
@@ -401,7 +402,7 @@ impl InputBox {
         mut reader: QReader,
         kill_channel: KillWriter,
     ) {
-        while let Some(_) = reader.recv().await {
+        while reader.recv().await.is_some() {
             let locked_box = text_box.lock().await;
             if !locked_box.mode {
                 kill_channel.send(()).await.unwrap();
@@ -425,46 +426,43 @@ impl InputBox {
 
             let event: Event = event.unwrap();
 
-            match event {
-                Event::Key(key) => {
-                    match key.code {
-                        KeyCode::Char('q') => {
-                            q_channel.send(()).await.unwrap();
-                        }
-                        KeyCode::Char('i') => {
-                            mode_writer.send(true).await.unwrap();
-                        }
-                        KeyCode::Char(char) => {
-                            let ascii = match char.as_ascii() {
-                                Some(v) => v,
-                                None => continue,
-                            }
-                            .to_u8();
-                            if ascii >= 48 && ascii < 58 {
-                                char_writer.send(ascii - 48).await.unwrap();
-                            }
-                        }
-                        KeyCode::Enter => {
-                            // Commit.
-                            commit_channel.send(()).await.unwrap();
-                        }
-
-                        KeyCode::Backspace => {
-                            // Allow word deletion.
-                            backspace_channel
-                                .send(key.modifiers.contains(KeyModifiers::CONTROL))
-                                .await
-                                .unwrap();
-                        }
-
-                        KeyCode::Esc => {
-                            // Revert to normal mode
-                            mode_writer.send(false).await.unwrap();
-                        }
-                        _ => {}
+            if let Event::Key(key) = event {
+                match key.code {
+                    KeyCode::Char('q') => {
+                        q_channel.send(()).await.unwrap();
                     }
+                    KeyCode::Char('i') => {
+                        mode_writer.send(true).await.unwrap();
+                    }
+                    KeyCode::Char(char) => {
+                        let ascii = match char.as_ascii() {
+                            Some(v) => v,
+                            None => continue,
+                        }
+                        .to_u8();
+                        if (48..58).contains(&ascii) {
+                            char_writer.send(ascii - 48).await.unwrap();
+                        }
+                    }
+                    KeyCode::Enter => {
+                        // Commit.
+                        commit_channel.send(()).await.unwrap();
+                    }
+
+                    KeyCode::Backspace => {
+                        // Allow word deletion.
+                        backspace_channel
+                            .send(key.modifiers.contains(KeyModifiers::CONTROL))
+                            .await
+                            .unwrap();
+                    }
+
+                    KeyCode::Esc => {
+                        // Revert to normal mode
+                        mode_writer.send(false).await.unwrap();
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
         }
     }
@@ -506,7 +504,7 @@ impl MockSpi {
             } else if target < measured {
                 measured -= 2.;
             } else {
-                let rng = rand::thread_rng().gen_range((-1.)..(1.));
+                let rng = rand::thread_rng().gen_range((-1.)..1.);
                 measured += rng;
             }
             {
@@ -539,17 +537,16 @@ async fn thread_manager(
     mut kill_command: KillReader,
     frontend_killer: mpsc::Sender<()>,
 ) {
-    while let Some(_) = kill_command.recv().await {
-        frontend_killer.send(()).await.unwrap();
-        threads.into_iter().for_each(|handle| {
-            let _ = handle.abort();
-        });
-        return;
-    }
+    let _ = kill_command.recv().await;
+
+    frontend_killer.send(()).await.unwrap();
+    threads.into_iter().for_each(|handle| {
+        handle.abort();
+    });
 }
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    console_subscriber::init();
+    // console_subscriber::init();
 
     start_app().await;
     Ok(())
@@ -639,7 +636,7 @@ async fn run_frontend<'a, B: Backend>(
     mut kill_reader: mpsc::Receiver<()>,
     mut redraw_reader: mpsc::Receiver<()>,
 ) {
-    while let Some(_) = redraw_reader.recv().await {
+    while redraw_reader.recv().await.is_some() {
         if kill_reader.try_recv().is_ok() {
             break;
         }
@@ -660,14 +657,13 @@ async fn run_frontend<'a, B: Backend>(
             let vertical =
                 Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
 
-            if terminal
-                .draw(|frame| {
-                    let [chart, text_area] = vertical.areas(frame.size());
-                    frame.render_widget(graph, chart);
-                    frame.render_widget(input, text_area);
-                })
-                .is_err()
-            {
+            let res = terminal.draw(|frame| {
+                let [chart, text_area] = vertical.areas(frame.size());
+                frame.render_widget(graph, chart);
+                frame.render_widget(input, text_area);
+            });
+
+            if res.is_err() {
                 return;
             }
         }
