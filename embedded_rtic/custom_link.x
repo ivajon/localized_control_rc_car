@@ -174,6 +174,7 @@ SECTIONS
   /* ### .uninit */
   .uninit (NOLOAD) : ALIGN(4)
   {
+    .buffer = ALIGN(4);
     . = ALIGN(4);
     __suninit = .;
     *(.uninit .uninit.*);
@@ -271,4 +272,3 @@ ASSERT(SIZEOF(.vector_table) <= 0x400, "
 There can't be more than 240 interrupt handlers. This may be a bug in
 your device crate, or you may have registered more than 240 interrupt
 handlers.");
-
