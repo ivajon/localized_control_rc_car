@@ -20,6 +20,7 @@ mod app {
 
     use arraydeque::{behavior::Wrapping, ArrayDeque};
     use defmt::{error, info};
+    use embedded_hal::digital::*;
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Input, Output, Pin, PullDown, PushPull},
@@ -96,6 +97,7 @@ mod app {
         Mono::start(cx.device.TIMER0, token);
 
         let _ = trigger_trampoline::spawn();
+
         (Shared { gpiote }, Local {
             trig,
             echo,
@@ -178,6 +180,7 @@ mod app {
             // let _start = Mono::now();
             match trigger::spawn() {
                 Ok(_) => {
+                    info!("Trigger sent");
                     let distance = cx.local.receiver.recv().await.unwrap();
                     // Discard outliers
                     if distance < prev_avg + outlier_offset {
