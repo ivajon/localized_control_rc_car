@@ -15,6 +15,4 @@ MEMORY
   RAM2 	 : ORIGIN = 0x00810000, LENGTH = 64K
   TEXT 	 : ORIGIN = 0x00820000, LENGTH = 64K
 
-  /* This is where we are going to store the control signal buffer */
-  BUFFER : ORIGIN = 0x20030000, LENGTH = 16K
 }
