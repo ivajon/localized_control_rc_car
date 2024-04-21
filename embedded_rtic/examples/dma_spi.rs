@@ -128,16 +128,17 @@ mod app {
     fn register_measurement(cx: register_measurement::Context) {
         info!("Waiting for message");
         let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
-        if buff[0] == 0 {
-            info!("Read {:?}", buff);
-        }
-        buff.copy_from_slice(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        // if buff[0] == 0 {
+        info!("Read {:?}", buff);
+        // }
+        buff.copy_from_slice(&[9,8,7,6,5,4,3,2,1,0]);
         let was_end = transfer.is_event_triggered(spis::SpisEvent::End);
         info!("Was end ? : {:?}", was_end);
         let was_end = transfer.is_event_triggered(spis::SpisEvent::EndRx);
         info!("Was end ? : {:?}", was_end);
-        transfer.reset_event(spis::SpisEvent::End);
-        transfer.reset_event(spis::SpisEvent::EndRx);
+        // transfer.reset_event(spis::SpisEvent::End);
+        // transfer.reset_event(spis::SpisEvent::EndRx);
+        transfer.reset_events();
 
         *cx.local.spis = transfer.transfer(buff).ok();
         // info!("Starting transfer from device side.");
@@ -159,7 +160,7 @@ mod app {
         loop {
             // let mut transfer_buffer = [0; BUFFER_SIZE * 10];
             // info!("Writing {:?}", transfer_buffer);
-            for (idx, el) in (0..(super::BUFFER_SIZE)).enumerate() {
+            for (idx, el) in (10..(10 + super::BUFFER_SIZE)).enumerate() {
                 cx.local.BUF[idx] = el as u8;
                 info!("Cx : {:?}", cx.local.BUF[idx]);
             }
@@ -171,7 +172,7 @@ mod app {
             // .unwrap_or_else(|_| panic!());
             cx.local
                 .spim
-                .write(cx.local.spim_cs, cx.local.BUF)
+                .transfer(cx.local.spim_cs, cx.local.BUF)
                 .unwrap_or_else(|_| panic!());
             info!("Buffer after transfer {:?}", cx.local.BUF);
             if !cx.local.BUF.map(|val| val != 255).iter().all(|val| *val) {
