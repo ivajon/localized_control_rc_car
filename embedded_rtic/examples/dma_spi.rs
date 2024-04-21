@@ -109,7 +109,7 @@ mod app {
             mosi: Some(spim_mosi),
             miso: Some(spim_miso),
         };
-        let spim = Spim::new(cx.device.SPIM1, spim_pins, Frequency::K125, spim::MODE_0, 0);
+        let spim = Spim::new(cx.device.SPIM1, spim_pins, Frequency::M32, spim::MODE_0, 0);
 
         send_directive::spawn().ok();
         // register_measurement::spawn().ok();
@@ -126,15 +126,20 @@ mod app {
     }
     #[task(shared = [], local = [spis],priority = 3,binds = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0)]
     fn register_measurement(cx: register_measurement::Context) {
-        loop {
-            info!("Waiting for message");
-            let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
-            if buff[0] == 0 {
-                info!("Read {:?}", buff);
-            }
-            buff.copy_from_slice(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-            *cx.local.spis = transfer.transfer(buff).ok();
+        info!("Waiting for message");
+        let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
+        if buff[0] == 0 {
+            info!("Read {:?}", buff);
         }
+        buff.copy_from_slice(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        let was_end = transfer.is_event_triggered(spis::SpisEvent::End);
+        info!("Was end ? : {:?}", was_end);
+        let was_end = transfer.is_event_triggered(spis::SpisEvent::EndRx);
+        info!("Was end ? : {:?}", was_end);
+        transfer.reset_event(spis::SpisEvent::End);
+        transfer.reset_event(spis::SpisEvent::EndRx);
+
+        *cx.local.spis = transfer.transfer(buff).ok();
         // info!("Starting transfer from device side.");
         // let result = cx
         //     .local
