@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 arraydeque = { version = "0.5.1", default-features = false }
 cortex-m = { version = "0.7", features = ["critical-section-single-core"], optional = true }
+defmt = {version = "0.3.6"}
 
 [features]
 std = []

@@ -248,6 +248,11 @@ where
         self.integral +=
             (Output::half_size(avg / two).map_err(|_| ControllerError::ValueToLarge)?) * ts
                 / time_scale;
+
+        self.integral = self.integral
+            .max(threshold_min)
+            .min(threshold_max);
+
         let i = self.integral * ki;
 
         // Compute the rate of change between previous time-step and this time-step.
