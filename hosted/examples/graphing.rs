@@ -422,10 +422,10 @@ impl MockSpi {
             // }
             let (target, measured, time_step) = {
                 let mut spi = spi.lock().await;
-                let mut buf = Vec::new();
-                let _read = spi.spi.read(buf.as_mut_slice());
-                println!("Read data {:?}",buf);
-                match shared::protocol::Message::<V0_0_1>::try_parse(&mut buf.into_iter()) {
+                let mut data = [0;100]; 
+                let _read = spi.spi.read(&mut data);
+                println!("Read data {:?}",data);
+                match shared::protocol::Message::<V0_0_1>::try_parse(&mut data.into_iter()) {
                     Some(message) => {
                         match message.payload() {
                             Payload::CurrentVelocity { velocity, time_us } => {
