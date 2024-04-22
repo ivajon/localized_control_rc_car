@@ -4,10 +4,15 @@ imds = imageDatastore("capture2\"); %Get images
 
 for i = 1:length(imds.Files)
     tic
+    
     image1 = readimage(imds,i);
+    size(image1)
+    image1 = imrotate(image1,5,"crop");
+    cropSize = 30;
+    image1 = imcrop(image1,[cropSize cropSize 640-2*cropSize 480-2*cropSize]);
     image1 = imresize(image1,1/4);
     image1 = imgaussfilt(image1);
-    % image1 = imrotate(image1,3,"crop");
+    
 % 
     
     image1 = im2gray(image1);
@@ -20,9 +25,26 @@ for i = 1:length(imds.Files)
 
    % edgeX = imerode(edgeX,SE);
 
-   [Hx,T,R] = hough(edgeX,'RhoResolution',1,'Theta',-90:0.1:-85);
-   P  = houghpeaks(Hx,6);
+   [Hx,T,R] = hough(edgeX,'RhoResolution',1,'Theta',[-90:0.1:-80 80:0.1:89]);
+   P  = houghpeaks(Hx,10);
    lines = houghlines(edgeX,T,R,P,'FillGap',10,'MinLength',30);
+
+      figure(5)
+    x = [1 size(image1,2)];
+    test = zeros(size(image1));
+    hold on
+    for k = 1:length(lines)
+        rho = lines(k).rho;
+        theta = lines(k).theta;
+        y = (rho-x*cosd(theta))/sind(theta);
+        % plot(x,y,"LineWidth",1,"Color","g")
+        test = insertShape(test,"line",[x(1) y(1);x(2),y(2)],"Color","white","Opacity",0,"SmoothEdges",false);
+        
+    end
+    hold off
+    test = im2bw(test);
+    imshow(test)
+
 
    t  = toc;
    fprintf("%f Hz\n",1/t)
@@ -54,22 +76,23 @@ plot(x,y,'s','color','white');
 
     figure(4), imshow(image1),
     hold on
-max_len = 0;
-for k = 1:length(lines)
-   xy = [lines(k).point1; lines(k).point2];
-   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+    max_len = 0;
+    for k = 1:length(lines)
+       xy = [lines(k).point1; lines(k).point2];
+       plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
 
-   % Plot beginnings and ends of lines
-   plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
-   plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
+       % Plot beginnings and ends of lines
+       plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
+       plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
 
-   % Determine the endpoints of the longest line segment
-   len = norm(lines(k).point1 - lines(k).point2);
-   if ( len > max_len)
-      max_len = len;
-      xy_long = xy;
-   end
-end
-    
+       % Determine the endpoints of the longest line segment
+       len = norm(lines(k).point1 - lines(k).point2);
+       if ( len > max_len)
+          max_len = len;
+          xy_long = xy;
+       end
+    end
+    hold off
 
+ 
 end
