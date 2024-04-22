@@ -20,8 +20,6 @@ embedded-hal = "1.0.0"
 shared = { path = "../shared", defualt-features = false, features = ["no_std"] }
 
 
-# Use embassy hall for spi comms.
-embassy-nrf = {version = "0.1.0", features = ["nrf52840"]}
 
 
 # Helpers
