@@ -465,6 +465,7 @@ impl MockSpi {
                 hold_for_us: 0,
             })
             .collect();
+            println!("Sending {:?}",target);
             spi.spi.write(target.as_slice());
         }
     }
