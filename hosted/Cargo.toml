@@ -22,5 +22,17 @@ linux-embedded-hal = { version = "0.4.0", features =["spidev"]}
 [profile.release]
 debug = true
 
+
+[[example]]
+name = "graphing"
+path = "examples/graphing.rs"
+required-features = ["tui"]
+
+[features]
+default = ["tui"]
+
+tui = []
+
+
 [build]
 rustflags = ["--cfg", "tokio_unstable"]
