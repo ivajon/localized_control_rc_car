@@ -174,9 +174,4 @@ mod app {
             Mono::delay(1.secs()).await;
         }
     }
-
-    #[idle]
-    fn idle(_cx: idle::Context) -> ! {
-        loop {}
-    }
 }

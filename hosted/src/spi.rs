@@ -51,7 +51,7 @@ impl<V: Version<BusItem = u8>> Spi<V> {
         <<V as Version>::Payload as IntoIterator>::IntoIter: Clone,
     {
         let mut data = [0; 100];
-        let read = self.spi.read(&mut data).map_err(|e| Error::IoError(e))?;
+        let read = self.spi.read(&mut data).map_err(Error::IoError)?;
         if read == 0 {
             return Err(Error::NothingToRead);
         }
@@ -76,13 +76,12 @@ impl<V: Version<BusItem = u8>> Spi<V> {
         let mut rx_buff = [0; 1024];
 
         let mut xfer = spi_ioc_transfer::read_write(target.as_slice(), &mut rx_buff);
-        match self.spi.transfer(&mut xfer) {
-            Ok(_) => match shared::protocol::Message::<V>::try_parse(&mut rx_buff.into_iter()) {
-                Some(message) => self.buffered.push(message.payload()),
-                _ => {}
-            },
-            _ => panic!(),
+        self.spi.transfer(&mut xfer).map_err(Error::IoError)?;
+
+        if let Some(message) = shared::protocol::Message::<V>::try_parse(&mut rx_buff.into_iter()) {
+            self.buffered.push(message.payload())
         }
+
         Ok(())
     }
 }
