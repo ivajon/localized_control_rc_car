@@ -19,7 +19,7 @@ const BUFFER_SIZE: usize = 10;
 
 #[rtic::app(
     device = nrf52840_hal::pac,
-    dispatchers = [RTC0,RTC1,RTC2]
+    dispatchers = [RTC0,RTC1,RTC2,PWM0]
 )]
 mod app {
 
@@ -51,7 +51,14 @@ mod app {
         channel::{Receiver, Sender},
         make_channel,
     };
-    use shared::controller::Pid;
+    use shared::{
+        controller::Pid,
+        protocol::{
+            v0_0_1::{Payload, V0_0_1},
+            Message,
+            Parse,
+        },
+    };
     const SMOOTHING: usize = 10;
 
     #[shared]
@@ -78,6 +85,9 @@ mod app {
         sender: Sender<'static, i32, 30>,
 
         receiver: Receiver<'static, i32, 30>,
+
+        command_receiver: Receiver<'static, Payload, 30>,
+        command_sender: Sender<'static, Payload, 30>,
     }
 
     // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
@@ -163,7 +173,10 @@ mod app {
         };
         let spim = Spim::new(cx.device.SPIM1, spim_pins, Frequency::M32, spim::MODE_0, 0);
 
+        let (command_sender, command_receiver) = make_channel!(Payload, 30);
+
         send_directive::spawn().ok();
+        reference_setter::spawn().ok();
 
         let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
         Mono::start(cx.device.TIMER0, token);
@@ -182,16 +195,52 @@ mod app {
                 receiver,
                 queue,
                 gpiote,
+                command_sender,
+                command_receiver,
             },
         )
     }
-    #[task(shared = [], local = [spis],priority = 3,binds = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0)]
-    fn register_measurement(cx: register_measurement::Context) {
+    #[task(shared = [measurement], local = [
+           spis,
+           command_sender,
+           previous:(f32,u32) = (0.,0)
+    ],priority = 3,binds = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0)]
+    fn register_measurement(mut cx: register_measurement::Context) {
         info!("Waiting for message");
         let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
+
+        // Convert in to a message.
+        match Message::<V0_0_1>::try_parse(&mut buff.iter().cloned()) {
+            Some(message) => {
+                let payload = message.payload();
+                cx.local
+                    .command_sender
+                    .try_send(payload)
+                    .unwrap_or_else(|_| panic!());
+            }
+            None => debug!("SPI got malformed packet"),
+        }
+
         info!("Read {:?}", buff);
 
-        buff.copy_from_slice(&[9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+        let new_measurement = cx
+            .shared
+            .measurement
+            .lock(|measurement| measurement.clone());
+        if new_measurement != *cx.local.previous {
+            let new_message = Message::<V0_0_1>::new(Payload::CurrentVelocity {
+                velocity: new_measurement.0 as u32,
+                time_us: new_measurement.1 as u64,
+            });
+            for (idx, el) in new_message.enumerate() {
+                buff[idx] = el;
+            }
+
+            *cx.local.previous = new_measurement;
+        } else {
+            buff.fill(0);
+        }
+
         let was_end = transfer.is_event_triggered(spis::SpisEvent::End);
         info!("Was end ? : {:?}", was_end);
         let was_end = transfer.is_event_triggered(spis::SpisEvent::EndRx);
@@ -201,27 +250,88 @@ mod app {
         *cx.local.spis = transfer.transfer(buff).ok();
     }
 
-    #[task(shared = [], local = [spim,spim_cs,
+    #[task(shared = [], local = [
+            spim,
+            spim_cs,
             #[link_section = ".uninit.buffer"]
             BUF: [u8; super::BUFFER_SIZE] = [1,2,3,4,5,6,7,8,9,10],
     ],priority= 1)]
+    /// This mimics the host side SPI, if we are connected to the real device we
+    /// should not spawn this.
     async fn send_directive(cx: send_directive::Context) {
+        let commands = [
+            Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: 0,
+                hold_for_us: 10,
+            }),
+            Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: 10,
+                hold_for_us: 10,
+            }),
+            Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: 20,
+                hold_for_us: 10,
+            }),
+            Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: 30,
+                hold_for_us: 10,
+            }),
+            Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: 40,
+                hold_for_us: 10,
+            }),
+            Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: 60,
+                hold_for_us: 10,
+            }),
+        ];
         loop {
-            for (idx, el) in (10..(10 + super::BUFFER_SIZE)).enumerate() {
-                cx.local.BUF[idx] = el as u8;
-                info!("Cx : {:?}", cx.local.BUF[idx]);
-            }
-            info!("Writing {:?}", cx.local.BUF);
+            for el in commands.clone().iter() {
+                let msg = el.clone();
+                for (idx, el) in msg.enumerate() {
+                    cx.local.BUF[idx] = el as u8;
+                    info!("Cx : {:?}", cx.local.BUF[idx]);
+                }
+                info!("Writing {:?}", cx.local.BUF);
 
-            cx.local
-                .spim
-                .transfer(cx.local.spim_cs, cx.local.BUF)
-                .unwrap_or_else(|_| panic!());
-            info!("Buffer after transfer {:?}", cx.local.BUF);
-            if !cx.local.BUF.map(|val| val != 255).iter().all(|val| *val) {
-                info!("Transfer did not work");
+                cx.local
+                    .spim
+                    .transfer(cx.local.spim_cs, cx.local.BUF)
+                    .unwrap_or_else(|_| panic!());
+
+                info!("Buffer after transfer {:?}", cx.local.BUF);
+                // Convert in to a message.
+                match Message::<V0_0_1>::try_parse(&mut cx.local.BUF.iter().cloned()) {
+                    Some(message) => {
+                        let payload = message.payload();
+                        info!("Got message : {:?}",payload);
+                    }
+                    None => debug!("SPI got malformed packet"),
+                }
+
+
+                if !cx.local.BUF.map(|val| val != 255).iter().all(|val| *val) {
+                    info!("Transfer did not work");
+                }
+                Mono::delay(1.secs()).await;
             }
-            Mono::delay(1.secs()).await;
+        }
+    }
+
+    #[task(shared = [reference],local=[command_receiver],priority = 3)]
+    async fn reference_setter(mut cx: reference_setter::Context) {
+        while let Ok(payload) = cx.local.command_receiver.recv().await {
+            match payload {
+                Payload::SetSpeed {
+                    velocity,
+                    hold_for_us: _hold_for_us,
+                } => {
+                    cx.shared
+                        .reference
+                        .lock(|reference| *reference = velocity as f32);
+                }
+                _ => {}
+            };
         }
     }
 
@@ -250,7 +360,7 @@ mod app {
             Some(value) => {
                 let dt = time - *value;
                 let angvel = (MAGNET_SPACING as u64) * 1_000_000 / (dt as u64);
-                let angvel = angvel / 10_000/* (DIFF as u64 / 3) */;
+                let angvel = angvel / 10_000;
                 trace!("Angular velocity {:?}", angvel);
                 let vel = RADIUS * angvel;
                 trace!("Velocity : {:?} cm/s", vel);
