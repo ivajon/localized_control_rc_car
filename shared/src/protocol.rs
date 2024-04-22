@@ -62,6 +62,7 @@ where
     <V::Payload as IntoIterator>::IntoIter: Clone,
 {
     type Item = <V::Payload as IntoIterator>::Item;
+
     fn next(&mut self) -> Option<Self::Item> {
         if !self.version_sent {
             self.version_sent = true;
@@ -87,6 +88,7 @@ where
     <V::Payload as IntoIterator>::IntoIter: Clone,
 {
     type Item = V::BusItem;
+
     fn try_parse<T: Iterator<Item = Self::Item>>(stream: &mut T) -> Option<Self>
     where
         Self: Sized,
