@@ -1,17 +1,17 @@
 use core::mem::size_of;
 
-use crate::OwnedItterator;
-
 use super::{Parse, Version};
+use crate::OwnedItterator;
 
 /// The first version of the protocol.
 pub type V0_0_1 = ();
 
 impl Version for V0_0_1 {
-    const VERSION_ID: Self::BusItem = 0b00_00_00_01;
-    const PACKET_SIZE: usize = Payload::MAX_BUFFER_REQUIRED + Self::HEADER_SIZE;
     type BusItem = u8;
     type Payload = Payload;
+
+    const PACKET_SIZE: usize = Payload::MAX_BUFFER_REQUIRED + Self::HEADER_SIZE;
+    const VERSION_ID: Self::BusItem = 0b00_00_00_01;
 }
 
 /// The payload for [`V0_0_1`] of the protocol.
@@ -19,13 +19,16 @@ impl Version for V0_0_1 {
 pub enum Payload {
     /// Sets the speed of the esc to the specified velocity in cm/s.
     ///
-    /// If hold_for_us is 0 the speed will be held until a new speed is requested.
+    /// If hold_for_us is 0 the speed will be held until a new speed is
+    /// requested.
     SetSpeed { velocity: u32, hold_for_us: u64 },
     /// Sets the steering angle of the motor.
     ///
-    /// If hold_for_us is 0 the angle will be held until a new angle is requested.
+    /// If hold_for_us is 0 the angle will be held until a new angle is
+    /// requested.
     SetSteeringAngle { angle: i32, hold_for_us: u64 },
-    /// The current velocity of the car, timestamped with the measurement on the car.
+    /// The current velocity of the car, timestamped with the measurement on the
+    /// car.
     CurrentVelocity { velocity: u32, time_us: u64 },
     /// The current angle of the steering servo on the car.
     ///
@@ -35,19 +38,20 @@ pub enum Payload {
     ///
     /// Timestamped on the car.
     CurrentDistance { distance: u32, time_us: u64 },
-    /// Clears all requested control signals, this is used when we have planned a path until
-    /// completion.
+    /// Clears all requested control signals, this is used when we have planned
+    /// a path until completion.
     ClearQueue,
 }
 
 impl Payload {
-    /// For this payload we need one u64, one i32 or u32 and on byte to indicate payload type.
+    /// For this payload we need one u64, one i32 or u32 and on byte to indicate
+    /// payload type.
     const MAX_BUFFER_REQUIRED: usize = { size_of::<u64>() + size_of::<i32>() + 1 };
 }
 
 impl IntoIterator for Payload {
-    type Item = u8;
     type IntoIter = OwnedItterator<Self::Item, { Self::MAX_BUFFER_REQUIRED }>;
+    type Item = u8;
 
     fn into_iter(self) -> Self::IntoIter {
         let mut ret = [0; Self::MAX_BUFFER_REQUIRED];
@@ -103,6 +107,7 @@ impl IntoIterator for Payload {
 
 impl Parse for Payload {
     type Item = u8;
+
     fn try_parse<T: Iterator<Item = Self::Item>>(stream: &mut T) -> Option<Self>
     where
         Self: Sized,
@@ -191,9 +196,8 @@ impl Parse for Payload {
 #[cfg(test)]
 mod test {
 
-    use crate::protocol::Parse;
-
     use super::Payload;
+    use crate::protocol::Parse;
 
     #[test]
     fn test_set_speed() {
