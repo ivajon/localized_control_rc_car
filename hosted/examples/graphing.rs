@@ -14,12 +14,12 @@
 //! [examples readme]: https://github.com/ratatui-org/ratatui/blob/main/examples/README.md
 #![feature(ascii_char)]
 
-use linux_embedded_hal::{spidev::{SpiModeFlags, Spidev}, SpidevDevice};
 use rand::Rng;
 use shared::protocol::{
     v0_0_1::{Payload, V0_0_1},
     Message, Parse,
 };
+use spidev::{SpiModeFlags, Spidev, SpidevOptions};
 use std::{
     collections::HashMap,
     error::Error,
@@ -485,7 +485,11 @@ impl MockSpi {
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
     ) -> Vec<JoinHandle<()>> {
-        let spi = linux_embedded_hal::spidev::Spidev::open("/dev/spidev0.0").unwrap();
+        let mut spi = Spidev::open("/dev/spidev0.0").unwrap();
+        
+        let options = SpidevOptions::new().bits_per_word(8).max_speed_hz(1_000_000).mode(SpiModeFlags::SPI_MODE_0).build();
+
+        spi.configure(&options).unwrap();
 
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
@@ -523,7 +527,7 @@ impl MockSpi {
             let (target, measured, time_step) = {
                 let mut spi = spi.lock().await;
                 let mut buf = Vec::new();
-                let read = spi.spi.read(buf.as_mut_slice());
+                let _read = spi.spi.read(buf.as_mut_slice());
                 match shared::protocol::Message::<V0_0_1>::try_parse(&mut buf.into_iter()) {
                     Some(message) => {
                         match message.payload() {
