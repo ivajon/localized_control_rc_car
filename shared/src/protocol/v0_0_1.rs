@@ -15,8 +15,7 @@ impl Version for V0_0_1 {
 }
 
 /// The payload for [`V0_0_1`] of the protocol.
-#[derive(defmt::Format)]
-#[derive(PartialEq, Clone, Copy)]
+#[derive(defmt::Format, PartialEq, Clone, Copy)]
 pub enum Payload {
     /// Sets the speed of the esc to the specified velocity in cm/s.
     ///
