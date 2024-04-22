@@ -249,7 +249,9 @@ where
             (Output::half_size(avg / two).map_err(|_| ControllerError::ValueToLarge)?) * ts
                 / time_scale;
 
-        self.integral = self.integral.max(threshold_min).min(threshold_max);
+        self.integral = self.integral
+            .max(threshold_min)
+            .min(threshold_max);
 
         let i = self.integral * ki;
 

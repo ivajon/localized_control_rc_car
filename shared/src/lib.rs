@@ -11,6 +11,7 @@
 pub mod controller;
 pub mod protocol;
 
+#[derive(Clone)]
 pub struct OwnedItterator<Item: Sized + Clone, const SIZE: usize> {
     buff: [Item; SIZE],
     ptr: usize,
