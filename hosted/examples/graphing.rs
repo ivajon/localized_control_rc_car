@@ -424,7 +424,6 @@ impl MockSpi {
                 let mut spi = spi.lock().await;
                 let mut data = [0;100]; 
                 let _read = spi.spi.read(&mut data);
-                println!("Read data {:?}",data);
                 match shared::protocol::Message::<V0_0_1>::try_parse(&mut data.into_iter()) {
                     Some(message) => {
                         match message.payload() {
