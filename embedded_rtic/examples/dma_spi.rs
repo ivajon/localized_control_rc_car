@@ -1,17 +1,10 @@
-//! Defines a simple showcase for how to use the [`Esc`](controller::esc::Esc).
-//!
-//! It simply changes the direction we are moving in.
+//! Simple example where we use external loopback to test the SPI peripherals.
 
 #![no_main]
 #![no_std]
-#![feature(type_alias_impl_trait)]
-#![feature(noop_waker)]
-#![feature(const_refs_to_static)]
-#![feature(const_mut_refs)]
 #![deny(clippy::all)]
 #![deny(warnings)]
-// use core::ptr::addr_of_mut;
-#![allow(static_mut_refs)]
+#![feature(type_alias_impl_trait)]
 
 use controller as _; // global logger + panicking-behavior + memory layout
 
@@ -131,7 +124,7 @@ mod app {
         // if buff[0] == 0 {
         info!("Read {:?}", buff);
         // }
-        buff.copy_from_slice(&[9,8,7,6,5,4,3,2,1,0]);
+        buff.copy_from_slice(&[9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
         let was_end = transfer.is_event_triggered(spis::SpisEvent::End);
         info!("Was end ? : {:?}", was_end);
         let was_end = transfer.is_event_triggered(spis::SpisEvent::EndRx);
