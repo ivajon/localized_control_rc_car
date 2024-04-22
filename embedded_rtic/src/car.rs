@@ -39,7 +39,7 @@ pub mod constants {
     };
 
     /// The magnet spacing in the rotary encoder.
-    pub const MAGNET_SPACING: u32 = 2 * 31415 / 3;
+    pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
 
     /// The wheel radius in centimeters.
     pub const RADIUS: u64 = 3;

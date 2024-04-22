@@ -13,9 +13,10 @@
 // use core::ptr::addr_of_mut;
 #![allow(static_mut_refs)]
 
-use controller as _; // global logger + panicking-behavior + memory layout
+use controller as _;
+use shared::protocol::{v0_0_1::V0_0_1, Message}; // global logger + panicking-behavior + memory layout
 
-const BUFFER_SIZE: usize = 10;
+const BUFFER_SIZE: usize = Message::<V0_0_1>::MAX_SIZE;
 
 #[rtic::app(
     device = nrf52840_hal::pac,
@@ -213,6 +214,7 @@ mod app {
         match Message::<V0_0_1>::try_parse(&mut buff.iter().cloned()) {
             Some(message) => {
                 let payload = message.payload();
+                info!("Got message {:?}", payload);
                 cx.local
                     .command_sender
                     .try_send(payload)
@@ -254,7 +256,7 @@ mod app {
             spim,
             spim_cs,
             #[link_section = ".uninit.buffer"]
-            BUF: [u8; super::BUFFER_SIZE] = [1,2,3,4,5,6,7,8,9,10],
+            BUF: [u8; super::BUFFER_SIZE] = [0;super::BUFFER_SIZE],
     ],priority= 1)]
     /// This mimics the host side SPI, if we are connected to the real device we
     /// should not spawn this.
@@ -304,16 +306,32 @@ mod app {
                 match Message::<V0_0_1>::try_parse(&mut cx.local.BUF.iter().cloned()) {
                     Some(message) => {
                         let payload = message.payload();
-                        info!("Got message : {:?}",payload);
+                        info!("Host got message : {:?}", payload);
                     }
                     None => debug!("SPI got malformed packet"),
                 }
+                for _ in 0..100 {
+                    cx.local.BUF.fill(0);
+                    cx.local
+                        .spim
+                        .transfer(cx.local.spim_cs, cx.local.BUF)
+                        .unwrap_or_else(|_| panic!());
 
+                    info!("Buffer after transfer {:?}", cx.local.BUF);
+                    // Convert in to a message.
+                    match Message::<V0_0_1>::try_parse(&mut cx.local.BUF.iter().cloned()) {
+                        Some(message) => {
+                            let payload = message.payload();
+                            info!("Host got message : {:?}", payload);
+                        }
+                        None => debug!("SPI got malformed packet"),
+                    }
+                    Mono::delay(100.millis()).await;
+                }
 
                 if !cx.local.BUF.map(|val| val != 255).iter().all(|val| *val) {
                     info!("Transfer did not work");
                 }
-                Mono::delay(1.secs()).await;
             }
         }
     }
@@ -420,7 +438,7 @@ mod app {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
 
                 // Lets say that the minimum speed we want to achive is 10 cm/s.
-                let angle = { 0.001f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angle = { 0.1f32 * MAGNET_SPACING as f32 / 10_000f32 };
                 let angvel =
                     angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
 
