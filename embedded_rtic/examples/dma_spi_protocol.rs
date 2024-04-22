@@ -15,70 +15,131 @@
 
 use controller as _; // global logger + panicking-behavior + memory layout
 
-const BUFFER_SIZE: usize = 100;
-
-// #[link_section = ".uninit.buffer"]
-// static mut WRITE_BUFFER: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
-// #[link_section = ".uninit.buffer"]
-// static mut READ_BUFFER: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
-
-// static WRITE_BUFFER_PTR: &'static mut [u8] = unsafe { &mut WRITE_BUFFER };
-// static READ_BUFFER_PTR: &'static mut [u8] = unsafe { &mut READ_BUFFER };
+const BUFFER_SIZE: usize = 10;
 
 #[rtic::app(
     device = nrf52840_hal::pac,
     dispatchers = [RTC0,RTC1,RTC2]
 )]
 mod app {
-    use defmt::info;
+
+    use arraydeque::{ArrayDeque, Wrapping};
+    use controller::{
+        car::{
+            constants::{ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
+            wrappers::MotorController,
+        },
+        esc::Esc,
+    };
+    use defmt::{debug, info, trace};
     use nrf52840_hal::{
         clocks::Clocks,
-        gpio::{p0, Level, Output, Pin, PushPull},
-        pac::{SPIM0, SPIS0},
+        gpio::{self, p0, p1, Level, Output, Pin, PushPull},
+        gpiote::Gpiote,
+        pac::{PWM0, SPIM1, SPIS0},
+        ppi::Ppi,
+        prelude::*,
         spim::{self, Frequency},
         spis,
         Spim,
+    };
+    use rtic_monotonics::{
+        nrf::timer::{fugit::ExtU64, Timer0 as Mono},
+        Monotonic,
     };
     use rtic_sync::{
         channel::{Receiver, Sender},
         make_channel,
     };
-    use shared::protocol::{
-        v0_0_1::{Payload, V0_0_1},
-        Message,
-        Parse,
-    };
+    use shared::controller::Pid;
+    const SMOOTHING: usize = 10;
 
     #[shared]
-    struct Shared {}
+    struct Shared {
+        measurement: (f32, u32),
+        reference: f32,
+    }
 
     // Local resources go here
     #[local]
     #[allow(dead_code)]
     struct Local {
         spis: Option<spis::Transfer<SPIS0, &'static mut [u8; super::BUFFER_SIZE]>>,
-        spim: Spim<SPIM0>,
+        spim: Spim<SPIM1>,
         spim_cs: Pin<Output<PushPull>>,
-        sender: Sender<'static, Payload, 100>,
-        receiver: Receiver<'static, Payload, 100>,
+        controller: MotorController<PWM0>,
+
+        gpiote: Gpiote,
+
+        // Sliding smoothing.
+        queue: ArrayDeque<i32, SMOOTHING, Wrapping>,
+
+        // Sends velocity updates
+        sender: Sender<'static, i32, 30>,
+
+        receiver: Receiver<'static, i32, 30>,
     }
 
     // For future pin reference look at https://infocenter.nordicsemi.com/index.jsp?topic=%2Fps_nrf52840%2Fpin.html&cp=3_0_0_6_0
     #[init(local = [
             #[link_section = ".uninit.buffer"]
-            BUF: [u8; super::BUFFER_SIZE] = [0; super::BUFFER_SIZE],
+            RXBUF: [u8; super::BUFFER_SIZE] = [0; super::BUFFER_SIZE],
+            #[link_section = ".uninit.buffer"]
+            TXBUF: [u8; super::BUFFER_SIZE] = [0; super::BUFFER_SIZE],
         ]
     )]
     fn init(cx: init::Context) -> (Shared, Local) {
         info!("init");
-        let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
+        let _clocks = Clocks::new(cx.device.CLOCK)
+            .enable_ext_hfosc()
+            .start_lfclk();
 
         let p0 = p0::Parts::new(cx.device.P0);
+        let p1 = p1::Parts::new(cx.device.P1);
 
-        let mosi = p0.p0_23.into_floating_input().degrade();
-        let miso = p0.p0_22.into_floating_input().degrade();
-        let sck = p0.p0_24.into_floating_input().degrade();
-        let cs = p0.p0_25.into_floating_input().degrade();
+        let (controller, sender, receiver, queue, gpiote) = {
+            let _source = p0.p0_15.into_push_pull_output(gpio::Level::High).degrade();
+            let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
+
+            let mut esc = Esc::new(cx.device.PWM0, motor);
+
+            let hal_effect = p0.p0_11.into_pullup_input().degrade();
+
+            let gpiote = {
+                let gpiote = Gpiote::new(cx.device.GPIOTE);
+                gpiote
+                    .channel0()
+                    .input_pin(&hal_effect)
+                    .lo_to_hi()
+                    .enable_interrupt();
+
+                let ppi_channels = nrf52840_hal::ppi::Parts::new(cx.device.PPI);
+                let mut ppi0 = ppi_channels.ppi0;
+                ppi0.set_event_endpoint(gpiote.channel0().event());
+                ppi0.set_task_endpoint(gpiote.channel0().task_out());
+                ppi0.enable();
+                gpiote.port().enable_interrupt();
+                gpiote
+            };
+
+            esc.speed(0).unwrap();
+
+            let queue = ArrayDeque::new();
+
+            let controller = Pid::new(esc);
+
+            let (sender, receiver) = make_channel!(i32, 30);
+
+            intermediary::spawn().ok();
+            control_loop::spawn().ok();
+
+            (controller, sender, receiver, queue, gpiote)
+        };
+
+        let mosi = p1.p1_12.into_floating_input().degrade();
+        let miso = p1.p1_13.into_floating_input().degrade();
+        let sck = p1.p1_14.into_floating_input().degrade();
+        let cs = p1.p1_11.into_floating_input().degrade();
 
         let spis_pins = spis::Pins {
             sck,
@@ -87,11 +148,12 @@ mod app {
             cs,
         };
         let spi = spis::Spis::new(cx.device.SPIS0, spis_pins);
-        let spis = spi.transfer(cx.local.BUF).unwrap_or_else(|_| panic!());
+        spi.enable_interrupt(spis::SpisEvent::End);
+        let spis = spi.transfer(cx.local.RXBUF).unwrap_or_else(|_| panic!());
 
-        let spim_mosi = p0.p0_15.into_push_pull_output(Level::Low).degrade();
-        let spim_miso = p0.p0_16.into_floating_input().degrade();
-        let spim_sck = p0.p0_17.into_push_pull_output(Level::Low).degrade();
+        let spim_mosi = p1.p1_07.into_push_pull_output(Level::Low).degrade();
+        let spim_miso = p1.p1_08.into_floating_input().degrade();
+        let spim_sck = p1.p1_10.into_push_pull_output(Level::Low).degrade();
         let spim_cs = p0.p0_18.into_push_pull_output(Level::Low).degrade();
 
         let spim_pins = spim::Pins {
@@ -99,90 +161,195 @@ mod app {
             mosi: Some(spim_mosi),
             miso: Some(spim_miso),
         };
-        let spim = Spim::new(cx.device.SPIM0, spim_pins, Frequency::K125, spim::MODE_0, 0);
+        let spim = Spim::new(cx.device.SPIM1, spim_pins, Frequency::M32, spim::MODE_0, 0);
 
-        register_measurement::spawn().ok();
         send_directive::spawn().ok();
 
-        let (sender, receiver) = make_channel!(Payload, 100);
+        let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
+        Mono::start(cx.device.TIMER0, token);
 
-        (Shared {}, Local {
-            spis: Some(spis),
-            spim,
-            spim_cs,
-            sender,
-            receiver,
-        })
+        (
+            Shared {
+                measurement: (0f32, 0),
+                reference: 0f32,
+            },
+            Local {
+                spis: Some(spis),
+                spim,
+                spim_cs,
+                controller,
+                sender,
+                receiver,
+                queue,
+                gpiote,
+            },
+        )
+    }
+    #[task(shared = [], local = [spis],priority = 3,binds = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0)]
+    fn register_measurement(cx: register_measurement::Context) {
+        info!("Waiting for message");
+        let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
+        info!("Read {:?}", buff);
+
+        buff.copy_from_slice(&[9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+        let was_end = transfer.is_event_triggered(spis::SpisEvent::End);
+        info!("Was end ? : {:?}", was_end);
+        let was_end = transfer.is_event_triggered(spis::SpisEvent::EndRx);
+        info!("Was end ? : {:?}", was_end);
+        transfer.reset_events();
+
+        *cx.local.spis = transfer.transfer(buff).ok();
     }
 
-    #[task(shared = [], local = [spis,receiver],priority = 1)]
-    async fn register_measurement(cx: register_measurement::Context) {
-        loop {
-            info!("Waiting for message");
-            let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
-            info!("Read {:?}", buff);
-
-            let next_msg = cx.local.receiver.recv().await.unwrap_or_else(|_| panic!());
-
-            let iter = Message::<V0_0_1>::new(next_msg);
-            let iter = iter.into_iter();
-            let mut ptr = 0;
-            for el in iter {
-                buff[ptr] = el;
-                ptr += 1;
-            }
-            *cx.local.spis = transfer.transfer(buff).ok()
-        }
-    }
-
-    #[task(shared = [], local = [spim,spim_cs],priority= 2)]
+    #[task(shared = [], local = [spim,spim_cs,
+            #[link_section = ".uninit.buffer"]
+            BUF: [u8; super::BUFFER_SIZE] = [1,2,3,4,5,6,7,8,9,10],
+    ],priority= 1)]
     async fn send_directive(cx: send_directive::Context) {
         loop {
-            let mut transfer_buffer = [0; super::BUFFER_SIZE];
-            info!("Writing {:?}", transfer_buffer);
+            for (idx, el) in (10..(10 + super::BUFFER_SIZE)).enumerate() {
+                cx.local.BUF[idx] = el as u8;
+                info!("Cx : {:?}", cx.local.BUF[idx]);
+            }
+            info!("Writing {:?}", cx.local.BUF);
+
             cx.local
                 .spim
-                .transfer(cx.local.spim_cs, &mut transfer_buffer)
-                .ok();
-
-            let data = Message::<V0_0_1>::try_parse(&mut transfer_buffer.into_iter());
-            match data {
-                Some(message) => info!("Got message {:?}", message.payload()),
-                None => {}
-            };
-            info!("Buffer after transfer {:?}", transfer_buffer);
+                .transfer(cx.local.spim_cs, cx.local.BUF)
+                .unwrap_or_else(|_| panic!());
+            info!("Buffer after transfer {:?}", cx.local.BUF);
+            if !cx.local.BUF.map(|val| val != 255).iter().all(|val| *val) {
+                info!("Transfer did not work");
+            }
+            Mono::delay(1.secs()).await;
         }
     }
 
-    #[task(local=[sender],priority = 1)]
-    async fn sender(cx: sender::Context) {
-        let sender = cx.local.sender;
-        sender
-            .send(Payload::CurrentVelocity {
-                velocity: 10,
-                time_us: 1,
-            })
-            .await
-            .unwrap_or_else(|_| panic!());
-        sender
-            .send(Payload::CurrentAngle {
-                angle: -10,
-                time_us: 1,
-            })
-            .await
-            .unwrap_or_else(|_| panic!());
-        sender
-            .send(Payload::CurrentDistance {
-                distance: 10,
-                time_us: 1,
-            })
-            .await
-            .unwrap_or_else(|_| panic!());
-        loop {}
+    #[task(
+        local=[
+            gpiote,
+            sender,
+            // The time for the previous magnet.
+            prev_time:Option<u64> = None,
+            // Wether or not we are on a rising or falling edge of the signal.
+            flank:bool = false
+        ],
+        binds=GPIOTE,
+        priority = 6
+    )]
+    fn compute_vel(cx: compute_vel::Context) {
+        let time = Mono::now().duration_since_epoch().to_micros();
+
+        if *cx.local.flank {
+            *cx.local.flank = false;
+            cx.local.gpiote.reset_events();
+            cx.local.gpiote.channel0().clear();
+            cx.local.gpiote.port().reset_events();
+        }
+        match cx.local.prev_time {
+            Some(value) => {
+                let dt = time - *value;
+                let angvel = (MAGNET_SPACING as u64) * 1_000_000 / (dt as u64);
+                let angvel = angvel / 10_000/* (DIFF as u64 / 3) */;
+                trace!("Angular velocity {:?}", angvel);
+                let vel = RADIUS * angvel;
+                trace!("Velocity : {:?} cm/s", vel);
+                *cx.local.prev_time = Some(time);
+
+                cx.local
+                    .sender
+                    .try_send(vel as i32)
+                    .expect("The message channel is broken");
+            }
+            None => {
+                *cx.local.prev_time = Some(time);
+            }
+        };
+
+        cx.local.gpiote.reset_events();
+        cx.local.gpiote.channel0().clear();
+        cx.local.gpiote.port().reset_events();
     }
+
+    #[task(local = [queue, receiver], shared = [measurement],priority=4)]
+    /// Acts as a trampoline for data processing thus, hopefully reducing the
+    /// time spent in `compute_vel`.
+    async fn intermediary(mut cx: intermediary::Context) {
+        info!("Waiting for message");
+        // Wait for a new velocity reading, smooth it using the queue and then set the
+        // average value in measurement.
+
+        while let Ok(vel) = cx.local.receiver.recv().await {
+            cx.local.queue.push_back(vel);
+            let avg = cx.local.queue.iter().sum::<i32>() / { SMOOTHING as i32 };
+            cx.shared
+                .measurement
+                .lock(|measurement| *measurement = (avg as f32, measurement.1 + 1));
+        }
+        debug!("Channel closed.");
+    }
+
+    #[task(local = [controller], shared = [measurement,reference],priority=5)]
+    /// Highest priority as this should be ran no matter what is running (aside
+    /// from measurements).
+    ///
+    /// Uses the PID to set an appropriate control signal for the motor.
+    /// Will re-run every sample time.
+    ///
+    /// NOTE! If we notice that we this takes too long, use [`Symex`](https://github.com/ivario123/symex) to get the
+    /// longest possible time the PID takes and subtract that form TS.
+    async fn control_loop(mut cx: control_loop::Context) {
+        let controller = cx.local.controller;
+        let mut previous = (0f32, 0);
+        loop {
+            let time = Mono::now();
+            let mut measurement = cx.shared.measurement.lock(|measurement| *measurement);
+            let reference = cx.shared.reference.lock(|reference| *reference);
+
+            if measurement.1 == previous.1 {
+                debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
+
+                // Lets say that the minimum speed we want to achive is 10 cm/s.
+                let angle = { 0.001f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angvel =
+                    angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
+
+                let vel = RADIUS as f32 * angvel;
+                info!("Expected min vel to be  {:?}", vel);
+                // Go a litle bit closer to 0 as we are sampeling faster than
+                // the wheel rotates.
+                //
+                // We could do something like subtract towards the minimum speed here.
+                // I am not sure on how we do this in a good way.
+                measurement.0 -= vel;
+                if measurement.0 < 0f32 {
+                    measurement.0 = 0f32;
+                }
+            } else {
+                previous = measurement;
+            }
+
+            info!("Previous speed {:?} target : {:?}", measurement, reference);
+
+            controller.register_measurement(measurement.0, measurement.1);
+            controller.follow([reference]);
+            let _actuation = controller
+                .actuate()
+                .expect("Example is broken this should work");
+
+            let outer = measurement;
+
+            cx.shared
+                .measurement
+                .lock(|measurement| *measurement = outer);
+
+            // Delay between entry time and actuation time.
+            Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
+        }
+    }
+
     #[idle]
     fn idle(_cx: idle::Context) -> ! {
-        sender::spawn().unwrap_or_else(|_| panic!());
         loop {}
     }
 }
