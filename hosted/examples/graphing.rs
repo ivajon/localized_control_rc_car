@@ -14,9 +14,8 @@
 //! [examples readme]: https://github.com/ratatui-org/ratatui/blob/main/examples/README.md
 #![feature(ascii_char)]
 
-use linux_embedded_hal::{spidev::SpiModeFlags, SpidevDevice};
+use linux_embedded_hal::{spidev::{SpiModeFlags, Spidev}, SpidevDevice};
 use rand::Rng;
-use rpi_embedded::spi::{Bus, Mode, SlaveSelect, Spi};
 use shared::protocol::{
     v0_0_1::{Payload, V0_0_1},
     Message, Parse,
@@ -374,7 +373,7 @@ pub struct MockSpi {
     target_value: f64,
     last_measured: f64,
     time_step: f64,
-    spi: SpidevDevice,
+    spi: Spidev,
 }
 
 impl MockSpi {
@@ -421,9 +420,18 @@ impl MockSpi {
                 let mut spi = spi.lock().await;
                 let mut buf = Vec::new();
                 let read = spi.spi.read(buf.as_mut_slice());
-                match shared::protocol::Message::<V0_0_1>::try_parse(&mut buf.iter()) {
-                    Some(Payload::CurrentVelocity { velocity, time_us }) => {
+                match shared::protocol::Message::<V0_0_1>::try_parse(&mut buf.into_iter()) {
+                    Some(message) => {
+                        match message.payload() {
+                            Payload::CurrentVelocity { velocity, time_us } => {
                         (spi.target_value, velocity as f64, time_us as f64)
+                    }
+                            _ => {
+                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        continue;
+
+                            }
+                        }
                     }
                     _ => {
                         tokio::time::sleep(Duration::from_millis(500)).await;
