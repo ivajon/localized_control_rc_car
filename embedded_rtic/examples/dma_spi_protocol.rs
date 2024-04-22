@@ -1,20 +1,19 @@
-//! Defines a simple showcase for how to use the [`Esc`](controller::esc::Esc).
+//! Composite example where we set the reference value via SPI and read the
+//! latest measurement over SPI.
 //!
-//! It simply changes the direction we are moving in.
+//! This example can be ran with or without a host, if you want to run it
+//! without a host, connect all of spis pins to the spim pins and spawn the send
+//! directive task.
 
 #![no_main]
 #![no_std]
 #![feature(type_alias_impl_trait)]
-#![feature(noop_waker)]
-#![feature(const_refs_to_static)]
-#![feature(const_mut_refs)]
 #![deny(clippy::all)]
 #![deny(warnings)]
-// use core::ptr::addr_of_mut;
 #![allow(static_mut_refs)]
 
 use controller as _;
-use shared::protocol::{v0_0_1::V0_0_1, Message}; // global logger + panicking-behavior + memory layout
+use shared::protocol::{v0_0_1::V0_0_1, Message};
 
 const BUFFER_SIZE: usize = Message::<V0_0_1>::MAX_SIZE;
 
@@ -60,6 +59,8 @@ mod app {
             Parse,
         },
     };
+
+    /// How big the smoothing window should be.
     const SMOOTHING: usize = 10;
 
     #[shared]
@@ -201,6 +202,7 @@ mod app {
             },
         )
     }
+
     #[task(shared = [measurement], local = [
            spis,
            command_sender,
@@ -223,12 +225,12 @@ mod app {
             None => debug!("SPI got malformed packet"),
         }
 
-        info!("Read {:?}", buff);
-
         let new_measurement = cx
             .shared
             .measurement
             .lock(|measurement| measurement.clone());
+
+        // Enqueue all of the bytes needed for the transfer.
         if new_measurement != *cx.local.previous {
             let new_message = Message::<V0_0_1>::new(Payload::CurrentVelocity {
                 velocity: new_measurement.0 as u32,
@@ -243,12 +245,9 @@ mod app {
             buff.fill(0);
         }
 
-        let was_end = transfer.is_event_triggered(spis::SpisEvent::End);
-        info!("Was end ? : {:?}", was_end);
-        let was_end = transfer.is_event_triggered(spis::SpisEvent::EndRx);
-        info!("Was end ? : {:?}", was_end);
         transfer.reset_events();
 
+        // Enqueue the next packet.
         *cx.local.spis = transfer.transfer(buff).ok();
     }
 
@@ -437,14 +436,13 @@ mod app {
             if measurement.1 == previous.1 {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
 
-                // Lets say that the minimum speed we want to achive is 10 cm/s.
                 let angle = { 0.1f32 * MAGNET_SPACING as f32 / 10_000f32 };
                 let angvel =
                     angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
-
                 let vel = RADIUS as f32 * angvel;
+
                 info!("Expected min vel to be  {:?}", vel);
-                // Go a litle bit closer to 0 as we are sampeling faster than
+                // Go a little bit closer to 0 as we are sampling faster than
                 // the wheel rotates.
                 //
                 // We could do something like subtract towards the minimum speed here.

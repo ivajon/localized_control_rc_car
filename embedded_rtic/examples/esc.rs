@@ -52,7 +52,7 @@ mod app {
 
             info!("FORWARDS!");
             // ~2-5 seems to be slowest possible forward velocity
-            esc.speed(24).unwrap();
+            esc.speed(500).unwrap();
             delay(500000000);
 
             info!("STOP!");

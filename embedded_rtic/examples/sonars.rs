@@ -23,6 +23,7 @@ mod app {
     use arraydeque::{behavior::Wrapping, ArrayDeque};
     use controller::car::constants::Sonar;
     use defmt::{error, info};
+    use embedded_hal::digital::OutputPin;
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Input, Output, Pin, PullDown, PushPull},

@@ -29,7 +29,7 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 150,
+        KP: 300,
         KI: 80,
         KD: 31,
         // 10^2
