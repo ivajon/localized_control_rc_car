@@ -424,6 +424,7 @@ impl MockSpi {
                 let mut spi = spi.lock().await;
                 let mut buf = Vec::new();
                 let _read = spi.spi.read(buf.as_mut_slice());
+                println!("Read data {:?}",buf);
                 match shared::protocol::Message::<V0_0_1>::try_parse(&mut buf.into_iter()) {
                     Some(message) => {
                         match message.payload() {
@@ -465,7 +466,6 @@ impl MockSpi {
                 hold_for_us: 0,
             })
             .collect();
-            println!("Sending {:?}",target);
             spi.spi.write(target.as_slice());
         }
     }
