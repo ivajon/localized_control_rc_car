@@ -14,11 +14,17 @@
 //! [examples readme]: https://github.com/ratatui-org/ratatui/blob/main/examples/README.md
 #![feature(ascii_char)]
 
+use linux_embedded_hal::{spidev::SpiModeFlags, SpidevDevice};
 use rand::Rng;
+use rpi_embedded::spi::{Bus, Mode, SlaveSelect, Spi};
+use shared::protocol::{
+    v0_0_1::{Payload, V0_0_1},
+    Message, Parse,
+};
 use std::{
     collections::HashMap,
     error::Error,
-    io::{self, Stdout},
+    io::{self, Read, Stdout, Write},
     pin::pin,
     sync::Arc,
 };
@@ -368,6 +374,7 @@ pub struct MockSpi {
     target_value: f64,
     last_measured: f64,
     time_step: f64,
+    spi: SpidevDevice,
 }
 
 impl MockSpi {
@@ -375,10 +382,13 @@ impl MockSpi {
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
     ) -> Vec<JoinHandle<()>> {
+        let spi = linux_embedded_hal::spidev::Spidev::open("/dev/spidev0.0").unwrap();
+
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
             last_measured: 0.,
             time_step: 0.,
+            spi,
         }));
         vec![
             tokio::spawn(Self::bogus_measurement(ret.clone(), measurement_writer)),
@@ -388,25 +398,39 @@ impl MockSpi {
 
     async fn bogus_measurement(spi: Arc<Mutex<Self>>, measurement_writer: MeasurementWriter) {
         loop {
-            let (target, mut measured, time_step) = {
+            // let (target, mut measured, time_step) = {
+            //     let mut spi = spi.lock().await;
+            //     spi.time_step += 1.;
+            //     let (target, measured, time_step) =
+            //         (spi.target_value, spi.last_measured, spi.time_step + 1.);
+            //     (target, measured, time_step)
+            // };
+            // if target > measured {
+            //     measured += 2.;
+            // } else if target < measured {
+            //     measured -= 2.;
+            // } else {
+            //     let rng = rand::thread_rng().gen_range((-1.)..1.);
+            //     measured += rng;
+            // }
+            // {
+            //     let mut spi = spi.lock().await;
+            //     spi.last_measured = measured;
+            // }
+            let (target, measured, time_step) = {
                 let mut spi = spi.lock().await;
-                spi.time_step += 1.;
-                let (target, measured, time_step) =
-                    (spi.target_value, spi.last_measured, spi.time_step + 1.);
-                (target, measured, time_step)
+                let mut buf = Vec::new();
+                let read = spi.spi.read(buf.as_mut_slice());
+                match shared::protocol::Message::<V0_0_1>::try_parse(&mut buf.iter()) {
+                    Some(Payload::CurrentVelocity { velocity, time_us }) => {
+                        (spi.target_value, velocity as f64, time_us as f64)
+                    }
+                    _ => {
+                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        continue;
+                    }
+                }
             };
-            if target > measured {
-                measured += 2.;
-            } else if target < measured {
-                measured -= 2.;
-            } else {
-                let rng = rand::thread_rng().gen_range((-1.)..1.);
-                measured += rng;
-            }
-            {
-                let mut spi = spi.lock().await;
-                spi.last_measured = measured;
-            }
 
             measurement_writer
                 .send(("measured".to_string(), (time_step, measured)))
@@ -424,6 +448,12 @@ impl MockSpi {
         while let Some(value) = refference_reader.recv().await {
             let mut spi = spi.lock().await;
             spi.target_value = value;
+            let mut target: Vec<u8> = Message::<V0_0_1>::new(Payload::SetSpeed {
+                velocity: value as u32,
+                hold_for_us: 0,
+            })
+            .collect();
+            spi.spi.write(target.as_slice());
         }
     }
 }
