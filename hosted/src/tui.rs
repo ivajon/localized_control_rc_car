@@ -45,7 +45,6 @@ impl Drop for TerminalWrapper {
 }
 
 /// Initiates the terminal.
-#[must_use]
 pub fn initiate_terminal() -> io::Result<TerminalWrapper> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();

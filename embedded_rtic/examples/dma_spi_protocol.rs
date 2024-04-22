@@ -225,10 +225,7 @@ mod app {
             None => debug!("SPI got malformed packet"),
         }
 
-        let new_measurement = cx
-            .shared
-            .measurement
-            .lock(|measurement| measurement.clone());
+        let new_measurement = cx.shared.measurement.lock(|measurement| *measurement);
 
         // Enqueue all of the bytes needed for the transfer.
         if new_measurement != *cx.local.previous {
@@ -290,7 +287,7 @@ mod app {
             for el in commands.clone().iter() {
                 let msg = el.clone();
                 for (idx, el) in msg.enumerate() {
-                    cx.local.BUF[idx] = el as u8;
+                    cx.local.BUF[idx] = el;
                     info!("Cx : {:?}", cx.local.BUF[idx]);
                 }
                 info!("Writing {:?}", cx.local.BUF);
@@ -338,17 +335,15 @@ mod app {
     #[task(shared = [reference],local=[command_receiver],priority = 3)]
     async fn reference_setter(mut cx: reference_setter::Context) {
         while let Ok(payload) = cx.local.command_receiver.recv().await {
-            match payload {
-                Payload::SetSpeed {
-                    velocity,
-                    hold_for_us: _hold_for_us,
-                } => {
-                    cx.shared
-                        .reference
-                        .lock(|reference| *reference = velocity as f32);
-                }
-                _ => {}
-            };
+            if let Payload::SetSpeed {
+                velocity,
+                hold_for_us: _hold_for_us,
+            } = payload
+            {
+                cx.shared
+                    .reference
+                    .lock(|reference| *reference = velocity as f32);
+            }
         }
     }
 
@@ -376,7 +371,7 @@ mod app {
         match cx.local.prev_time {
             Some(value) => {
                 let dt = time - *value;
-                let angvel = (MAGNET_SPACING as u64) * 1_000_000 / (dt as u64);
+                let angvel = (MAGNET_SPACING as u64) * 1_000_000 / dt;
                 let angvel = angvel / 10_000;
                 trace!("Angular velocity {:?}", angvel);
                 let vel = RADIUS * angvel;
@@ -472,10 +467,5 @@ mod app {
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
         }
-    }
-
-    #[idle]
-    fn idle(_cx: idle::Context) -> ! {
-        loop {}
     }
 }
