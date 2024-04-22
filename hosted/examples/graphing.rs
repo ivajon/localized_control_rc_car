@@ -393,20 +393,17 @@ impl MockSpi {
                 }
             };
             for el in read.into_iter() {
-                match el {
-                    Payload::CurrentVelocity { velocity, time_us } => {
-                        unwrap_or_break!(
-                            measurement_writer
-                                .send(("measured".to_string(), (time_us as f64, velocity as f64)))
-                                .await
-                        );
-                        unwrap_or_break!(
-                            measurement_writer
-                                .send(("target".to_string(), (time_us as f64, spi.target_value)))
-                                .await
-                        );
-                    }
-                    _ => {}
+                if let Payload::CurrentVelocity { velocity, time_us } = el {
+                    unwrap_or_break!(
+                        measurement_writer
+                            .send(("measured".to_string(), (time_us as f64, velocity as f64)))
+                            .await
+                    );
+                    unwrap_or_break!(
+                        measurement_writer
+                            .send(("target".to_string(), (time_us as f64, spi.target_value)))
+                            .await
+                    );
                 }
             }
 
@@ -552,7 +549,7 @@ async fn run_frontend(
                 return;
             }
         }
-        if let None = redraw_reader.recv().await {
+        if redraw_reader.recv().await.is_none() {
             break;
         }
     }
