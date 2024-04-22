@@ -1,42 +1,22 @@
-//! # [Ratatui] Chart example
-//!
-//! The latest version of this example is available in the [examples] folder in the repository.
-//!
-//! Please note that the examples are designed to be run against the `main` branch of the Github
-//! repository. This means that you may not be able to compile with the latest release version on
-//! crates.io, or the one that you have installed locally.
-//!
-//! See the [examples readme] for more information on finding examples that match the version of the
-//! library you are using.
-//!
-//! [Ratatui]: https://github.com/ratatui-org/ratatui
-//! [examples]: https://github.com/ratatui-org/ratatui/blob/main/examples
-//! [examples readme]: https://github.com/ratatui-org/ratatui/blob/main/examples/README.md
+//! Defines a short example that uses the [`Spi`] to read data using our
+//! [`protocol`](shared::protocol). It then plots the data using our [`tui`](hosted::tui)
+//! abstractions.
+
 #![feature(ascii_char)]
 
-use rand::Rng;
-use shared::protocol::{
-    v0_0_1::{Payload, V0_0_1},
-    Message, Parse,
+use hosted::{
+    spi::Spi,
+    tui::{
+        graph::{Graph, MeasurementWriter},
+        initiate_terminal,
+        input_box::{CommitReader, InputBox, KillReader},
+        TerminalWrapper,
+    },
 };
-use spidev::{SpiModeFlags, Spidev, SpidevOptions};
-use std::{
-    collections::HashMap,
-    error::Error,
-    io::{self, Read, Stdout, Write},
-    pin::pin,
-    sync::Arc,
-};
+use ratatui::layout::{Constraint, Layout};
+use shared::protocol::v0_0_1::{Payload, V0_0_1};
+use std::{error::Error, sync::Arc};
 
-use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
-use ratatui::{
-    prelude::*,
-    widgets::{block::Title, Axis, Block, Borders, Chart, Dataset, Paragraph},
-};
 use tokio::{
     sync::{mpsc, Mutex},
     task::JoinHandle,
@@ -371,101 +351,80 @@ impl InputBox {
 
 pub struct MockSpi {
     target_value: f64,
-    last_measured: f64,
-    time_step: f64,
-    spi: Spidev,
+    spi: Spi<V0_0_1>,
+}
+
+macro_rules! unwrap_or_break {
+    ($tokens:expr) => {
+        match $tokens {
+            Ok(_) => {}
+            _ => break,
+        }
+    };
 }
 
 impl MockSpi {
     fn init(
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
-    ) -> Vec<JoinHandle<()>> {
-        let mut spi = Spidev::open("/dev/spidev0.0").unwrap();
-        
-        let options = SpidevOptions::new().bits_per_word(8).max_speed_hz(1_000_000).mode(SpiModeFlags::SPI_MODE_0).build();
-
-        spi.configure(&options).unwrap();
+    ) -> Option<Vec<JoinHandle<()>>> {
+        let spi = Spi::init("/dev/spidev0.0")?;
 
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
-            last_measured: 0.,
-            time_step: 0.,
             spi,
         }));
-        vec![
-            tokio::spawn(Self::bogus_measurement(ret.clone(), measurement_writer)),
+        Some(vec![
+            tokio::spawn(Self::measurement(ret.clone(), measurement_writer)),
             tokio::spawn(Self::set_reference(ret.clone(), reference_reader)),
-        ]
+        ])
     }
 
-    async fn bogus_measurement(spi: Arc<Mutex<Self>>, measurement_writer: MeasurementWriter) {
+    async fn measurement(spi: Arc<Mutex<Self>>, measurement_writer: MeasurementWriter) {
         loop {
-            // let (target, mut measured, time_step) = {
-            //     let mut spi = spi.lock().await;
-            //     spi.time_step += 1.;
-            //     let (target, measured, time_step) =
-            //         (spi.target_value, spi.last_measured, spi.time_step + 1.);
-            //     (target, measured, time_step)
-            // };
-            // if target > measured {
-            //     measured += 2.;
-            // } else if target < measured {
-            //     measured -= 2.;
-            // } else {
-            //     let rng = rand::thread_rng().gen_range((-1.)..1.);
-            //     measured += rng;
-            // }
-            // {
-            //     let mut spi = spi.lock().await;
-            //     spi.last_measured = measured;
-            // }
-            let (target, measured, time_step) = {
-                let mut spi = spi.lock().await;
-                let mut data = [0;100]; 
-                let _read = spi.spi.read(&mut data);
-                match shared::protocol::Message::<V0_0_1>::try_parse(&mut data.into_iter()) {
-                    Some(message) => {
-                        match message.payload() {
-                            Payload::CurrentVelocity { velocity, time_us } => {
-                        (spi.target_value, velocity as f64, time_us as f64)
-                    }
-                            _ => {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
-                        continue;
-
-                            }
-                        }
-                    }
-                    _ => {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
-                        continue;
-                    }
+            let mut spi = spi.lock().await;
+            // Read a command, if it does not work, discard it and re-try.
+            let read = match spi.spi.read() {
+                Ok(read) => read,
+                Err(_) => {
+                    // Wait for a longer time before polling as there is no new data to be read..
+                    tokio::time::sleep(Duration::from_millis(500)).await;
+                    continue;
                 }
             };
+            for el in read.into_iter() {
+                match el {
+                    Payload::CurrentVelocity { velocity, time_us } => {
+                        unwrap_or_break!(
+                            measurement_writer
+                                .send(("measured".to_string(), (time_us as f64, velocity as f64)))
+                                .await
+                        );
+                        unwrap_or_break!(
+                            measurement_writer
+                                .send(("target".to_string(), (time_us as f64, spi.target_value)))
+                                .await
+                        );
+                    }
+                    _ => {}
+                }
+            }
 
-            measurement_writer
-                .send(("measured".to_string(), (time_step, measured)))
-                .await
-                .unwrap();
-            measurement_writer
-                .send(("target".to_string(), (time_step, target)))
-                .await
-                .unwrap();
             tokio::time::sleep(Duration::from_millis(100)).await;
         }
     }
 
-    async fn set_reference(spi: Arc<Mutex<Self>>, mut refference_reader: CommitReader) {
-        while let Some(value) = refference_reader.recv().await {
+    async fn set_reference(spi: Arc<Mutex<Self>>, mut reference_reader: CommitReader) {
+        while let Some(value) = reference_reader.recv().await {
             let mut spi = spi.lock().await;
             spi.target_value = value;
-            let mut target: Vec<u8> = Message::<V0_0_1>::new(Payload::SetSpeed {
+            match spi.spi.write(Payload::SetSpeed {
                 velocity: value as u32,
                 hold_for_us: 0,
-            })
-            .collect();
-            spi.spi.write(target.as_slice());
+            }) {
+                Ok(_) => {}
+                _ => break,
+            }
         }
     }
 }
@@ -477,26 +436,30 @@ async fn thread_manager(
 ) {
     let _ = kill_command.recv().await;
 
-    frontend_killer.send(()).await.unwrap();
+    // Do not unwrap would be strange if the thread managed died due to a process having died.
+    let _ = frontend_killer.send(()).await;
     threads.into_iter().for_each(|handle| {
         handle.abort();
     });
 }
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // console_subscriber::init();
 
-    start_app().await;
+    let _ = start_app().await;
     Ok(())
 }
 
-async fn start_app() {
+/// Spawns all of the threads that are needed for the app to work
+/// and does not return until all threads have exited.
+async fn start_app() -> Result<(), ()> {
     let (redraw_writer, redraw_reader) = mpsc::channel(1024);
 
     // setup terminal
-    let (terminal, chart_area, input_area) = initiate_terminal();
+    let terminal = initiate_terminal();
 
-    let terminal = Arc::new(Mutex::new(terminal));
+    let terminal = Arc::new(Mutex::new(terminal.map_err(|_| ())?));
 
     // Spawn everything for the graph.
     let (graph, register_channel, graph_handles) = Graph::init(redraw_writer.clone());
@@ -504,7 +467,19 @@ async fn start_app() {
     let (input, commit, kill, input_handles) = InputBox::init(redraw_writer);
 
     // TODO! Replace this with the real SPI manager.
-    let mock_spi_channels: Vec<JoinHandle<()>> = MockSpi::init(register_channel, commit);
+    let mock_spi_channels: Vec<JoinHandle<()>> = match MockSpi::init(register_channel, commit) {
+        Some(value) => value,
+        None => {
+            // Kill all threads if we encountered an error.
+            for el in graph_handles {
+                el.abort();
+            }
+            for el in input_handles {
+                el.abort();
+            }
+            return Err(());
+        }
+    };
 
     /*
        Manages all of the tasks, if the frontend_killer gets a message the thread_manager exists the program by aborting
@@ -515,8 +490,6 @@ async fn start_app() {
     // Spawn the frontend renderer.
     let mut handles = vec![tokio::spawn(run_frontend(
         terminal.clone(),
-        chart_area,
-        input_area,
         graph,
         input,
         reader,
@@ -534,52 +507,26 @@ async fn start_app() {
 
     // Block until all threads exit
     let _ = kill_handle.await;
-
-    let mut terminal = terminal.lock().await;
-    restore_terminal(&mut terminal);
+    Ok(())
 }
 
-fn initiate_terminal() -> (Terminal<CrosstermBackend<Stdout>>, Rect, Rect) {
-    enable_raw_mode().unwrap();
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture).unwrap();
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend).unwrap();
-    let frame = terminal.get_frame();
-    let area = frame.size();
-
-    let vertical = Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
-
-    let [chart, text_area] = vertical.areas(area);
-    (terminal, chart, text_area)
-}
-
-fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<Stdout>>) {
-    // restore terminal
-    let _ = disable_raw_mode();
-    let _ = execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    );
-    let _ = terminal.show_cursor();
-}
-
-async fn run_frontend<'a, B: Backend>(
-    terminal: Arc<Mutex<Terminal<B>>>,
-    _chart_area: Rect,
-    _input_area: Rect,
+/// Draws the frontend of the application.
+async fn run_frontend(
+    terminal: Arc<Mutex<TerminalWrapper>>,
     graph: Arc<Mutex<Box<Graph>>>,
     input: Arc<Mutex<Box<InputBox>>>,
     mut kill_reader: mpsc::Receiver<()>,
     mut redraw_reader: mpsc::Receiver<()>,
 ) {
-    while redraw_reader.recv().await.is_some() {
+    loop {
         if kill_reader.try_recv().is_ok() {
             break;
         }
         {
+            // Acquire terminal first for the shortest possible critical sections.
             let mut terminal = terminal.lock().await;
+
+            // Grab the two widgets.
 
             let input = {
                 let input = input.lock().await;
@@ -604,6 +551,9 @@ async fn run_frontend<'a, B: Backend>(
             if res.is_err() {
                 return;
             }
+        }
+        if let None = redraw_reader.recv().await {
+            break;
         }
     }
 }

@@ -1,8 +1,31 @@
+use std::{io::Read, path::Path};
 
+use shared::protocol::{Message, Parse, Version};
+use spidev::{spidevioctl::spi_ioc_transfer, SpiModeFlags, Spidev, SpidevOptions};
 
+/// Enumerates the accounted for edge-cases when using the [`Spi`].
+pub enum Error {
+    /// Thrown when there is no data to read on the device.
+    NothingToRead,
+    /// Thrown when the data was not a value [`Message`]
+    InvalidData,
 
+    /// A generic io error.
+    IoError(std::io::Error),
+}
 
+pub struct Spi<V: Version> {
+    spi: Spidev,
+    buffered: Vec<V::Payload>,
+}
 
+impl<V: Version<BusItem = u8>> Spi<V> {
+    /// Creates a neat SPI abstraction that allows us to read/write protocol packets.
+    pub fn init<P: AsRef<Path>>(path: P) -> Option<Self> {
+        let mut spi = match Spidev::open(path) {
+            Ok(value) => value,
+            _ => return None,
+        };
 
         let options = SpidevOptions::new()
             .bits_per_word(8)
