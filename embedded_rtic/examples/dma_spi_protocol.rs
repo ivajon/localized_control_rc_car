@@ -172,11 +172,11 @@ mod app {
             mosi: Some(spim_mosi),
             miso: Some(spim_miso),
         };
-        let spim = Spim::new(cx.device.SPIM1, spim_pins, Frequency::M32, spim::MODE_0, 0);
+        let spim = Spim::new(cx.device.SPIM1, spim_pins, Frequency::M1, spim::MODE_0, 0);
 
         let (command_sender, command_receiver) = make_channel!(Payload, 30);
 
-        send_directive::spawn().ok();
+        // send_directive::spawn().ok();
         reference_setter::spawn().ok();
 
         let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
