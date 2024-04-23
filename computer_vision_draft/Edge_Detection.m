@@ -86,7 +86,7 @@ for i = 1:length(imds.Files)
 end
 
 % Create video with 20 fps
-v = VideoWriter("videos/hough_test");
+v = VideoWriter("videos/hough_test",'MPEG-4');
 v.FrameRate = 20;
 open(v)
 writeVideo(v,M)
