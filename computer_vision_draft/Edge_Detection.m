@@ -4,6 +4,10 @@
 imds = imageDatastore("capture1\"); %Get images
 centerPoint = [120,140]; %Initialization values for centerpoint, arbitrary
 
+%Create struct to store video frames
+loops = length(imds.Files);
+M(loops) = struct('cdata',[],'colormap',[]);
+
 %Loop through a directory containing images
 for i = 1:length(imds.Files)
     tic
@@ -20,8 +24,8 @@ for i = 1:length(imds.Files)
    edgeX = edge(image1,"prewitt",0.02,"horizontal");
 
    %Extract lines
-   [Hx,T,R] = hough(edgeX,'RhoResolution',1,'Theta',[-89:0.1:-75 75:0.1:89]);
-   P  = houghpeaks(Hx,10);
+   [Hx,T,R] = hough(edgeX,'RhoResolution',1,'Theta',[-88:0.1:-75 75:0.1:88]);
+   P  = houghpeaks(Hx,20);
    lines = houghlines(edgeX,T,R,P,'FillGap',10,'MinLength',50);
 
     %Plot lines across entire image to get binary mask containing stacked
@@ -48,6 +52,9 @@ for i = 1:length(imds.Files)
         while(notOnLine)
             drivableArea(row,col) = 1;
             row = row -1;
+            if(row == 0)
+                break
+            end
             if(drivingLimit(row,col) == 1)
                 notOnLine = false;
             end
@@ -59,19 +66,28 @@ for i = 1:length(imds.Files)
     end
 
     %Weighted average filter for center point prediction
-    pastWeight = 0.9;
+    pastWeight = 0.7;
     centerPoint(1) = centerPoint(1)*pastWeight + minRow*(1-pastWeight);
     centerPoint(2) = centerPoint(2)*pastWeight+ round(mean( find(drivableArea(minRow+1,:)==1)))*(1-pastWeight);
     
 
    t  = toc;
    fprintf("%f Hz\n",1/t)
-    
+   
       %Overlay drivability mask and display centerpoint as red circle
      figure(1)
      drivabilityImage = labeloverlay(image1,drivableArea);
      drivabilityImage = insertShape(drivabilityImage,"filled-circle",[centerPoint(2),centerPoint(1),5],"Color","red");
      drivabilityImage = insertText(drivabilityImage,[0 0],sprintf("Rows from bottom: %i",size(drivabilityImage,2)-minRow));
      imshow(drivabilityImage,"Border","tight","InitialMagnification",400)
- 
+
+     %Get the current frame
+     M(i) = getframe;
 end
+
+% Create video with 20 fps
+v = VideoWriter("videos/hough_test");
+v.FrameRate = 20;
+open(v)
+writeVideo(v,M)
+close(v)
