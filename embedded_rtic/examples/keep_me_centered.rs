@@ -20,13 +20,16 @@ use controller as _; // global logger + panicking-behavior + memory layout
 
 mod app {
 
-    use controller::compute_distance;
+    use core::hint::unreachable_unchecked;
+
+    use controller::{car::wrappers::ServoController, compute_distance, servo::Servo};
     use defmt::info;
     use embedded_hal::digital::OutputPin;
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Input, Output, Pin, PullDown, PushPull},
         gpiote::*,
+        pac::PWM0,
         ppi,
         prelude::*,
     };
@@ -69,11 +72,13 @@ mod app {
         echo3: Pin<Input<PullDown>>,
         receiver_right: Receiver<'static, u32, CAPACITY>,
 
-        receiver_sonar_packets: Receiver<'static, ((u32, u32), u64), CAPACITY>,
-        sender_sonar_packets: Sender<'static, ((u32, u32), u64), CAPACITY>,
+        receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
+        sender_sonar_packets: Sender<'static, ((u32, u32), u32), CAPACITY>,
 
         senders: [Sender<'static, u32, CAPACITY>; 3],
         times: [Instant; 3],
+
+        servo_controller: ServoController<PWM0>,
     }
 
     #[allow(dead_code)]
@@ -146,6 +151,14 @@ mod app {
             gpiote
         };
 
+        let servo_controller = {
+            let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
+            let servo = Servo::new(cx.device.PWM0, motor);
+            let mut controller = ServoController::new(servo);
+            controller.follow([0]);
+            controller
+        };
+
         // Pair forward sonars sender and receiver
         let (sender, _receiver_forward) = make_channel!(u32, CAPACITY);
 
@@ -157,7 +170,7 @@ mod app {
 
         // Channel for packed sonar data.
         let (sender_sonar_packets, receiver_sonar_packets) =
-            make_channel!(((u32, u32), u64), CAPACITY);
+            make_channel!(((u32, u32), u32), CAPACITY);
 
         // Array with respective senders
         let senders = [sender, sender2, sender3];
@@ -167,6 +180,9 @@ mod app {
 
         let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
         Mono::start(cx.device.TIMER0, token);
+
+        trigger_timestamped::spawn().ok();
+        controll_loop::spawn().ok();
 
         (Shared { gpiote }, Local {
             trig,
@@ -182,6 +198,7 @@ mod app {
             receiver_sonar_packets,
             senders,
             times,
+            servo_controller,
         })
     }
 
@@ -219,6 +236,51 @@ mod app {
             gpiote.channel1().clear();
             gpiote.channel2().clear();
         });
+    }
+
+    #[task(priority = 1, local = [receiver_sonar_packets,servo_controller])]
+    async fn controll_loop(cx: controll_loop::Context) {
+        let prev = None;
+        loop {
+            let start_time = Mono::now();
+            // This should ensure that the sampling time is correct.
+
+            // Dequeue all of the measured values and grab the latest one
+            let mut latest = prev.clone();
+            // If we have more than one value recorded we discard the previous values.
+            while let Ok(new) = cx.local.receiver_sonar_packets.try_recv() {
+                latest = Some(new);
+            }
+
+            if latest.is_none() {
+                Mono::delay(1.secs()).await;
+                continue;
+            }
+
+            // TODO! Add in some way to cope with to slow measurements.
+            if latest == prev {
+                todo!()
+            }
+
+            // Previous check makes this safe.
+            let latest = unsafe { latest.unwrap_or_else(|| unreachable_unchecked()) };
+
+            let ((dl, dr), ts) = latest;
+
+            let diff = (dl as i32) - (dr as i32);
+
+            // Register measurement and actuate.
+            cx.local.servo_controller.register_measurement(diff, ts);
+            cx.local
+                .servo_controller
+                .actuate()
+                .unwrap_or_else(|_| panic!());
+
+            Mono::delay_until(
+                start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
+            )
+            .await;
+        }
     }
 
     #[task(priority = 2, local = [trig], shared = [gpiote])]
@@ -268,16 +330,10 @@ mod app {
         // Set low is always valid.
         cx.local.trig3.set_low().unwrap();
     }
-
-    #[task(priority = 1, local = [receiver_sonar_packets])]
-    async fn controll_loop(_cx:controll_loop::Context) {
-
-    }
-
     #[task(priority = 2,local = [receiver_left,receiver_right,sender_sonar_packets])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(cx: trigger_timestamped::Context) {
-        let mut time_stamp: u64 = 0;
+        let mut time_stamp: u32 = 0;
         loop {
             // Receive data from the second sonar
             trigger_left::spawn().unwrap_or_else(|_| panic!());

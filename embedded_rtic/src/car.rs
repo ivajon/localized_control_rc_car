@@ -38,6 +38,17 @@ pub mod constants {
         TIMESCALE: 1_000_000,
     };
 
+    /// The PID parameters for the ESC.
+    pub const SERVO_PID_PARAMS: PidParams = PidParams {
+        KP: 60,
+        KI: 30,
+        KD: 11,
+        // 10^2
+        SCALE: 2,
+        TS: 250_000, // 4 Hz should probly be higher
+        TIMESCALE: 1_000_000,
+    };
+
     /// The message queue capacity.
     pub const CAPACITY: usize = 5;
 
@@ -91,6 +102,22 @@ pub mod wrappers {
         { ESC_PID_PARAMS.TS },
         1000,
         -1000,
+        { ESC_PID_PARAMS.TIMESCALE },
+        { ESC_PID_PARAMS.SCALE },
+    >;
+
+    /// A wrapper around the [`Pid`] controller with predefined coefficients.
+    pub type ServoController<PWM> = Pid<
+        crate::servo::Error,
+        crate::servo::Servo<PWM>,
+        i32,
+        1,
+        { ESC_PID_PARAMS.KP },
+        { ESC_PID_PARAMS.KI },
+        { ESC_PID_PARAMS.KD },
+        { ESC_PID_PARAMS.TS },
+        15,
+        -15,
         { ESC_PID_PARAMS.TIMESCALE },
         { ESC_PID_PARAMS.SCALE },
     >;
