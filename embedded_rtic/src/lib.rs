@@ -58,8 +58,10 @@
 #![allow(clippy::manual_range_contains)]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
+use car::{constants::CAPACITY, wrappers::Instant};
 use defmt_rtt as _; // global logger
-use panic_probe as _; // memory layout
+use panic_probe as _;
+use rtic_sync::channel::Sender; // memory layout
 
 pub mod car;
 pub mod esc;
@@ -86,5 +88,35 @@ defmt::timestamp!("{=usize}", {
 pub fn exit() -> ! {
     loop {
         cortex_m::asm::bkpt();
+    }
+}
+
+/// Computes the distance for a specific sensor channel and sends that in the
+/// specified [`Sender`].
+pub fn compute_distance(
+    sonar: usize,
+    channels: &mut [Sender<'static, u32, CAPACITY>],
+    times: &mut [Instant],
+    time: Instant,
+) {
+    let zero = Instant::from_ticks(0);
+
+    if times[sonar] == zero {
+        times[sonar] = time;
+    } else {
+        let distance = time
+            .checked_duration_since(times[sonar])
+            .unwrap()
+            .to_micros()
+            / 56;
+        match channels[sonar].try_send(distance as u32) {
+            Ok(_) => {}
+            _ => {
+                defmt::error!(
+                    "Distance FORWARD did not fit in to the buffer, scheduling is probably broken."
+                );
+            }
+        }
+        times[sonar] = zero;
     }
 }

@@ -38,6 +38,9 @@ pub mod constants {
         TIMESCALE: 1_000_000,
     };
 
+    /// The message queue capacity.
+    pub const CAPACITY: usize = 5;
+
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
 
@@ -69,7 +72,12 @@ pub mod constants {
 
 /// Defines wrapper types that make the [`rtic`] code easier to read.
 pub mod wrappers {
+    use rtic_monotonics::nrf::timer::Timer0 as Mono;
+
     use super::{constants::ESC_PID_PARAMS, Pid};
+
+    /// The duration type.
+    pub type Instant = <Mono as rtic_monotonics::Monotonic>::Instant;
 
     /// A wrapper around the [`Pid`] controller with predefined coefficients.
     pub type MotorController<PWM> = Pid<
