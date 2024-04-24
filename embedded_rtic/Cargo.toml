@@ -36,14 +36,6 @@ incremental = false
 opt-level = "s"         # <-
 overflow-checks = true  # <-
 
-# cargo test
-[profile.test]
-codegen-units = 1
-debug = 2
-debug-assertions = true # <-
-incremental = false
-opt-level = "s"         # <-
-overflow-checks = true  # <-
 
 # cargo build/run --release
 [profile.release]

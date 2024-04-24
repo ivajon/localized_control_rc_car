@@ -6,6 +6,7 @@ use nrf52840_hal::{
     pwm::{Channel, Instance, Pwm},
     time::U32Ext,
 };
+use shared::controller::Channel as ControllerChannel;
 
 use self::sealed::Remap;
 use crate::wrapper::{Degrees, Exti32};
@@ -94,6 +95,14 @@ impl<PWM: Instance> Servo<PWM> {
         self.pwm
             .set_duty_on(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
+    }
+}
+
+impl<I: Instance> ControllerChannel<Error> for Servo<I> {
+    type Output = i32;
+
+    fn set(&mut self, value: Self::Output) -> Result<(), Error> {
+        self.angle(value.deg())
     }
 }
 
