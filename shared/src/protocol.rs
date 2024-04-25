@@ -2,6 +2,7 @@
 
 use core::marker::PhantomData;
 pub mod v0_0_1;
+pub mod v0_0_2;
 
 pub trait Version {
     const HEADER_SIZE: usize = 10;
@@ -34,6 +35,9 @@ where
 {
     /// The maximum packet size.
     pub const MAX_SIZE: usize = { V::PACKET_SIZE + 1 };
+    
+    pub const MAX_PACKET_SIZE:usize = {V::PACKET_SIZE};
+    pub const MAX_PACKETS:usize = {Self::MAX_SIZE / Self::MAX_PACKET_SIZE};
 
     pub fn new(payload: V::Payload) -> Self {
         Self {
