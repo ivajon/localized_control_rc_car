@@ -308,7 +308,7 @@ mod app {
             // This should ensure that the sampling time is correct.
 
             // Dequeue all of the measured values and grab the latest one
-            let mut latest = prev.clone();
+            let mut latest = prev;
             // If we have more than one value recorded we discard the previous values.
             while let Ok(new) = cx.local.receiver_sonar_packets.try_recv() {
                 latest = Some(new);
