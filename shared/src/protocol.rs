@@ -33,11 +33,10 @@ impl<V: Version> Message<V>
 where
     <V::Payload as IntoIterator>::IntoIter: Clone,
 {
+    pub const MAX_PACKETS: usize = { Self::MAX_SIZE / Self::MAX_PACKET_SIZE };
+    pub const MAX_PACKET_SIZE: usize = { V::PACKET_SIZE };
     /// The maximum packet size.
     pub const MAX_SIZE: usize = { V::PACKET_SIZE + 1 };
-    
-    pub const MAX_PACKET_SIZE:usize = {V::PACKET_SIZE};
-    pub const MAX_PACKETS:usize = {Self::MAX_SIZE / Self::MAX_PACKET_SIZE};
 
     pub fn new(payload: V::Payload) -> Self {
         Self {
