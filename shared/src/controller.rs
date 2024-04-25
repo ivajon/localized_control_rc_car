@@ -248,6 +248,9 @@ where
         self.integral +=
             (Output::half_size(avg / two).map_err(|_| ControllerError::ValueToLarge)?) * ts
                 / time_scale;
+
+        self.integral = self.integral.max(threshold_min).min(threshold_max);
+
         let i = self.integral * ki;
 
         // Compute the rate of change between previous time-step and this time-step.
@@ -272,7 +275,8 @@ where
 }
 
 #[macro_export]
-/// Makes the instantiation of a new [`PID`](Pid) controller a bit more readable.
+/// Makes the instantiation of a new [`PID`](Pid) controller a bit more
+/// readable.
 ///
 /// Syntax :
 ///
@@ -309,37 +313,33 @@ where
 /// ```
 macro_rules! pid {
     (
-        // Error,
-        // Interface,
-        // Output,
-        buffer_size:$buffer:literal,
-        kp:$kp:literal,
-        ki:$ki:literal,
-        kd:$kd:literal,
-        sample_time:$ts:literal,
-        threshold_max:$max:literal,
-        threshold_min:$min:literal,
-        time_scale:$time_scale:literal,
-        fixed_point:$fixed_point:literal,
-        output:$channel:tt
+        buffer_size:
+        $buffer:literal,kp:
+        $kp:literal,ki:
+        $ki:literal,kd:
+        $kd:literal,sample_time:
+        $ts:literal,threshold_max:
+        $max:literal,threshold_min:
+        $min:literal,time_scale:
+        $time_scale:literal,fixed_point:
+        $fixed_point:literal,output:
+        $channel:tt
     ) => {{
         let ret: Pid<_, _, _, $buffer, $kp, $ki, $kd, $ts, $max, $min, $time_scale, $fixed_point> =
             Pid::new($channel);
         ret
     }};
     (
-        // Error,
-        // Interface,
-        // Output,
-        kp:$kp:literal,
-        ki:$ki:literal,
-        kd:$kd:literal,
-        sample_time:$ts:literal,
-        threshold_max:$max:literal,
-        threshold_min:$min:literal,
-        time_scale:$time_scale:literal,
-        fixed_point:$fixed_point:literal,
-        output:$channel:tt
+        kp:
+        $kp:literal,ki:
+        $ki:literal,kd:
+        $kd:literal,sample_time:
+        $ts:literal,threshold_max:
+        $max:literal,threshold_min:
+        $min:literal,time_scale:
+        $time_scale:literal,fixed_point:
+        $fixed_point:literal,output:
+        $channel:tt
     ) => {{
         let ret: Pid<_, _, _, 1, $kp, $ki, $kd, $ts, $max, $min, $time_scale, $fixed_point> =
             Pid::new($channel);
@@ -351,19 +351,18 @@ pub mod prelude {
 
     impl Channel<()> for f32 {
         type Output = f32;
+
         fn set(&mut self, value: f32) -> Result<(), ()> {
             *self = value;
             Ok(())
         }
     }
-    pub use super::Channel;
-    pub use super::Pid;
+    pub use super::{Channel, Pid};
     pub use crate::pid;
 }
 
 mod sealed {
-    use core::convert::Infallible;
-    use core::fmt::Debug;
+    use core::{convert::Infallible, fmt::Debug};
 
     use super::ControllerError;
 
@@ -377,6 +376,7 @@ mod sealed {
 
     impl Convert<i32> for i32 {
         type Error = Infallible;
+
         fn convert(self) -> Result<i32, Self::Error> {
             Ok(self)
         }
@@ -384,6 +384,7 @@ mod sealed {
 
     impl Convert<f32> for i32 {
         type Error = Infallible;
+
         fn convert(self) -> Result<f32, Self::Error> {
             Ok(self as f32)
         }
@@ -429,11 +430,13 @@ mod sealed {
 use sealed::*;
 
 impl DoubleSize for i32 {
-    type Ret = i64;
     type Error = ();
+    type Ret = i64;
+
     fn double_size(self) -> Self::Ret {
         self.into()
     }
+
     fn half_size(value: Self::Ret) -> Result<Self, Self::Error>
     where
         Self: Sized,
@@ -443,11 +446,13 @@ impl DoubleSize for i32 {
 }
 
 impl DoubleSize for f32 {
-    type Ret = f64;
     type Error = Infallible;
+    type Ret = f64;
+
     fn double_size(self) -> Self::Ret {
         self.into()
     }
+
     fn half_size(value: Self::Ret) -> Result<Self, Self::Error>
     where
         Self: Sized,
@@ -463,6 +468,7 @@ mod test {
 
     impl<Iter: Iterator<Item = i32>> Channel<()> for (Iter, i32) {
         type Output = i32;
+
         fn set(&mut self, value: i32) -> Result<(), ()> {
             self.1 = value;
             Ok(())
@@ -471,6 +477,7 @@ mod test {
 
     impl Channel<()> for i32 {
         type Output = f32;
+
         fn set(&mut self, value: f32) -> Result<(), ()> {
             *self = value as i32;
             Ok(())
@@ -587,15 +594,16 @@ mod test {
     //         pid.register_measurement(counter as f32, 0);
     //         println!("Actuation : {actuation:?}");
     //     }
-    //     // assert!(actuation.actuation == 2 * (actuation.reference - actuation.measured) + 5 / 2 + 5);
+    //     // assert!(actuation.actuation == 2 * (actuation.reference -
+    // actuation.measured) + 5 / 2 + 5);
     //
     //     pid.register_measurement(2f32, 1);
     //     let actuation = pid.actuate().unwrap();
     //     println!("First actuation : {actuation:?}");
-    //     // Accumulated sum + average from previous time step to the current time step.
-    //     // assert!(
-    //     //     actuation.actuation // == 2 * (actuation.reference - actuation.measured) + (5 + 4) / 2 + 2 - 1
-    //     // );
+    //     // Accumulated sum + average from previous time step to the current time
+    // step.     // assert!(
+    //     //     actuation.actuation // == 2 * (actuation.reference -
+    // actuation.measured) + (5 + 4) / 2 + 2 - 1     // );
     //     assert!(false);
     // }
 

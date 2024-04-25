@@ -1,7 +1,38 @@
 [package]
 name = "hosted"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+ratatui = "0.26.2"
+crossterm = {git = "https://github.com/ivario123/crossterm_async", features = ["event-stream"]}
+tokio = { version = "1.37.0", features = ["full","time","tracing"] }
 #opencv = "0.89.0"
+futures-core = "0.3.30"
+rand = "0.8"
+console-subscriber = "0.2.0"
+
+spidev = "0.6.0"
+
+shared = {path = "../shared"}
+
+
+linux-embedded-hal = { version = "0.4.0", features =["spidev"]} 
+
+[profile.release]
+debug = true
+
+
+[[example]]
+name = "graphing"
+path = "examples/graphing.rs"
+required-features = ["tui"]
+
+[features]
+default = ["tui"]
+
+tui = []
+
+
+[build]
+rustflags = ["--cfg", "tokio_unstable"]

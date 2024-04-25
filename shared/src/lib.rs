@@ -11,6 +11,7 @@
 pub mod controller;
 pub mod protocol;
 
+#[derive(Clone)]
 pub struct OwnedItterator<Item: Sized + Clone, const SIZE: usize> {
     buff: [Item; SIZE],
     ptr: usize,
@@ -23,6 +24,7 @@ impl<Item: Sized + Clone, const SIZE: usize> OwnedItterator<Item, SIZE> {
 }
 impl<Item: Sized + Clone, const SIZE: usize> Iterator for OwnedItterator<Item, SIZE> {
     type Item = Item;
+
     fn next(&mut self) -> Option<Self::Item> {
         if self.ptr >= SIZE {
             return None;
