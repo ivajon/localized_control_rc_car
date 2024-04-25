@@ -73,7 +73,7 @@ impl<V: Version<BusItem = u8>> Spi<V> {
     {
         let target: Vec<u8> = Message::<V>::new(payload).collect();
         // Make a really large buffer, this is a "fulhack" but it is fine for now.
-        let mut rx_buff = [0; 1024];
+        let mut rx_buff: Vec<u8>  = target.iter().map(|_| 0).collect();
 
         let mut xfer = spi_ioc_transfer::read_write(target.as_slice(), &mut rx_buff);
         self.spi.transfer(&mut xfer).map_err(Error::IoError)?;
