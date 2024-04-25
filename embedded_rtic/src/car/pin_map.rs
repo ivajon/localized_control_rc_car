@@ -35,7 +35,12 @@ pub struct SpiPins {
 }
 
 /// The pin mapping used in the car.
-pub struct PinMapping<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool> {
+pub struct PinMapping<
+    const SPI_USED: bool,
+    const SERVO_USED: bool,
+    const ESC_USED: bool,
+    const EVENTS_CONFIGURED: bool,
+> {
     /// The pins used for the forward sonar.
     sonar_forward: SonarPins,
     /// The pins used for the left sonar.
@@ -52,7 +57,7 @@ pub struct PinMapping<const SPI_USED: bool, const SERVO_USED: bool, const ESC_US
     spi: Option<SpiPins>,
 }
 
-impl PinMapping<false, false, false> {
+impl PinMapping<false, false, false, false> {
     /// Instantiates a new pin mapping.
     pub fn new(p0: p0::Parts, p1: p1::Parts) -> Self {
         // Outputs
@@ -105,14 +110,16 @@ impl PinMapping<false, false, false> {
     }
 }
 
-impl<const SERVO_USED: bool, const ESC_USED: bool> PinMapping<false, SERVO_USED, ESC_USED> {
+impl<const SERVO_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
+    PinMapping<false, SERVO_USED, ESC_USED, EVENTS_CONFIGURED>
+{
     /// Creates a new spis device which triggers an event on transfer end.
     pub fn spi(
         mut self,
         device: SpiInstance,
         buffer: &'static mut [u8],
     ) -> (
-        PinMapping<true, SERVO_USED, ESC_USED>,
+        PinMapping<true, SERVO_USED, ESC_USED, EVENTS_CONFIGURED>,
         spis::Transfer<SpiInstance, &'static mut [u8]>,
     ) {
         // This is checked by the type system.
@@ -133,13 +140,15 @@ impl<const SERVO_USED: bool, const ESC_USED: bool> PinMapping<false, SERVO_USED,
     }
 }
 
-impl<const SPI_USED: bool, const SERVO_USED: bool> PinMapping<SPI_USED, SERVO_USED, false> {
+impl<const SPI_USED: bool, const SERVO_USED: bool, const EVENTS_CONFIGURED: bool>
+    PinMapping<SPI_USED, SERVO_USED, false, EVENTS_CONFIGURED>
+{
     /// Creates a [`MotorController`] for the car.
     pub fn esc_controller(
         mut self,
         device: EscPwm,
     ) -> (
-        PinMapping<SPI_USED, SERVO_USED, true>,
+        PinMapping<SPI_USED, SERVO_USED, true, EVENTS_CONFIGURED>,
         MotorController<EscPwm>,
     ) {
         let esc = unsafe { self.esc_output.take().unwrap_unchecked() };
@@ -162,7 +171,10 @@ impl<const SPI_USED: bool, const SERVO_USED: bool> PinMapping<SPI_USED, SERVO_US
     pub fn esc_raw(
         mut self,
         device: EscPwm,
-    ) -> (PinMapping<SPI_USED, SERVO_USED, true>, Esc<EscPwm>) {
+    ) -> (
+        PinMapping<SPI_USED, SERVO_USED, true, EVENTS_CONFIGURED>,
+        Esc<EscPwm>,
+    ) {
         let esc = unsafe { self.esc_output.take().unwrap_unchecked() };
         let esc = Esc::new(device, esc);
 
@@ -179,13 +191,15 @@ impl<const SPI_USED: bool, const SERVO_USED: bool> PinMapping<SPI_USED, SERVO_US
     }
 }
 
-impl<const SPI_USED: bool, const ESC_USED: bool> PinMapping<SPI_USED, false, ESC_USED> {
+impl<const SPI_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
+    PinMapping<SPI_USED, false, ESC_USED, EVENTS_CONFIGURED>
+{
     /// Creates a [`ServoController`] for the car.
     pub fn servo_controller(
         mut self,
         device: ServoPwm,
     ) -> (
-        PinMapping<SPI_USED, true, ESC_USED>,
+        PinMapping<SPI_USED, true, ESC_USED, EVENTS_CONFIGURED>,
         ServoController<ServoPwm>,
     ) {
         let esc = unsafe { self.servo_output.take().unwrap_unchecked() };
@@ -208,7 +222,10 @@ impl<const SPI_USED: bool, const ESC_USED: bool> PinMapping<SPI_USED, false, ESC
     pub fn servo_raw(
         mut self,
         device: ServoPwm,
-    ) -> (PinMapping<SPI_USED, true, ESC_USED>, Servo<ServoPwm>) {
+    ) -> (
+        PinMapping<SPI_USED, true, ESC_USED, EVENTS_CONFIGURED>,
+        Servo<ServoPwm>,
+    ) {
         let servo = unsafe { self.esc_output.take().unwrap_unchecked() };
         let servo = Servo::new(device, servo);
 
@@ -226,7 +243,7 @@ impl<const SPI_USED: bool, const ESC_USED: bool> PinMapping<SPI_USED, false, ESC
 }
 
 impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
-    PinMapping<SPI_USED, SERVO_USED, ESC_USED>
+    PinMapping<SPI_USED, SERVO_USED, ESC_USED, true>
 {
     /// Consumes the type returning the raw pins.
     pub fn consume(self) -> (SonarPins, SonarPins, SonarPins, Pin<Input<PullUp>>) {
@@ -237,9 +254,20 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
             self.encoder,
         )
     }
+}
 
+impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
+    PinMapping<SPI_USED, SERVO_USED, ESC_USED, false>
+{
     /// Sets up the events for the inputs.
-    pub fn configure_events(&self, gpiote: Gpiote, ppi: ppi::Parts) -> EventManager {
+    pub fn configure_events(
+        self,
+        gpiote: Gpiote,
+        ppi: ppi::Parts,
+    ) -> (
+        PinMapping<SPI_USED, SERVO_USED, ESC_USED, true>,
+        EventManager,
+    ) {
         gpiote
             .channel0()
             .input_pin(&self.encoder)
@@ -282,7 +310,16 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
         ppi3.set_task_endpoint(gpiote.channel3().task_out());
         ppi3.enable();
 
-        EventManager::new(gpiote)
+        let new_self = PinMapping {
+            sonar_left: self.sonar_left,
+            sonar_right: self.sonar_right,
+            sonar_forward: self.sonar_forward,
+            servo_output: self.servo_output,
+            esc_output: self.esc_output,
+            encoder: self.encoder,
+            spi: self.spi,
+        };
+        (new_self, EventManager::new(gpiote))
     }
 }
 
