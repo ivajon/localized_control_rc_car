@@ -42,7 +42,7 @@ impl MockSpi {
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
     ) -> Option<Vec<JoinHandle<()>>> {
-        let spi = Spi::init("/dev/spidev0.0")?;
+        let spi = Spi::init("/dev/spidev1.0")?;
 
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
