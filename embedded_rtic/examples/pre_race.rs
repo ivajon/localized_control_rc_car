@@ -31,14 +31,15 @@ mod app {
         compute_distance,
         compute_velocity,
     };
-    use defmt::{debug, info};
+    use defmt::{debug, info, warn};
     use embedded_hal::digital::OutputPin;
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Output, Pin, PushPull},
         gpiote::*,
-        pac::{PWM0, PWM1},
+        pac::{PWM0, PWM1, SPIS0},
         ppi,
+        spis::Transfer,
     };
     use rtic_monotonics::{
         nrf::timer::{fugit::ExtU64, Timer0 as Mono},
@@ -48,16 +49,24 @@ mod app {
         channel::{Receiver, Sender},
         make_channel,
     };
+    use shared::protocol::{
+        v0_0_2::{Payload, V0_0_2},
+        Message,
+        Parse,
+        Version,
+    };
 
     /// The message queue capacity
     const CAPACITY: usize = 5;
     const SMOOTHING: usize = 10;
-
+    const BUFFER_SIZE: usize = <V0_0_2 as Version>::HEADER_SIZE + <V0_0_2 as Version>::PACKET_SIZE;
     /// The duration type
     type Instant = <Mono as rtic_monotonics::Monotonic>::Instant;
 
     #[shared]
     struct Shared {
+        pose_refference: i32,
+        pose: (i32, u64),
         velocity: (f32, u64),
         velocity_reference: f32,
     }
@@ -84,11 +93,14 @@ mod app {
         receiver_velocity: Receiver<'static, i32, CAPACITY>,
         sender_velocity: Sender<'static, i32, CAPACITY>,
 
+        protocol_receiver: Receiver<'static, Payload, CAPACITY>,
+        protocol_sender: Sender<'static, Payload, CAPACITY>,
         senders: [Sender<'static, u32, CAPACITY>; 3],
         times: [Instant; 3],
 
         servo: ServoController<PWM1>,
         esc: MotorController<PWM0>,
+        spis: Option<Transfer<SPIS0, &'static mut [u8]>>,
 
         queue: ArrayDeque<i32, SMOOTHING, Wrapping>,
 
@@ -96,7 +108,10 @@ mod app {
     }
 
     #[allow(dead_code)]
-    #[init]
+    #[init(local = [
+            #[link_section = ".uninit.buffer"]
+            RXBUF: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE],
+    ])]
     fn init(cx: init::Context) -> (Shared, Local) {
         info!("init");
         let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
@@ -108,7 +123,7 @@ mod app {
 
         let (pins, servo) = pins.servo_controller(cx.device.PWM1);
         let (pins, esc) = pins.esc_controller(cx.device.PWM0);
-
+        let (pins, spis) = pins.spi(cx.device.SPIS0, cx.local.RXBUF);
         // Configure GPIOTE and PPI for all sonars
         let gpiote = Gpiote::new(cx.device.GPIOTE);
         let ppi_channels = ppi::Parts::new(cx.device.PPI);
@@ -132,6 +147,8 @@ mod app {
 
         let (sender_velocity, receiver_velocity) = make_channel!(i32, CAPACITY);
 
+        let (protocol_sender, protocol_receiver) = make_channel!(Payload, CAPACITY);
+
         // Array with respective senders
         let senders = [sender, sender2, sender3];
 
@@ -148,12 +165,13 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
+                pose: (0, 0),
+                pose_refference: 0,
                 velocity_reference: 40.,
             },
             Local {
                 //Sonar 1
                 trig_forward,
-                // receiver_forward: Receiver<'static, u32, CAPACITY>,
 
                 // Sonar 2
                 trig_left,
@@ -169,6 +187,10 @@ mod app {
                 sender_velocity,
                 receiver_velocity,
 
+                protocol_sender,
+                protocol_receiver,
+                spis: Some(spis),
+
                 senders,
                 times,
 
@@ -182,14 +204,66 @@ mod app {
         )
     }
 
-    #[task(binds = GPIOTE,priority = 4, local=[
-           senders,
-           times,
-           event_manager,
-           flank:bool=false,
-           prev_time:Option<u64> = None,
-           sender_velocity
-    ],shared = [])]
+    #[task(shared = [velocity,pose], local = [
+           spis,
+           protocol_sender,
+    ],priority = 3,binds = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0)]
+    fn register_measurement(mut cx: register_measurement::Context) {
+        info!("Waiting for message");
+        let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
+
+        // Convert in to a message.
+        match Message::<V0_0_2>::try_parse(&mut buff.iter().cloned()) {
+            Some(message) => {
+                let payload = message.payload();
+                info!("Got message {:?}", payload);
+                cx.local
+                    .protocol_sender
+                    .try_send(payload)
+                    .unwrap_or_else(|_| panic!());
+            }
+            None => debug!("SPI got malformed packet"),
+        }
+
+        let new_velocity = cx.shared.velocity.lock(|measurement| *measurement);
+        let new_pose = cx.shared.pose.lock(|measurement| *measurement);
+
+        // Enqueue all of the bytes needed for the transfer.
+        let new_message = Message::<V0_0_2>::new(Payload::CurrentState {
+            velocity: new_velocity.0 as u32,
+            position: new_pose.0,
+            distance: 0,
+            time_us: new_velocity.1 as u64,
+        });
+
+        for (idx, el) in new_message.enumerate() {
+            if idx >= BUFFER_SIZE {
+                warn!("BUFFER OVERFLOW");
+                break;
+            }
+            buff[idx] = el;
+        }
+
+        transfer.reset_events();
+
+        // Enqueue the next packet.
+        *cx.local.spis = transfer.transfer(buff).ok();
+    }
+
+    #[task(
+            binds = GPIOTE,
+            priority = 4,
+            local=[
+               senders,
+               times,
+               event_manager,
+               flank:bool=false,
+               prev_time:Option<u64> = None,
+               sender_velocity
+            ],
+            shared = []
+        )
+    ]
     /// Reads the echo pin and check which sonar that triggered an event using
     /// their channels
     ///
@@ -226,6 +300,25 @@ mod app {
                 },
             }
         }
+    }
+    #[task(local = [protocol_receiver], shared = [velocity_reference,pose_refference],priority=4)]
+    async fn refference_setter(mut cx: refference_setter::Context) {
+        info!("Waiting for message");
+        // Wait for a new velocity reading, smooth it using the queue and then set the
+        // average value in measurement.
+
+        while let Ok(payload) = cx.local.protocol_receiver.recv().await {
+            match payload {
+                Payload::SetSpeed { velocity } => {
+                    cx.shared.velocity_reference.lock(|w| *w = velocity as f32);
+                }
+                Payload::SetPosition { position } => {
+                    cx.shared.pose_refference.lock(|w| *w = position);
+                }
+                _ => {}
+            }
+        }
+        debug!("Channel closed.");
     }
 
     #[task(local = [queue, receiver_velocity], shared = [velocity],priority=4)]
@@ -300,12 +393,13 @@ mod app {
         }
     }
 
-    #[task(priority = 1, local = [receiver_sonar_packets,servo])]
-    async fn controll_loop_steering(cx: controll_loop_steering::Context) {
+    #[task(priority = 1, local = [receiver_sonar_packets,servo],shared = [pose_refference])]
+    async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         let prev = None;
         loop {
             let start_time = Mono::now();
             // This should ensure that the sampling time is correct.
+            let refference = cx.shared.pose_refference.lock(|w| *w);
 
             // Dequeue all of the measured values and grab the latest one
             let mut latest = prev;
@@ -321,6 +415,7 @@ mod app {
 
             // TODO! Add in some way to cope with to slow measurements.
             if latest == prev {
+                info!("MEASUREMENTS ARE TOO SLOW");
                 todo!()
             }
 
@@ -332,6 +427,7 @@ mod app {
             let diff = (dl as i32) - (dr as i32);
 
             // Register measurement and actuate.
+            cx.local.servo.follow([refference]);
             cx.local.servo.register_measurement(diff, ts);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
 
