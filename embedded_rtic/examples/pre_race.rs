@@ -233,7 +233,7 @@ mod app {
             velocity: new_velocity.0 as u32,
             position: new_pose.0,
             distance: 0,
-            time_us: new_velocity.1 as u64,
+            time_us: new_velocity.1,
         });
 
         for (idx, el) in new_message.enumerate() {
