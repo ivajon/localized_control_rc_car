@@ -5,7 +5,7 @@
 #![feature(ascii_char)]
 
 use hosted::{
-    spi::Spi,
+    spi::{Error as SpiError, Spi},
     tui::{
         graph::{Graph, MeasurementWriter},
         initiate_terminal,
@@ -41,14 +41,14 @@ impl MockSpi {
     fn init(
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
-    ) -> Option<Vec<JoinHandle<()>>> {
+    ) -> Result<Vec<JoinHandle<()>>, SpiError> {
         let spi = Spi::init("/dev/spidev0.0")?;
 
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
             spi,
         }));
-        Some(vec![
+        Ok(vec![
             tokio::spawn(Self::measurement(ret.clone(), measurement_writer)),
             tokio::spawn(Self::set_reference(ret.clone(), reference_reader)),
         ])
@@ -118,19 +118,21 @@ async fn thread_manager(
 async fn main() -> Result<(), Box<dyn Error>> {
     // console_subscriber::init();
 
-    let _ = start_app().await;
+    let res = start_app().await;
+    eprintln!("Some error occured during SPI configuration {:?}", res);
     Ok(())
 }
 
 /// Spawns all of the threads that are needed for the app to work
 /// and does not return until all threads have exited.
-async fn start_app() -> Result<(), ()> {
+async fn start_app() -> Result<(), SpiError> {
     let (redraw_writer, redraw_reader) = mpsc::channel(1024);
 
     // setup terminal
     let terminal = initiate_terminal();
 
-    let terminal = Arc::new(Mutex::new(terminal.map_err(|_| ())?));
+    // This is not correct, but let's say that it is.
+    let terminal = Arc::new(Mutex::new(terminal.map_err(|_| SpiError::NothingToRead)?));
 
     // Spawn everything for the graph.
     let (graph, register_channel, graph_handles) = Graph::init(redraw_writer.clone());
@@ -139,8 +141,8 @@ async fn start_app() -> Result<(), ()> {
 
     // TODO! Replace this with the real SPI manager.
     let mock_spi_channels: Vec<JoinHandle<()>> = match MockSpi::init(register_channel, commit) {
-        Some(value) => value,
-        None => {
+        Ok(value) => value,
+        Err(e) => {
             // Kill all threads if we encountered an error.
             for el in graph_handles {
                 el.abort();
@@ -148,7 +150,9 @@ async fn start_app() -> Result<(), ()> {
             for el in input_handles {
                 el.abort();
             }
-            return Err(());
+
+            eprintln!("Some error occured during SPI configuration {:?}", e);
+            return Err(e);
         }
     };
 

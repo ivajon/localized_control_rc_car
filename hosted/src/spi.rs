@@ -4,6 +4,7 @@ use shared::protocol::{Message, Parse, Version};
 use spidev::{spidevioctl::spi_ioc_transfer, SpiModeFlags, Spidev, SpidevOptions};
 
 /// Enumerates the accounted for edge-cases when using the [`Spi`].
+#[derive(Debug)]
 pub enum Error {
     /// Thrown when there is no data to read on the device.
     NothingToRead,
@@ -21,10 +22,10 @@ pub struct Spi<V: Version> {
 
 impl<V: Version<BusItem = u8>> Spi<V> {
     /// Creates a neat SPI abstraction that allows us to read/write protocol packets.
-    pub fn init<P: AsRef<Path>>(path: P) -> Option<Self> {
+    pub fn init<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         let mut spi = match Spidev::open(path) {
             Ok(value) => value,
-            _ => return None,
+            Err(e) => return Err(Error::IoError(e)),
         };
 
         let options = SpidevOptions::new()
@@ -35,10 +36,10 @@ impl<V: Version<BusItem = u8>> Spi<V> {
 
         match spi.configure(&options) {
             Ok(_) => {}
-            Err(_) => return None,
+            Err(e) => return Err(Error::IoError(e)),
         }
 
-        Some(Self {
+        Ok(Self {
             spi,
             buffered: Vec::new(),
         })
