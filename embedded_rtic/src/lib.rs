@@ -59,9 +59,12 @@
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use car::{constants::CAPACITY, wrappers::Instant};
+use defmt::trace;
 use defmt_rtt as _; // global logger
 use panic_probe as _;
-use rtic_sync::channel::Sender; // memory layout
+use rtic_sync::channel::Sender;
+
+use crate::car::constants::{MAGNET_SPACING, RADIUS}; // memory layout
 
 pub mod car;
 pub mod esc;
@@ -118,5 +121,31 @@ pub fn compute_distance(
             }
         }
         times[sonar] = zero;
+    }
+}
+
+/// Computes the velocity of the car based on time stamps in micro seconds.
+pub fn compute_velocity(
+    previous_time: &mut Option<u64>,
+    time: u64,
+    sender: &mut Sender<'static, i32, CAPACITY>,
+) {
+    match previous_time {
+        Some(value) => {
+            let dt = time - *value;
+            let angvel = (MAGNET_SPACING as u64) * 1_000_000 / dt;
+            let angvel = angvel / 10_000;
+            trace!("Angular velocity {:?}", angvel);
+            let vel = RADIUS * angvel;
+            trace!("Velocity : {:?} cm/s", vel);
+            *previous_time = Some(time);
+
+            sender
+                .try_send(vel as i32)
+                .expect("The message channel is broken");
+        }
+        None => {
+            *previous_time = Some(time);
+        }
     }
 }
