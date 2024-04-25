@@ -1,5 +1,7 @@
 //! BSP for our car, defines some specifics for out car.
 
+pub mod event;
+pub mod pin_map;
 use shared::controller::Pid;
 
 #[allow(non_snake_case)]
@@ -83,9 +85,18 @@ pub mod constants {
 
 /// Defines wrapper types that make the [`rtic`] code easier to read.
 pub mod wrappers {
+    use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
     use rtic_monotonics::nrf::timer::Timer0 as Mono;
 
     use super::{constants::ESC_PID_PARAMS, Pid};
+
+    /// The spi device used.
+    pub type SpiInstance = SPIS0;
+
+    /// The PWM in charge of controlling the [`Esc`](crate::esc::Esc)
+    pub type EscPwm = PWM0;
+    /// The PWM in charge of controlling the [`Servo`](crate::servo::Servo)
+    pub type ServoPwm = PWM1;
 
     /// The duration type.
     pub type Instant = <Mono as rtic_monotonics::Monotonic>::Instant;

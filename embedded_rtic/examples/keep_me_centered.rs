@@ -15,23 +15,30 @@ use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     device = nrf52840_hal::pac,
-    dispatchers = [RTC0,RTC1,RTC2]
+    dispatchers = [RTC0,RTC1,RTC2,TIMER1]
 )]
 
 mod app {
 
-    use core::hint::unreachable_unchecked;
-
-    use controller::{car::wrappers::ServoController, compute_distance, servo::Servo};
-    use defmt::info;
+    use arraydeque::{ArrayDeque, Wrapping};
+    use controller::{
+        car::{
+            constants::{Sonar, ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
+            event::{EventManager, GpioEvents},
+            pin_map::PinMapping,
+            wrappers::{MotorController, ServoController},
+        },
+        compute_distance,
+        compute_velocity,
+    };
+    use defmt::{debug, info};
     use embedded_hal::digital::OutputPin;
     use nrf52840_hal::{
         clocks::Clocks,
-        gpio::{self, Input, Output, Pin, PullDown, PushPull},
+        gpio::{self, Output, Pin, PushPull},
         gpiote::*,
-        pac::PWM0,
+        pac::{PWM0, PWM1},
         ppi,
-        prelude::*,
     };
     use rtic_monotonics::{
         nrf::timer::{fugit::ExtU64, Timer0 as Mono},
@@ -44,13 +51,15 @@ mod app {
 
     /// The message queue capacity
     const CAPACITY: usize = 5;
+    const SMOOTHING: usize = 10;
 
     /// The duration type
     type Instant = <Mono as rtic_monotonics::Monotonic>::Instant;
 
     #[shared]
     struct Shared {
-        gpiote: Gpiote,
+        velocity: (f32, u64),
+        velocity_reference: f32,
     }
 
     // Local resources go here
@@ -58,27 +67,32 @@ mod app {
     #[allow(dead_code)]
     struct Local {
         //Sonar 1
-        trig: Pin<Output<PushPull>>,
-        echo: Pin<Input<PullDown>>,
+        trig_forward: Pin<Output<PushPull>>,
         // receiver_forward: Receiver<'static, u32, CAPACITY>,
 
         // Sonar 2
-        trig2: Pin<Output<PushPull>>,
-        echo2: Pin<Input<PullDown>>,
+        trig_left: Pin<Output<PushPull>>,
         receiver_left: Receiver<'static, u32, CAPACITY>,
 
         // Sonar 3
-        trig3: Pin<Output<PushPull>>,
-        echo3: Pin<Input<PullDown>>,
+        trig_right: Pin<Output<PushPull>>,
         receiver_right: Receiver<'static, u32, CAPACITY>,
 
         receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
         sender_sonar_packets: Sender<'static, ((u32, u32), u32), CAPACITY>,
 
+        receiver_velocity: Receiver<'static, i32, CAPACITY>,
+        sender_velocity: Sender<'static, i32, CAPACITY>,
+
         senders: [Sender<'static, u32, CAPACITY>; 3],
         times: [Instant; 3],
 
-        servo_controller: ServoController<PWM0>,
+        servo: ServoController<PWM1>,
+        esc: MotorController<PWM0>,
+
+        queue: ArrayDeque<i32, SMOOTHING, Wrapping>,
+
+        event_manager: EventManager,
     }
 
     #[allow(dead_code)]
@@ -88,121 +102,94 @@ mod app {
         let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
 
         let p0 = gpio::p0::Parts::new(cx.device.P0);
+        let p1 = gpio::p1::Parts::new(cx.device.P1);
 
-        // Sonar 1
-        let trig = p0.p0_12.into_push_pull_output(gpio::Level::Low).degrade();
-        let echo = p0.p0_11.into_pulldown_input().degrade();
+        let pins = PinMapping::new(p0, p1);
 
-        // Sonar 2
-        let trig2 = p0.p0_14.into_push_pull_output(gpio::Level::Low).degrade();
-        let echo2 = p0.p0_13.into_pulldown_input().degrade();
-
-        // Sonar 3
-        let trig3 = p0.p0_16.into_push_pull_output(gpio::Level::Low).degrade();
-        let echo3 = p0.p0_15.into_pulldown_input().degrade();
-
-        // Enable interrupts
-        //
-        // The nrf52840 is a bit strange when it comes to pin interrupts,
-        // but for now we simply connect the echo pins to the channel 0, 1 and 2.
+        let (pins, servo) = pins.servo_controller(cx.device.PWM1);
+        let (pins, esc) = pins.esc_controller(cx.device.PWM0);
 
         // Configure GPIOTE and PPI for all sonars
         let gpiote = Gpiote::new(cx.device.GPIOTE);
         let ppi_channels = ppi::Parts::new(cx.device.PPI);
+        let event_manager = pins.configure_events(gpiote, ppi_channels);
 
-        // Sonar 1 -> Channel0
-        // Sonar 2 -> Channel1
-        // Sonar 3 -> Channel2
-        let gpiote = {
-            gpiote
-                .channel0()
-                .input_pin(&echo)
-                .toggle()
-                .enable_interrupt();
+        let (sonar_forward, sonar_left, sonar_right, _hal_effect) = pins.consume();
 
-            gpiote
-                .channel1()
-                .input_pin(&echo2)
-                .toggle()
-                .enable_interrupt();
-
-            gpiote
-                .channel2()
-                .input_pin(&echo3)
-                .toggle()
-                .enable_interrupt();
-
-            let mut ppi0 = ppi_channels.ppi0;
-            ppi0.set_event_endpoint(gpiote.channel0().event());
-            ppi0.set_task_endpoint(gpiote.channel0().task_out());
-            ppi0.enable();
-
-            let mut ppi1 = ppi_channels.ppi1;
-            ppi1.set_event_endpoint(gpiote.channel1().event());
-            ppi1.set_task_endpoint(gpiote.channel1().task_out());
-            ppi1.enable();
-
-            let mut ppi2 = ppi_channels.ppi2;
-            ppi2.set_event_endpoint(gpiote.channel2().event());
-            ppi2.set_task_endpoint(gpiote.channel2().task_out());
-            ppi2.enable();
-
-            gpiote.port().enable_interrupt();
-            gpiote
-        };
-
-        let servo_controller = {
-            let motor = p0.p0_05.into_push_pull_output(gpio::Level::High).degrade();
-            let servo = Servo::new(cx.device.PWM0, motor);
-            let mut controller = ServoController::new(servo);
-            controller.follow([0]);
-            controller
-        };
+        let (trig_forward, _echo_forward) = sonar_forward.split();
+        let (trig_left, _echo_left) = sonar_left.split();
+        let (trig_right, _echo_right) = sonar_right.split();
 
         // Pair forward sonars sender and receiver
         let (sender, _receiver_forward) = make_channel!(u32, CAPACITY);
-
         // Pair left sonars sender and receiver
         let (sender2, receiver_left) = make_channel!(u32, CAPACITY);
-
         // Pair right sonars sender and receiver
         let (sender3, receiver_right) = make_channel!(u32, CAPACITY);
-
         // Channel for packed sonar data.
         let (sender_sonar_packets, receiver_sonar_packets) =
             make_channel!(((u32, u32), u32), CAPACITY);
 
+        let (sender_velocity, receiver_velocity) = make_channel!(i32, CAPACITY);
+
         // Array with respective senders
         let senders = [sender, sender2, sender3];
 
-        //
         let times = [Instant::from_ticks(0); 3];
 
         let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
         Mono::start(cx.device.TIMER0, token);
 
         trigger_timestamped::spawn().ok();
-        controll_loop::spawn().ok();
+        controll_loop_steering::spawn().ok();
+        controll_loop_velocity::spawn().ok();
+        intermediary::spawn().ok();
 
-        (Shared { gpiote }, Local {
-            trig,
-            echo,
-            trig2,
-            echo2,
-            trig3,
-            echo3,
-            // receiver_forward,
-            receiver_left,
-            receiver_right,
-            sender_sonar_packets,
-            receiver_sonar_packets,
-            senders,
-            times,
-            servo_controller,
-        })
+        (
+            Shared {
+                velocity: (0., 0),
+                velocity_reference: 40.,
+            },
+            Local {
+                //Sonar 1
+                trig_forward,
+                // receiver_forward: Receiver<'static, u32, CAPACITY>,
+
+                // Sonar 2
+                trig_left,
+                receiver_left,
+
+                // Sonar 3
+                trig_right,
+                receiver_right,
+
+                receiver_sonar_packets,
+                sender_sonar_packets,
+
+                sender_velocity,
+                receiver_velocity,
+
+                senders,
+                times,
+
+                servo,
+                esc,
+
+                queue: ArrayDeque::new(),
+
+                event_manager,
+            },
+        )
     }
 
-    #[task(binds = GPIOTE,priority = 4, local=[echo,echo2,echo3,senders,times],shared = [gpiote])]
+    #[task(binds = GPIOTE,priority = 4, local=[
+           senders,
+           times,
+           event_manager,
+           flank:bool=false,
+           prev_time:Option<u64> = None,
+           sender_velocity
+    ],shared = [])]
     /// Reads the echo pin and check which sonar that triggered an event using
     /// their channels
     ///
@@ -210,36 +197,111 @@ mod app {
     /// On the falling edge this interrupt computes the "width" in time
     /// of the square wave thus allowing us to compute the time it took
     /// to echo back to us.
-    fn echo(mut cx: echo::Context) {
+    fn echo(cx: echo::Context) {
         // Get time ASAP for highest granularity
         let time = Mono::now();
 
         // Check which sonar triggered the event and store it in the array
         let channels = cx.local.senders;
         let times = cx.local.times;
-        cx.shared.gpiote.lock(|gpiote| {
-            if gpiote.channel0().is_event_triggered() {
-                compute_distance(0, channels, times, time);
-            }
-            if gpiote.channel1().is_event_triggered() {
-                compute_distance(1, channels, times, time);
-            }
-            if gpiote.channel2().is_event_triggered() {
-                compute_distance(2, channels, times, time);
-            }
-        });
 
-        // Clear pending bits.
-        cx.shared.gpiote.lock(|gpiote| {
-            gpiote.reset_events();
-            gpiote.channel0().clear();
-            gpiote.channel1().clear();
-            gpiote.channel2().clear();
-        });
+        // Now automagiaclly clears the pending bit after a case is handled.
+        for event in cx.local.event_manager.events() {
+            match event {
+                GpioEvents::Encoder => {
+                    if *cx.local.flank {
+                        *cx.local.flank = false;
+                        continue;
+                    }
+                    compute_velocity(
+                        cx.local.prev_time,
+                        time.duration_since_epoch().to_micros(),
+                        cx.local.sender_velocity,
+                    )
+                }
+                GpioEvents::Sonar(sonar) => match sonar {
+                    Sonar::Forward => compute_distance(0, channels, times, time),
+                    Sonar::Left => compute_distance(1, channels, times, time),
+                    Sonar::Right => compute_distance(2, channels, times, time),
+                },
+            }
+        }
     }
 
-    #[task(priority = 1, local = [receiver_sonar_packets,servo_controller])]
-    async fn controll_loop(cx: controll_loop::Context) {
+    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=4)]
+    /// Acts as a trampoline for data processing thus, hopefully reducing the
+    /// time spent in `compute_vel`.
+    async fn intermediary(mut cx: intermediary::Context) {
+        info!("Waiting for message");
+        // Wait for a new velocity reading, smooth it using the queue and then set the
+        // average value in measurement.
+
+        while let Ok(vel) = cx.local.receiver_velocity.recv().await {
+            cx.local.queue.push_back(vel);
+            let avg = cx.local.queue.iter().sum::<i32>() / { SMOOTHING as i32 };
+            cx.shared
+                .velocity
+                .lock(|measurement| *measurement = (avg as f32, measurement.1 + 1));
+        }
+        debug!("Channel closed.");
+    }
+
+    #[task(local = [esc], shared = [velocity,velocity_reference],priority=5)]
+    /// Highest priority as this should be ran no matter what is running (aside
+    /// from measurements).
+    ///
+    /// Uses the PID to set an appropriate control signal for the motor.
+    /// Will re-run every sample time.
+    ///
+    /// NOTE! If we notice that we this takes too long, use [`Symex`](https://github.com/ivario123/symex) to get the
+    /// longest possible time the PID takes and subtract that form TS.
+    async fn controll_loop_velocity(mut cx: controll_loop_velocity::Context) {
+        let controller = cx.local.esc;
+        let mut previous = (0f32, 0);
+        loop {
+            let time = Mono::now();
+            let mut measurement = cx.shared.velocity.lock(|measurement| *measurement);
+            let reference = cx.shared.velocity_reference.lock(|reference| *reference);
+
+            if measurement.1 == previous.1 {
+                debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
+
+                // Lets say that the minimum speed we want to achive is 10 cm/s.
+                let angle = { 0.001f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angvel =
+                    angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
+
+                let vel = RADIUS as f32 * angvel;
+                info!("Expected min vel to be  {:?}", vel);
+
+                measurement.0 -= vel;
+
+                if measurement.0 < 0f32 {
+                    measurement.0 = 0f32;
+                }
+            } else {
+                previous = measurement;
+            }
+
+            info!("Previous speed {:?} target : {:?}", measurement, reference);
+
+            controller.register_measurement(measurement.0, measurement.1 as u32);
+            controller.follow([reference]);
+            let _actuation = controller
+                .actuate()
+                .expect("Example is broken this should work");
+
+            let outer = measurement;
+
+            cx.shared.velocity.lock(|measurement| *measurement = outer);
+
+            // Delay between entry time and actuation time.
+            Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
+        }
+    }
+
+    #[task(priority = 1, local = [receiver_sonar_packets,servo])]
+    async fn controll_loop_steering(cx: controll_loop_steering::Context) {
         let prev = None;
         loop {
             let start_time = Mono::now();
@@ -263,18 +325,15 @@ mod app {
             }
 
             // Previous check makes this safe.
-            let latest = unsafe { latest.unwrap_or_else(|| unreachable_unchecked()) };
+            let latest = unsafe { latest.unwrap_unchecked() };
 
             let ((dl, dr), ts) = latest;
 
             let diff = (dl as i32) - (dr as i32);
 
             // Register measurement and actuate.
-            cx.local.servo_controller.register_measurement(diff, ts);
-            cx.local
-                .servo_controller
-                .actuate()
-                .unwrap_or_else(|_| panic!());
+            cx.local.servo.register_measurement(diff, ts);
+            cx.local.servo.actuate().unwrap_or_else(|_| panic!());
 
             Mono::delay_until(
                 start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
@@ -283,52 +342,52 @@ mod app {
         }
     }
 
-    #[task(priority = 2, local = [trig], shared = [gpiote])]
+    #[task(priority = 2, local = [trig_forward], shared = [])]
     /// Send a small pulse to the sonars.
     ///
     /// The sonars will then notify us in echo when the sound waves are
     /// received.
-    async fn trigger1(cx: trigger1::Context) {
+    async fn trigger_forward(cx: trigger_forward::Context) {
         // Set high is always valid.
-        cx.local.trig.set_high().unwrap();
+        cx.local.trig_forward.set_high().unwrap();
 
         let now = Mono::now();
         Mono::delay_until(now + 20.micros()).await;
 
         // Set low is always valid.
-        cx.local.trig.set_low().unwrap();
+        cx.local.trig_forward.set_low().unwrap();
     }
 
-    #[task(priority = 2, local = [trig2], shared = [gpiote])]
+    #[task(priority = 2, local = [trig_left], shared = [])]
     /// Send a small pulse to the sonars.
     ///
     /// The sonars will then notify us in echo when the sound waves are
     /// received.
     async fn trigger_left(cx: trigger_left::Context) {
         // Set high is always valid.
-        cx.local.trig2.set_high().unwrap();
+        cx.local.trig_left.set_high().unwrap();
 
         let now = Mono::now();
         Mono::delay_until(now + 20.micros()).await;
 
         // Set low is always valid.
-        cx.local.trig2.set_low().unwrap();
+        cx.local.trig_left.set_low().unwrap();
     }
 
-    #[task(priority = 2, local = [trig3], shared = [gpiote])]
+    #[task(priority = 2, local = [trig_right], shared = [])]
     /// Send a small pulse to sonar 3.
     ///
     /// The sonar will then notify us in echo when the sound wave are
     /// received.
     async fn trigger_right(cx: trigger_right::Context) {
         // Set high is always valid.
-        cx.local.trig3.set_high().unwrap();
+        cx.local.trig_right.set_high().unwrap();
 
         let now = Mono::now();
         Mono::delay_until(now + 20.micros()).await;
 
         // Set low is always valid.
-        cx.local.trig3.set_low().unwrap();
+        cx.local.trig_right.set_low().unwrap();
     }
     #[task(priority = 2,local = [receiver_left,receiver_right,sender_sonar_packets])]
     /// Re-spawn trigger after every new distance is correctly measured.
