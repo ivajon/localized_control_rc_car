@@ -29,3 +29,5 @@ Now you should be able to build the embedded code.
 ## [Open-cv](https://opencv.org/)
 
 This is a common computer vision library with [rust bindings](https://github.com/twistedfall/opencv-rust) which it self provides [install instructions](https://github.com/twistedfall/opencv-rust/blob/master/INSTALL.md). It also provides python bindings but we should probably use c++ or rust for speed.
+
+Guide for installing OpenCV for C++: https://www.opencv-srf.com/p/introduction.html.
