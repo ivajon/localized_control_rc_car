@@ -1,7 +1,7 @@
 %Simple comparison of sample images in different color spaces.
 %The enviroment is basically gray. Use grayscale images?
 
-imds = imageDatastore("sample_images\"); %Get images
+imds = imageDatastore("capture2\"); %Get images
 
 for i = 1:19
     Irgb = readimage(imds,i);  %Read images and convert from rgb to other color spaces
