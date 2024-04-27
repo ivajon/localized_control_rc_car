@@ -65,7 +65,7 @@ impl PinMapping<false, false, false, false> {
         let servo_output = p0.p0_06.into_push_pull_output(gpio::Level::High).degrade();
 
         // Inputs
-        let encoder = p0.p0_10.into_pullup_input().degrade();
+        let encoder = p0.p0_31.into_pullup_input().degrade();
 
         // Sonars
 
@@ -290,6 +290,14 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
             .toggle()
             .enable_interrupt();
 
+        gpiote.port().input_pin(&self.encoder).high();
+        gpiote.port().input_pin(&self.sonar_forward.echo).high();
+        gpiote.port().input_pin(&self.sonar_left.echo).high();
+        gpiote.port().input_pin(&self.sonar_right.echo).high();
+
+        gpiote.port().input_pin(&self.sonar_forward.echo).low();
+        gpiote.port().input_pin(&self.sonar_left.echo).low();
+        gpiote.port().input_pin(&self.sonar_right.echo).low();
         let mut ppi0 = ppi.ppi0;
         ppi0.set_event_endpoint(gpiote.channel0().event());
         ppi0.set_task_endpoint(gpiote.channel0().task_out());
@@ -310,6 +318,7 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
         ppi3.set_task_endpoint(gpiote.channel3().task_out());
         ppi3.enable();
 
+        gpiote.port().enable_interrupt();
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
             sonar_right: self.sonar_right,

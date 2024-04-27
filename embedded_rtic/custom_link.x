@@ -91,7 +91,7 @@ SECTIONS
   PROVIDE(_stext = ADDR(.vector_table) + SIZEOF(.vector_table));
 
   /* ### .text */
-  .text _stext :
+  .text ORIGIN(RAM2):
   {
     __stext = .;
     *(.Reset);
@@ -105,7 +105,7 @@ SECTIONS
 
     . = ALIGN(4); /* Pad .text to the alignment to workaround overlapping load section bug in old lld */
     __etext = .;
-  } > FLASH
+  } > RAM2 
 
   /* ### .rodata */
   .rodata : ALIGN(4)

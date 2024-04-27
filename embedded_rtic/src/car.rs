@@ -31,28 +31,28 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 300,
-        KI: 80,
-        KD: 31,
+        KP: 100,
+        KI: 300,
+        KD: 1,
         // 10^2
         SCALE: 2,
-        TS: 50_000,
+        TS: 250_000,
         TIMESCALE: 1_000_000,
     };
 
     /// The PID parameters for the ESC.
     pub const SERVO_PID_PARAMS: PidParams = PidParams {
-        KP: 60,
-        KI: 30,
-        KD: 11,
+        KP: 150,
+        KI: 80,
+        KD: 5,
         // 10^2
         SCALE: 2,
-        TS: 250_000, // 4 Hz should probly be higher
+        TS: 100_000, // 4 Hz should probly be higher
         TIMESCALE: 1_000_000,
     };
 
     /// The message queue capacity.
-    pub const CAPACITY: usize = 5;
+    pub const CAPACITY: usize = 30;
 
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
@@ -88,7 +88,7 @@ pub mod wrappers {
     use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
     use rtic_monotonics::nrf::timer::Timer0 as Mono;
 
-    use super::{constants::ESC_PID_PARAMS, Pid};
+    use super::{constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS}, Pid};
 
     /// The spi device used.
     pub type SpiInstance = SPIS0;
@@ -121,15 +121,15 @@ pub mod wrappers {
     pub type ServoController<PWM> = Pid<
         crate::servo::Error,
         crate::servo::Servo<PWM>,
-        i32,
+        f32,
         1,
-        { ESC_PID_PARAMS.KP },
-        { ESC_PID_PARAMS.KI },
-        { ESC_PID_PARAMS.KD },
-        { ESC_PID_PARAMS.TS },
+        { SERVO_PID_PARAMS.KP },
+        { SERVO_PID_PARAMS.KI },
+        { SERVO_PID_PARAMS.KD },
+        { SERVO_PID_PARAMS.TS },
         15,
         -15,
-        { ESC_PID_PARAMS.TIMESCALE },
-        { ESC_PID_PARAMS.SCALE },
+        { SERVO_PID_PARAMS.TIMESCALE },
+        { SERVO_PID_PARAMS.SCALE },
     >;
 }

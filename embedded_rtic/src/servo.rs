@@ -99,10 +99,10 @@ impl<PWM: Instance> Servo<PWM> {
 }
 
 impl<I: Instance> ControllerChannel<Error> for Servo<I> {
-    type Output = i32;
+    type Output = f32;
 
     fn set(&mut self, value: Self::Output) -> Result<(), Error> {
-        self.angle(value.deg())
+        self.angle((value as i32).deg())
     }
 }
 

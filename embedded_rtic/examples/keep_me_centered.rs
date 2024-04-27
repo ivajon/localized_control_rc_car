@@ -15,7 +15,7 @@ use controller as _; // global logger + panicking-behavior + memory layout
 
 #[rtic::app(
     device = nrf52840_hal::pac,
-    dispatchers = [RTC0,RTC1,RTC2,TIMER1]
+    dispatchers = [RTC0,RTC1,RTC2,TIMER1,TIMER2,TIMER3]
 )]
 
 mod app {
@@ -23,7 +23,7 @@ mod app {
     use arraydeque::{ArrayDeque, Wrapping};
     use controller::{
         car::{
-            constants::{Sonar, ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
+            constants::{Sonar, CAPACITY, ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
             wrappers::{MotorController, ServoController},
@@ -50,7 +50,6 @@ mod app {
     };
 
     /// The message queue capacity
-    const CAPACITY: usize = 5;
     const SMOOTHING: usize = 10;
 
     /// The duration type
@@ -121,11 +120,11 @@ mod app {
         let (trig_right, _echo_right) = sonar_right.split();
 
         // Pair forward sonars sender and receiver
-        let (sender, _receiver_forward) = make_channel!(u32, CAPACITY);
+        let (sender_forward, _receiver_forward) = make_channel!(u32, CAPACITY);
         // Pair left sonars sender and receiver
-        let (sender2, receiver_left) = make_channel!(u32, CAPACITY);
+        let (sender_left, receiver_left) = make_channel!(u32, CAPACITY);
         // Pair right sonars sender and receiver
-        let (sender3, receiver_right) = make_channel!(u32, CAPACITY);
+        let (sender_right, receiver_right) = make_channel!(u32, CAPACITY);
         // Channel for packed sonar data.
         let (sender_sonar_packets, receiver_sonar_packets) =
             make_channel!(((u32, u32), u32), CAPACITY);
@@ -133,7 +132,7 @@ mod app {
         let (sender_velocity, receiver_velocity) = make_channel!(i32, CAPACITY);
 
         // Array with respective senders
-        let senders = [sender, sender2, sender3];
+        let senders = [sender_forward, sender_left, sender_right];
 
         let times = [Instant::from_ticks(0); 3];
 
@@ -148,7 +147,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 40.,
+                velocity_reference: 120.,
             },
             Local {
                 //Sonar 1
@@ -182,7 +181,7 @@ mod app {
         )
     }
 
-    #[task(binds = GPIOTE,priority = 4, local=[
+    #[task(binds = GPIOTE,priority = 7, local=[
            senders,
            times,
            event_manager,
@@ -213,6 +212,7 @@ mod app {
                         *cx.local.flank = false;
                         continue;
                     }
+                    *cx.local.flank = true;
                     compute_velocity(
                         cx.local.prev_time,
                         time.duration_since_epoch().to_micros(),
@@ -226,9 +226,10 @@ mod app {
                 },
             }
         }
+        cx.local.event_manager.clear();
     }
 
-    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=4)]
+    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=5)]
     /// Acts as a trampoline for data processing thus, hopefully reducing the
     /// time spent in `compute_vel`.
     async fn intermediary(mut cx: intermediary::Context) {
@@ -246,7 +247,7 @@ mod app {
         debug!("Channel closed.");
     }
 
-    #[task(local = [esc], shared = [velocity,velocity_reference],priority=5)]
+    #[task(local = [esc], shared = [velocity,velocity_reference],priority=4)]
     /// Highest priority as this should be ran no matter what is running (aside
     /// from measurements).
     ///
@@ -267,7 +268,7 @@ mod app {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
 
                 // Lets say that the minimum speed we want to achive is 10 cm/s.
-                let angle = { 0.001f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angle = { 0.00001f32 * MAGNET_SPACING as f32 / 10_000f32 };
                 let angvel =
                     angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
 
@@ -300,9 +301,9 @@ mod app {
         }
     }
 
-    #[task(priority = 1, local = [receiver_sonar_packets,servo])]
+    #[task(priority = 3, local = [receiver_sonar_packets,servo])]
     async fn controll_loop_steering(cx: controll_loop_steering::Context) {
-        let prev = None;
+        let mut prev = None;
         loop {
             let start_time = Mono::now();
             // This should ensure that the sampling time is correct.
@@ -316,12 +317,13 @@ mod app {
 
             if latest.is_none() {
                 Mono::delay(1.secs()).await;
+                info!("No measurements yet.");
                 continue;
             }
 
             // TODO! Add in some way to cope with to slow measurements.
             if latest == prev {
-                todo!()
+                continue;
             }
 
             // Previous check makes this safe.
@@ -331,9 +333,14 @@ mod app {
 
             let diff = (dl as i32) - (dr as i32);
 
+            info!("Distance difference : {:?}", diff);
+
             // Register measurement and actuate.
-            cx.local.servo.register_measurement(diff, ts);
+            cx.local.servo.register_measurement(diff as f32, ts);
+            cx.local.servo.follow([0.]);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
+
+            prev = Some(latest);
 
             Mono::delay_until(
                 start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
@@ -358,7 +365,7 @@ mod app {
         cx.local.trig_forward.set_low().unwrap();
     }
 
-    #[task(priority = 2, local = [trig_left], shared = [])]
+    #[task(priority = 4, local = [trig_left], shared = [])]
     /// Send a small pulse to the sonars.
     ///
     /// The sonars will then notify us in echo when the sound waves are
@@ -374,7 +381,7 @@ mod app {
         cx.local.trig_left.set_low().unwrap();
     }
 
-    #[task(priority = 2, local = [trig_right], shared = [])]
+    #[task(priority = 4, local = [trig_right], shared = [])]
     /// Send a small pulse to sonar 3.
     ///
     /// The sonar will then notify us in echo when the sound wave are
@@ -389,6 +396,7 @@ mod app {
         // Set low is always valid.
         cx.local.trig_right.set_low().unwrap();
     }
+
     #[task(priority = 2,local = [receiver_left,receiver_right,sender_sonar_packets])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(cx: trigger_timestamped::Context) {
@@ -398,7 +406,9 @@ mod app {
             trigger_left::spawn().unwrap_or_else(|_| panic!());
             trigger_right::spawn().unwrap_or_else(|_| panic!());
             let distance_left = cx.local.receiver_left.recv().await.unwrap();
-            let distance_right = cx.local.receiver_left.recv().await.unwrap();
+            info!("Left distance : {:?}", distance_left);
+            let distance_right = cx.local.receiver_right.recv().await.unwrap();
+            info!("Right distance : {:?}", distance_right);
 
             cx.local
                 .sender_sonar_packets
@@ -407,6 +417,7 @@ mod app {
                 .unwrap_or_else(|_| panic!());
 
             time_stamp += 1;
+            Mono::delay(10.millis()).await;
         }
     }
 }
