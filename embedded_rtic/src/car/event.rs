@@ -42,6 +42,15 @@ impl EventManager {
             manager: self,
         }
     }
+
+    /// Clears all channel events
+    pub fn clear(&mut self) {
+        self.gpiote.reset_events();
+        self.gpiote.channel0().clear();
+        self.gpiote.channel1().clear();
+        self.gpiote.channel2().clear();
+        self.gpiote.channel3().clear();
+    }
 }
 
 impl<'a> Iterator for EventIter<'a> {
@@ -86,11 +95,12 @@ impl<'a> Iterator for EventIter<'a> {
             5 => {
                 gpiote.channel3().clear();
                 gpiote.reset_events();
-                gpiote.port().reset_events();
-
+                // gpiote.port().reset_events();
                 None
             }
-            _ => None,
+            _ => {
+                None
+            }
         }
     }
 }

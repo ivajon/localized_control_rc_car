@@ -140,9 +140,8 @@ pub fn compute_velocity(
             trace!("Velocity : {:?} cm/s", vel);
             *previous_time = Some(time);
 
-            sender
-                .try_send(vel as i32)
-                .expect("The message channel is broken");
+            let _ = sender
+                .try_send(vel as i32);
         }
         None => {
             *previous_time = Some(time);
