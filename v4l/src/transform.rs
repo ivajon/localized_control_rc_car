@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, ops::Range};
+use std::{collections::HashMap, f32::consts::PI, ops::Range};
 
 use crate::{
     buffer::{Buffer, ColorCode, GrayScale},
@@ -177,18 +177,15 @@ impl Transform<GrayScale> for HoughCircles {
         for x in PADDING..(buffer.width - PADDING) {
             for y in PADDING..(buffer.height - PADDING) {
                 if buffer[(x, y)] == 255 {
-                    for a in self.a.clone() {
-                        for b in self.b.clone() {
-                            let r = (((x as f32 - a as f32).powf(2.)
-                                + (y as f32 - b as f32).powf(2.))
-                                as f32)
-                                .sqrt() as usize;
-
-                            if r >= radius_max || r < radius_min {
-                                continue;
+                    for radius in self.radius.clone() {
+                        for angle in 0..360 {
+                            let a = (x as f32 - (radius as f32 * (angle as f32).to_radians().cos()))
+                                as usize;
+                            let b = (y as f32 - (radius as f32 * (angle as f32).to_radians().sin()))
+                                as usize;
+                            if a >= a_min && a < a_max && b >= b_min && b < b_max {
+                                param_space[a - a_min][b - b_min][radius - radius_min] += 1;
                             }
-
-                            param_space[a - a_min][b - b_min][r - radius_min] += 1;
                         }
                     }
                 }
@@ -196,10 +193,14 @@ impl Transform<GrayScale> for HoughCircles {
         }
 
         let mut ret = Vec::new();
+        let mut taken: HashMap<(usize, usize), ()> = HashMap::new();
         for (a, thetas) in param_space.iter().enumerate() {
             for (b, radii) in thetas.iter().enumerate() {
                 for (radius, votes) in radii.iter().enumerate() {
-                    if *votes > self.voting_threshold {
+                    if *votes > self.voting_threshold
+                        && taken.get(&(a + a_min, b + b_min)).is_none()
+                    {
+                        taken.insert((a + a_min, b + b_min), ());
                         ret.push(Circle::new((a + a_min, b + b_min), radius + radius_min))
                     }
                 }

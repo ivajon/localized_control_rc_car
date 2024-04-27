@@ -11,7 +11,7 @@ use rcv::{
 
 extern crate jpeg_decoder as jpeg;
 
-const SCALING: usize = 4;
+const SCALING: usize = 6;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut stream = VideoStream::<GrayScale>::new()?;
@@ -25,8 +25,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         buffer.limit_upper(175);
 
-        buffer.conv(&GAUSSIAN);
-
         display_buffer(&buffer, "old_image.png").unwrap();
 
         let mut target = Vec::new();
@@ -38,27 +36,28 @@ fn main() -> Result<(), Box<dyn Error>> {
         smaller_buffer.conv(&GAUSSIAN);
         smaller_buffer.conv(&SOBEL);
         smaller_buffer.threshold_percentile::<2>();
+        /*
+        let mut circle_transform = HoughCircles::new(
+            0..smaller_buffer.width,
+            0..smaller_buffer.height,
+            50..100,
+            600,
+        );
+        let circles = smaller_buffer.apply(&mut circle_transform);
+        println!("Found {} circles", circles.len());
 
-        //let mut circle_transform = HoughCircles::new(
-        //    0..smaller_buffer.width,
-        //    0..smaller_buffer.height,
-        //    100..200,
-        //    120,
-        //);
-        //let circles = smaller_buffer.apply(&mut circle_transform);
-        //println!("Found {} circles", circles.len());
-
-        //circles
-        //    .iter()
-        //    .for_each(|circle| circle.draw(&mut smaller_buffer, 255));
+        circles
+            .iter()
+            .for_each(|circle| circle.draw(&mut smaller_buffer, 255));
+        */
 
         let mut line_transform = HoughLines::new(
             (0..(((smaller_buffer.width.clone().pow(2) + smaller_buffer.height.clone().pow(2))
                 as f32)
                 .sqrt() as usize))
-                .step_by(50),
-            (-90)..90,
-            30,
+                .step_by(1),
+            (-180)..180,
+            10,
             (10, 100),
         );
         let lines = smaller_buffer.apply(&mut line_transform);
