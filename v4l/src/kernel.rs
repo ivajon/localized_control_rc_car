@@ -24,6 +24,23 @@ pub static GAUSSIAN: Kernel<f32, 3, 3, false> = Kernel {
     ],
 };
 
+pub static AVERAGING: Kernel<i32, 5, 5, true> = Kernel {
+    data: [
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+    ],
+};
+
+pub const fn averaging<const SIZE: usize>() -> Kernel<i32, SIZE, SIZE, true> {
+    Kernel {
+        data: [[1; SIZE]; SIZE],
+    }
+}
+
+#[derive(Clone)]
 pub struct Kernel<
     T: Sized
         + Mul<T, Output = T>

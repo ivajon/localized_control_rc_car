@@ -4,7 +4,7 @@ use std::{
     ops::{Add, AddAssign, Div, Index, IndexMut, Mul},
 };
 
-use crate::{kernel::Kernel, sealed::Conversions, transform::Transform};
+use crate::{kernel::Kernel, sealed::Conversions, transform::Transform, HighLight};
 
 pub trait ColorCode {
     type Marker: Clone;
@@ -120,10 +120,6 @@ impl<'buffer> Buffer<'buffer, GrayScale> {
             .for_each(|(target, source)| *target = source);
     }
 
-    pub fn apply<T: Transform<GrayScale>>(&self, transform: &mut T) -> T::Output {
-        transform.apply(self)
-    }
-
     pub fn down_sample<'target, const SCALING: usize>(
         self,
         target: &'target mut Vec<u8>,
@@ -218,9 +214,31 @@ impl<'buffer> Buffer<'buffer, GrayScale> {
     pub fn limit_lower(&mut self, limit: u8) {
         for el in self.buffer.iter_mut() {
             if *el < limit {
-                *el = limit;
+                *el = 0;
             }
         }
+    }
+}
+
+impl<'buffer> From<&Buffer<'buffer, GrayScale>> for Vec<HighLight> {
+    fn from(value: &Buffer<'buffer, GrayScale>) -> Self {
+        let mut x = 0;
+        let mut y = 0;
+        let next = |y: &mut usize, x: &mut usize| {
+            *x += 1;
+            if *x >= value.width {
+                *x = 0;
+                *y += 1
+            }
+        };
+        let mut ret = Vec::new();
+        for element in value.buffer.iter() {
+            if *element == 255 {
+                ret.push(HighLight { x, y });
+            };
+            next(&mut y, &mut x);
+        }
+        ret
     }
 }
 
@@ -249,6 +267,6 @@ impl<'mine, 'theirs, Color: ColorCode> AddAssign<&Buffer<'theirs, Color>> for Bu
         self.buffer
             .iter_mut()
             .zip(rhs.buffer.iter())
-            .for_each(|(mine, theirs)| *mine = *theirs);
+            .for_each(|(mine, theirs)| *mine = ((*mine as u16 + *theirs as u16) / 2) as u8);
     }
 }

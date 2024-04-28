@@ -1,4 +1,7 @@
-use std::{fmt::Debug, ops::IndexMut};
+use std::{
+    fmt::{Debug, Display},
+    ops::IndexMut,
+};
 
 use crate::buffer::{Buffer, ColorCode};
 
@@ -19,14 +22,14 @@ impl Circle {
 
 #[derive(Debug)]
 pub struct Line {
-    rho: usize,
+    rho: isize,
     theta: f32,
-    start: (usize, usize),
-    stop: (usize, usize),
+    pub(crate) start: (usize, usize),
+    pub(crate) stop: (usize, usize),
 }
 
 impl Line {
-    pub fn new(rho: usize, theta: f32, start: (usize, usize), stop: (usize, usize)) -> Self {
+    pub fn new(rho: isize, theta: f32, start: (usize, usize), stop: (usize, usize)) -> Self {
         Self {
             rho,
             theta,
@@ -39,7 +42,7 @@ impl Line {
 impl<'buffer, Color: ColorCode> Draw<'buffer, Color> for Line
 where
     Buffer<'buffer, Color>: IndexMut<(usize, usize), Output = Color::Marker>,
-    Color::Marker: Debug,
+    Color::Marker: Debug + Display,
 {
     fn draw(&self, buffer: &mut Buffer<'buffer, Color>, marker: Color::Marker) {
         let ypx =
@@ -47,22 +50,26 @@ where
 
         if self.start.0 == self.stop.0 {
             let x = self.start.0;
+
             for y in self.start.1..((self.stop.1 + 1).min(buffer.height)) {
                 buffer[(x, y)] = marker.clone();
             }
             return;
         }
-
+        let mut y = self.start.1 as f32;
         for x in self.start.0..((self.stop.0 + 1).min(buffer.width)) {
-            let (theta, rho, x_inner) = (self.theta, self.rho as f32, x as f32);
-            for i in 0..((1. / ypx) as usize) {
-                let y = (ypx * (i as f32) * (x as f32 - self.start.0 as f32)) as usize; //((-theta.cos() / theta.sin()) * x_inner + rho / theta.sin()).max(0.) as usize;
+            /*let (theta, rho, x_inner) = (self.theta, self.rho as f32, x as f32);
+            let y = ((-theta.cos() / theta.sin()) * x_inner + rho / theta.sin());
+            println!("Y float {y}");
+            let y = y.abs() as usize;
+            */
 
-                if y < buffer.height && self.start.1 < y && self.stop.1 > y {
-                    buffer[(x, y)] = marker.clone();
-                } else {
-                }
+            if y < buffer.height as f32 {
+                buffer[(x, y.abs() as usize)] = marker.clone();
+            } else {
+                // THIS SHOULD BE UNREACHABLE
             }
+            y += ypx;
         }
     }
 }

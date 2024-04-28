@@ -10,12 +10,17 @@ pub mod rgb_stream;
 pub mod transform;
 
 pub(crate) mod sealed {
-    pub(crate) trait Conversions<Target: Sized> {
+    pub trait Conversions<Target: Sized> {
         fn convert_to(self) -> Target;
         fn convert_from(value: Target) -> Self;
     }
 }
 use sealed::*;
+
+pub struct HighLight {
+    x: usize,
+    y: usize,
+}
 
 pub fn display_buffer(buffer: &Buffer<'_, GrayScale>, path: &'static str) -> ImageResult<()> {
     let width = buffer.width;
