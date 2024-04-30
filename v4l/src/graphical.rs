@@ -3,19 +3,19 @@ use std::{
     ops::IndexMut,
 };
 
-use crate::buffer::{Buffer, ColorCode};
+use crate::{buffer::Buffer, color_code::ColorCode};
 
-pub trait Draw<'buffer, Color: ColorCode> {
-    fn draw(&self, buffer: &mut Buffer<'buffer, Color>, marker: Color::Marker);
+pub trait Draw<Color: ColorCode> {
+    fn draw(&self, buffer: &mut Buffer<Color>, marker: Color::Marker);
 }
 
 pub struct Circle {
-    center: (usize, usize),
-    radius: usize,
+    center: (isize, isize),
+    radius: isize,
 }
 
 impl Circle {
-    pub fn new(center: (usize, usize), radius: usize) -> Self {
+    pub fn new(center: (isize, isize), radius: isize) -> Self {
         Self { center, radius }
     }
 }
@@ -39,12 +39,12 @@ impl Line {
     }
 }
 
-impl<'buffer, Color: ColorCode> Draw<'buffer, Color> for Line
+impl<Color: ColorCode> Draw<Color> for Line
 where
-    Buffer<'buffer, Color>: IndexMut<(usize, usize), Output = Color::Marker>,
+    Buffer<Color>: IndexMut<(usize, usize), Output = Color::Marker>,
     Color::Marker: Debug + Display,
 {
-    fn draw(&self, buffer: &mut Buffer<'buffer, Color>, marker: Color::Marker) {
+    fn draw(&self, buffer: &mut Buffer<Color>, marker: Color::Marker) {
         let ypx =
             (self.stop.1 as f32 - self.start.1 as f32) / (self.stop.0 as f32 - self.start.0 as f32);
 
@@ -58,7 +58,8 @@ where
         }
         let mut y = self.start.1 as f32;
         for x in self.start.0..((self.stop.0 + 1).min(buffer.width)) {
-            /*let (theta, rho, x_inner) = (self.theta, self.rho as f32, x as f32);
+            /*
+            let (theta, rho, x_inner) = (self.theta, self.rho as f32, x as f32);
             let y = ((-theta.cos() / theta.sin()) * x_inner + rho / theta.sin());
             println!("Y float {y}");
             let y = y.abs() as usize;
@@ -74,35 +75,37 @@ where
     }
 }
 
-impl<'buffer, Color: ColorCode> Draw<'buffer, Color> for Circle
+impl<Color: ColorCode> Draw<Color> for Circle
 where
-    Buffer<'buffer, Color>: IndexMut<(usize, usize), Output = Color::Marker>,
+    Buffer<Color>: IndexMut<(usize, usize), Output = Color::Marker>,
 {
-    fn draw(&self, buffer: &mut Buffer<'buffer, Color>, marker: Color::Marker) {
+    fn draw(&self, buffer: &mut Buffer<Color>, marker: Color::Marker) {
         let x_min = match self.center.0 <= self.radius {
             true => 0,
             false => self.center.0 - self.radius,
         };
-        let x_max = match self.center.0 + self.radius > buffer.width {
+
+        let x_max = match (self.center.0 + self.radius) as usize > buffer.width {
             true => buffer.width,
-            false => self.center.0 + self.radius,
+            false => (self.center.0 + self.radius) as usize,
         };
 
         let y_min = match self.center.1 <= self.radius {
             true => 0,
             false => self.center.1 - self.radius,
         };
-        let y_max = match self.center.1 + self.radius > buffer.height {
+
+        let y_max = match (self.center.1 + self.radius) as usize > buffer.height {
             true => buffer.height,
-            false => self.center.1 + self.radius,
+            false => (self.center.1 + self.radius) as usize,
         };
 
-        for x in x_min..x_max {
-            for y in y_min..y_max {
+        for x in x_min..(x_max as isize) {
+            for y in y_min..(y_max as isize) {
                 let (x, y) = (x as f32, y as f32);
                 let radius = ((x - self.center.0 as f32).powf(2.)
                     + (y - self.center.1 as f32).powf(2.))
-                .sqrt() as usize;
+                .sqrt() as isize;
 
                 if radius == self.radius {
                     buffer[(x as usize, y as usize)] = marker.clone();

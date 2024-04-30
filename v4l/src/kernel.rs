@@ -1,9 +1,6 @@
 use std::ops::{AddAssign, Div, Mul};
 
-use crate::{
-    buffer::{Buffer, GrayScale},
-    sealed::Conversions,
-};
+use crate::{buffer::Buffer, color_code::ColorCode, sealed::Conversions};
 
 pub static SOBEL: Kernel<i32, 3, 3, true> = Kernel {
     data: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]],
@@ -72,9 +69,9 @@ impl<
     const X_CENTER: usize = { WIDTH / 2 };
     const Y_CENTER: usize = { HEIGHT / 2 };
 
-    pub fn apply(
+    pub fn apply<Color: ColorCode<Marker = u8>>(
         &self,
-        buffer: &mut Buffer<'_, GrayScale>,
+        buffer: &mut Buffer<Color>,
         center_x: usize,
         center_y: usize,
         target: &mut [u8],

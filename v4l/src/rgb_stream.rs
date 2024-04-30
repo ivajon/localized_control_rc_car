@@ -7,9 +7,8 @@ use eye_hal::{
     Error,
     PlatformContext,
 };
-use image::GrayImage;
 
-use crate::buffer::ColorCode;
+use crate::{buffer::Buffer, color_code::ColorCode};
 
 pub struct VideoStream<'device, Color: ColorCode> {
     stream: eye_hal::platform::Stream<'device>,
@@ -37,8 +36,8 @@ impl<'device, Color: ColorCode> VideoStream<'device, Color> {
 
         Ok(Self {
             stream,
-            description,
             color: PhantomData,
+            description,
         })
     }
 
@@ -50,8 +49,8 @@ impl<'device, Color: ColorCode> VideoStream<'device, Color> {
     }
 }
 
-impl<'device, Color: ColorCode> Iterator for VideoStream<'device, Color> {
-    type Item = Vec<u8>;
+impl<'device, Color: ColorCode> Iterator for &mut VideoStream<'device, Color> {
+    type Item = Buffer<Color>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let frame = match self.stream.next() {
@@ -62,13 +61,17 @@ impl<'device, Color: ColorCode> Iterator for VideoStream<'device, Color> {
             _ => return None,
         };
 
-        let mut decoder = jpeg::Decoder::new(BufReader::new(frame));
+        let mut decoder = jpeg::Decoder::new(BufReader::new(frame.clone()));
 
         let pixels = match decoder.decode() {
             Ok(v) => v,
             _ => return None,
         };
 
-        Some(Color::from_rgb(pixels))
+        Some(Buffer::new(
+            Color::from_rgb(&pixels),
+            self.description.width as usize,
+            self.description.height as usize,
+        ))
     }
 }

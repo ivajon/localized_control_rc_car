@@ -1,7 +1,8 @@
 use std::error::Error;
 
 use rcv::{
-    buffer::{Buffer, GrayScale},
+    buffer::Buffer,
+    color_code::{GrayScale, Green, RGB},
     display_buffer,
     graphical::Draw,
     kernel::{averaging, AVERAGING, GAUSSIAN, LAPLACIAN, PREWIT, SOBEL},
@@ -11,32 +12,35 @@ use rcv::{
 
 extern crate jpeg_decoder as jpeg;
 
-const SCALING: usize = 8;
+const SCALING: usize = 10;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut stream = VideoStream::<GrayScale>::new()?;
+    let mut stream_handle = VideoStream::<RGB>::new()?;
+    let mut stream = stream_handle.into_iter();
 
     let (width, height) = stream.dimensions();
 
     for _i in 0..500 {
-        let mut pixels = stream.next().unwrap();
+        let buffer_color: Buffer<RGB> = stream.next().unwrap();
 
-        let mut buffer = crate::Buffer::new(pixels.as_mut_slice(), width, height);
-
-        buffer.limit_upper(200);
-        buffer.limit_lower(100);
+        let mut buffer = buffer_color.convert::<Green>();
 
         display_buffer(&buffer, "old_image.png").unwrap();
 
+        buffer.limit_upper(200);
+        //buffer.limit_lower(100);
+        buffer.conv(&GAUSSIAN);
+        buffer.conv(&averaging::<5>());
+
         let mut target = Vec::new();
-        let mut smaller_buffer = buffer.down_sample::<SCALING>(&mut target);
+        let mut smaller_buffer: Buffer<Green> = buffer.down_sample::<SCALING>(target);
 
         smaller_buffer.conv(&GAUSSIAN);
+        //smaller_buffer.conv(&LAPLACIAN);
+        //smaller_buffer.threshold_percentile::<5>();
+        //smaller_buffer.conv(&averaging::<5>());
         smaller_buffer.conv(&LAPLACIAN);
-        smaller_buffer.threshold_percentile::<10>();
-        smaller_buffer.conv(&averaging::<3>());
-        smaller_buffer.threshold_percentile::<10>();
-        smaller_buffer.conv(&SOBEL);
+        //smaller_buffer.conv(&GAUSSIAN);
         //smaller_buffer.threshold_percentile::<20>();
         //smaller_buffer.limit_lower(20);
 
@@ -46,10 +50,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let highlights: Vec<rcv::HighLight> = (&smaller_buffer).into();
 
         let circle_transform = HoughCircles::new(
-            0..smaller_buffer.width,
-            0..smaller_buffer.height,
-            1..100,
-            100,
+            0..(smaller_buffer.width as isize),
+            0..(smaller_buffer.height as isize),
+            10..(smaller_buffer.height / 2),
+            55,
         );
         let circles = circle_transform.apply(&highlights);
         println!("Found {} circles", circles.len());
@@ -63,11 +67,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         let max_len = ((smaller_buffer.width.clone().pow(2) + smaller_buffer.height.clone().pow(2))
             as f32)
             .sqrt() as isize;
+
+        /*
         let line_transform = HoughLines::new(
-            ((-max_len)..max_len).step_by(10),
+            ((-max_len)..max_len).step_by(1),
             //(-90)..90,
             (-90)..90,
-            30 as u32,
+            5 as u32,
             (1, 200),
         );
 
@@ -84,7 +90,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         lines
             .iter()
             .for_each(|line| line.draw(&mut line_buffer, 255));
+
         display_buffer(&line_buffer, "result_image_lines.png").unwrap();
+        */
         println!("Drew the lines");
     }
     Ok(())

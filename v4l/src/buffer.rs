@@ -4,70 +4,18 @@ use std::{
     ops::{Add, AddAssign, Div, Index, IndexMut, Mul},
 };
 
-use crate::{kernel::Kernel, sealed::Conversions, transform::Transform, HighLight};
+use crate::{
+    color_code::{ColorCode, GrayScale, RGB},
+    kernel::Kernel,
+    sealed::Conversions,
+    transform::Transform,
+    HighLight,
+};
 
-pub trait ColorCode {
-    type Marker: Clone;
-    fn into_grayscale(current: Vec<u8>) -> Vec<u8>;
-    fn from_rgb(current: Vec<u8>) -> Vec<u8>;
-}
-
-pub struct RGB {}
-impl ColorCode for RGB {
-    type Marker = [u8; 3];
-
-    fn into_grayscale(current: Vec<u8>) -> Vec<u8> {
-        let mut ret = Vec::new();
-        let mut cnt = 1;
-        let mut sum = 0;
-        for el in current {
-            sum += el;
-            if cnt % 3 == 0 {
-                let avg = sum / 3;
-                ret.push(avg);
-                sum = 0;
-            }
-
-            cnt += 1;
-        }
-        ret
-    }
-
-    fn from_rgb(current: Vec<u8>) -> Vec<u8> {
-        current
-    }
-}
-
-pub struct GrayScale {}
-impl ColorCode for GrayScale {
-    type Marker = u8;
-
-    fn into_grayscale(current: Vec<u8>) -> Vec<u8> {
-        current
-    }
-
-    fn from_rgb(current: Vec<u8>) -> Vec<u8> {
-        let mut ret = Vec::new();
-        let mut cnt = 1;
-        let mut sum: u32 = 0;
-        for el in current {
-            sum += el as u32;
-            if cnt % 3 == 0 {
-                let avg = sum / 3;
-                ret.push(avg as u8);
-                sum = 0;
-            }
-
-            cnt += 1;
-        }
-        ret
-    }
-}
-
-pub struct Buffer<'buffer, Color: ColorCode> {
+pub struct Buffer<Color: ColorCode> {
     pub width: usize,
     pub height: usize,
-    pub buffer: &'buffer mut [u8],
+    pub buffer: Vec<u8>,
     color: PhantomData<Color>,
 }
 
@@ -75,8 +23,8 @@ fn remap(source: usize, prev_max: usize, new_max: usize) -> usize {
     ((source as f32) / ((prev_max - 1) as f32) * ((new_max - 1) as f32)) as usize
 }
 
-impl<'buffer> Buffer<'buffer, GrayScale> {
-    pub fn new(buffer: &'buffer mut [u8], width: usize, height: usize) -> Self {
+impl<Color: ColorCode> Buffer<Color> {
+    pub fn new(buffer: Vec<u8>, width: usize, height: usize) -> Self {
         Self {
             width,
             height,
@@ -84,7 +32,19 @@ impl<'buffer> Buffer<'buffer, GrayScale> {
             color: PhantomData,
         }
     }
+}
 
+impl Buffer<RGB> {
+    pub fn convert<DestColor: ColorCode>(&self) -> Buffer<DestColor> {
+        Buffer {
+            width: self.width,
+            height: self.height,
+            buffer: DestColor::from_rgb(&self.buffer),
+            color: PhantomData,
+        }
+    }
+}
+impl<Color: ColorCode<Marker = u8>> Buffer<Color> {
     /// Dead simple implementation of a convolution.
     ///
     /// TODO! Break this in to threaded convolutions, we could have a thread
@@ -120,10 +80,7 @@ impl<'buffer> Buffer<'buffer, GrayScale> {
             .for_each(|(target, source)| *target = source);
     }
 
-    pub fn down_sample<'target, const SCALING: usize>(
-        self,
-        target: &'target mut Vec<u8>,
-    ) -> Buffer<'target, GrayScale> {
+    pub fn down_sample<const SCALING: usize>(self, mut target: Vec<u8>) -> Buffer<Color> {
         let target_height = self.height / SCALING;
         let target_width = self.width / SCALING;
 
@@ -220,8 +177,8 @@ impl<'buffer> Buffer<'buffer, GrayScale> {
     }
 }
 
-impl<'buffer> From<&Buffer<'buffer, GrayScale>> for Vec<HighLight> {
-    fn from(value: &Buffer<'buffer, GrayScale>) -> Self {
+impl<Color: ColorCode<Marker = u8>> From<&Buffer<Color>> for Vec<HighLight> {
+    fn from(value: &Buffer<Color>) -> Self {
         let mut x = 0;
         let mut y = 0;
         let next = |y: &mut usize, x: &mut usize| {
@@ -242,7 +199,7 @@ impl<'buffer> From<&Buffer<'buffer, GrayScale>> for Vec<HighLight> {
     }
 }
 
-impl<'buffer> Index<(usize, usize)> for Buffer<'buffer, GrayScale> {
+impl<Color: ColorCode<Marker = u8>> Index<(usize, usize)> for Buffer<Color> {
     type Output = <GrayScale as ColorCode>::Marker;
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
@@ -251,7 +208,7 @@ impl<'buffer> Index<(usize, usize)> for Buffer<'buffer, GrayScale> {
         &self.buffer[idx]
     }
 }
-impl<'buffer> IndexMut<(usize, usize)> for Buffer<'buffer, GrayScale> {
+impl<Color: ColorCode<Marker = u8>> IndexMut<(usize, usize)> for Buffer<Color> {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         let (x, y) = index;
         let idx = x + y * self.width;
@@ -259,8 +216,8 @@ impl<'buffer> IndexMut<(usize, usize)> for Buffer<'buffer, GrayScale> {
     }
 }
 
-impl<'mine, 'theirs, Color: ColorCode> AddAssign<&Buffer<'theirs, Color>> for Buffer<'mine, Color> {
-    fn add_assign(&mut self, rhs: &Buffer<'theirs, Color>) {
+impl<Color: ColorCode<Marker = u8>> AddAssign<&Buffer<Color>> for Buffer<Color> {
+    fn add_assign(&mut self, rhs: &Buffer<Color>) {
         assert!(rhs.width == self.width, "Operands must have same width");
         assert!(rhs.height == self.height, "Operands must have same height");
 

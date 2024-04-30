@@ -1,9 +1,11 @@
 //! Defines a few exports that allow us to do simple computer vision tasks.
 #![feature(const_trait_impl)]
-use buffer::{Buffer, GrayScale};
+use buffer::Buffer;
+use color_code::ColorCode;
 use image::{GrayImage, ImageResult, Luma};
 
 pub mod buffer;
+pub mod color_code;
 pub mod graphical;
 pub mod kernel;
 pub mod rgb_stream;
@@ -22,7 +24,10 @@ pub struct HighLight {
     y: usize,
 }
 
-pub fn display_buffer(buffer: &Buffer<'_, GrayScale>, path: &'static str) -> ImageResult<()> {
+pub fn display_buffer<Color: ColorCode<Marker = u8>>(
+    buffer: &Buffer<Color>,
+    path: &'static str,
+) -> ImageResult<()> {
     let width = buffer.width;
     let mut image_buffer = GrayImage::new(buffer.width as u32, buffer.height as u32);
     for (y, row) in image_buffer.rows_mut().enumerate() {
