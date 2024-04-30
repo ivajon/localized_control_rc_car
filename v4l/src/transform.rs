@@ -385,7 +385,7 @@ impl Transform<GrayScale> for HoughCircles {
                 }
             }
         }
-        println!("TOP 3 VOTES {top3:?}");
+        //println!("TOP 3 VOTES {top3:?}");
         /*if let Some((votes, (a, b, r))) = top {
             vec![Circle::new(
                 ((a as isize + a_min), (b as isize + b_min)),

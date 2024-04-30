@@ -10,7 +10,7 @@ pub trait Draw<Color: ColorCode> {
 }
 
 pub struct Circle {
-    center: (isize, isize),
+    pub center: (isize, isize),
     radius: isize,
 }
 

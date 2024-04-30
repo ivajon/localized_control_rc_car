@@ -12,6 +12,7 @@ use crate::{
     HighLight,
 };
 
+#[derive(Clone)]
 pub struct Buffer<Color: ColorCode> {
     pub width: usize,
     pub height: usize,

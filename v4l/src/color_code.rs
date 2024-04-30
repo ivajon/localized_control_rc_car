@@ -1,9 +1,10 @@
-pub trait ColorCode {
+pub trait ColorCode: Clone {
     type Marker: Clone;
     fn into_grayscale(current: Vec<u8>) -> Vec<u8>;
     fn from_rgb(current: &Vec<u8>) -> Vec<u8>;
 }
 
+#[derive(Clone)]
 pub struct RGB {}
 impl ColorCode for RGB {
     type Marker = [u8; 3];
@@ -30,6 +31,7 @@ impl ColorCode for RGB {
     }
 }
 
+#[derive(Clone)]
 pub struct Red {}
 impl ColorCode for Red {
     type Marker = u8;
@@ -51,6 +53,7 @@ impl ColorCode for Red {
     }
 }
 
+#[derive(Clone)]
 pub struct Green {}
 impl ColorCode for Green {
     type Marker = u8;
@@ -72,6 +75,7 @@ impl ColorCode for Green {
     }
 }
 
+#[derive(Clone)]
 pub struct GrayScale {}
 impl ColorCode for GrayScale {
     type Marker = u8;
