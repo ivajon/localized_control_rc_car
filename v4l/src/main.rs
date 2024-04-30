@@ -2,7 +2,7 @@ use std::error::Error;
 
 use rcv::{
     buffer::Buffer,
-    color_code::{GrayScale, Green, RGB},
+    color_code::{GrayScale, Green, Red, RGB},
     display_buffer,
     graphical::Draw,
     kernel::{averaging, AVERAGING, GAUSSIAN, LAPLACIAN, PREWIT, SOBEL},

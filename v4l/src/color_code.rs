@@ -1,4 +1,3 @@
-
 pub trait ColorCode {
     type Marker: Clone;
     fn into_grayscale(current: Vec<u8>) -> Vec<u8>;
