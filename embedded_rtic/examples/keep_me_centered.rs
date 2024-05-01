@@ -226,7 +226,9 @@ mod app {
                 },
             }
         }
-        cx.local.event_manager.clear();
+        // This should not be needed.
+        // we might even miss new events if we do this.
+        // cx.local.event_manager.clear();
     }
 
     #[task(local = [queue, receiver_velocity], shared = [velocity],priority=5)]
