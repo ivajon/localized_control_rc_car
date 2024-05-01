@@ -69,7 +69,6 @@ impl<'a> Iterator for EventIter<'a> {
                 }
             }
             2 => {
-                gpiote.channel0().clear();
                 if gpiote.channel1().is_event_triggered() {
                     Some(GpioEvents::Sonar(SONAR_MAPPING[0]))
                 } else {
@@ -77,7 +76,6 @@ impl<'a> Iterator for EventIter<'a> {
                 }
             }
             3 => {
-                gpiote.channel1().clear();
                 if gpiote.channel2().is_event_triggered() {
                     Some(GpioEvents::Sonar(SONAR_MAPPING[1]))
                 } else {
@@ -85,7 +83,6 @@ impl<'a> Iterator for EventIter<'a> {
                 }
             }
             4 => {
-                gpiote.channel2().clear();
                 if gpiote.channel3().is_event_triggered() {
                     Some(GpioEvents::Sonar(SONAR_MAPPING[2]))
                 } else {
@@ -93,14 +90,15 @@ impl<'a> Iterator for EventIter<'a> {
                 }
             }
             5 => {
+                gpiote.channel0().clear();
+                gpiote.channel1().clear();
+                gpiote.channel2().clear();
                 gpiote.channel3().clear();
                 gpiote.reset_events();
                 // gpiote.port().reset_events();
                 None
             }
-            _ => {
-                None
-            }
+            _ => None,
         }
     }
 }

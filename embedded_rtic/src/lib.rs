@@ -96,6 +96,7 @@ pub fn exit() -> ! {
 
 /// Computes the distance for a specific sensor channel and sends that in the
 /// specified [`Sender`].
+#[inline(always)]
 pub fn compute_distance(
     sonar: usize,
     channels: &mut [Sender<'static, u32, CAPACITY>],
@@ -125,6 +126,7 @@ pub fn compute_distance(
 }
 
 /// Computes the velocity of the car based on time stamps in micro seconds.
+#[inline(always)]
 pub fn compute_velocity(
     previous_time: &mut Option<u64>,
     time: u64,
@@ -140,8 +142,7 @@ pub fn compute_velocity(
             trace!("Velocity : {:?} cm/s", vel);
             *previous_time = Some(time);
 
-            let _ = sender
-                .try_send(vel as i32);
+            let _ = sender.try_send(vel as i32);
         }
         None => {
             *previous_time = Some(time);

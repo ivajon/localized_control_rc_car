@@ -139,10 +139,10 @@ mod app {
         let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
         Mono::start(cx.device.TIMER0, token);
 
-        trigger_timestamped::spawn().ok();
-        controll_loop_steering::spawn().ok();
-        controll_loop_velocity::spawn().ok();
-        intermediary::spawn().ok();
+        trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
+        controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
+        controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
+        intermediary::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
@@ -226,7 +226,8 @@ mod app {
                 },
             }
         }
-        cx.local.event_manager.clear();
+        // This should not be needed.
+        // cx.local.event_manager.clear();
     }
 
     #[task(local = [queue, receiver_velocity], shared = [velocity],priority=5)]
@@ -349,62 +350,22 @@ mod app {
         }
     }
 
-    #[task(priority = 2, local = [trig_forward], shared = [])]
-    /// Send a small pulse to the sonars.
-    ///
-    /// The sonars will then notify us in echo when the sound waves are
-    /// received.
-    async fn trigger_forward(cx: trigger_forward::Context) {
-        // Set high is always valid.
-        cx.local.trig_forward.set_high().unwrap();
-
-        let now = Mono::now();
-        Mono::delay_until(now + 20.micros()).await;
-
-        // Set low is always valid.
-        cx.local.trig_forward.set_low().unwrap();
-    }
-
-    #[task(priority = 4, local = [trig_left], shared = [])]
-    /// Send a small pulse to the sonars.
-    ///
-    /// The sonars will then notify us in echo when the sound waves are
-    /// received.
-    async fn trigger_left(cx: trigger_left::Context) {
-        // Set high is always valid.
-        cx.local.trig_left.set_high().unwrap();
-
-        let now = Mono::now();
-        Mono::delay_until(now + 20.micros()).await;
-
-        // Set low is always valid.
-        cx.local.trig_left.set_low().unwrap();
-    }
-
-    #[task(priority = 4, local = [trig_right], shared = [])]
-    /// Send a small pulse to sonar 3.
-    ///
-    /// The sonar will then notify us in echo when the sound wave are
-    /// received.
-    async fn trigger_right(cx: trigger_right::Context) {
-        // Set high is always valid.
-        cx.local.trig_right.set_high().unwrap();
-
-        let now = Mono::now();
-        Mono::delay_until(now + 20.micros()).await;
-
-        // Set low is always valid.
-        cx.local.trig_right.set_low().unwrap();
-    }
-
-    #[task(priority = 2,local = [receiver_left,receiver_right,sender_sonar_packets])]
+    #[task(priority = 2,local = [
+           receiver_left,trig_left,
+           receiver_right,trig_right,
+           sender_sonar_packets])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(cx: trigger_timestamped::Context) {
         let mut time_stamp: u32 = 0;
         loop {
             // Receive data from the second sonar
-            trigger_left::spawn().unwrap_or_else(|_| panic!());
-            trigger_right::spawn().unwrap_or_else(|_| panic!());
+            cx.local.trig_left.set_high().unwrap();
+            cx.local.trig_right.set_high().unwrap();
+            let now = Mono::now();
+            Mono::delay_until(now + 20.micros()).await;
+            cx.local.trig_left.set_low().unwrap();
+            cx.local.trig_right.set_low().unwrap();
+
             let distance_left = cx.local.receiver_left.recv().await.unwrap();
             info!("Left distance : {:?}", distance_left);
             let distance_right = cx.local.receiver_right.recv().await.unwrap();
