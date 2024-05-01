@@ -88,7 +88,10 @@ pub mod wrappers {
     use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
     use rtic_monotonics::nrf::timer::Timer0 as Mono;
 
-    use super::{constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS}, Pid};
+    use super::{
+        constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS},
+        Pid,
+    };
 
     /// The spi device used.
     pub type SpiInstance = SPIS0;

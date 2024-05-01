@@ -23,7 +23,7 @@ mod app {
     use arraydeque::{ArrayDeque, Wrapping};
     use controller::{
         car::{
-            constants::{Sonar, ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
+            constants::{Sonar, CAPACITY, ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
             wrappers::{MotorController, ServoController},
@@ -57,7 +57,6 @@ mod app {
     };
 
     /// The message queue capacity
-    const CAPACITY: usize = 5;
     const SMOOTHING: usize = 10;
     const BUFFER_SIZE: usize = <V0_0_2 as Version>::HEADER_SIZE + <V0_0_2 as Version>::PACKET_SIZE;
     /// The duration type
@@ -427,8 +426,8 @@ mod app {
             let diff = (dl as i32) - (dr as i32);
 
             // Register measurement and actuate.
-            cx.local.servo.follow([refference]);
-            cx.local.servo.register_measurement(diff, ts);
+            cx.local.servo.follow([refference as f32]);
+            cx.local.servo.register_measurement(diff as f32, ts);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
 
             Mono::delay_until(

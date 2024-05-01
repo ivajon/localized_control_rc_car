@@ -66,7 +66,7 @@ mod app {
     #[allow(dead_code)]
     struct Local {
         //Sonar 1
-        trig_forward: Pin<Output<PushPull>>,
+        // trig_forward: Pin<Output<PushPull>>,
         // receiver_forward: Receiver<'static, u32, CAPACITY>,
 
         // Sonar 2
@@ -115,7 +115,7 @@ mod app {
 
         let (sonar_forward, sonar_left, sonar_right, _hal_effect) = pins.consume();
 
-        let (trig_forward, _echo_forward) = sonar_forward.split();
+        let (_trig_forward, _echo_forward) = sonar_forward.split();
         let (trig_left, _echo_left) = sonar_left.split();
         let (trig_right, _echo_right) = sonar_right.split();
 
@@ -151,7 +151,7 @@ mod app {
             },
             Local {
                 //Sonar 1
-                trig_forward,
+                // trig_forward,
                 // receiver_forward: Receiver<'static, u32, CAPACITY>,
 
                 // Sonar 2
@@ -230,13 +230,16 @@ mod app {
         // cx.local.event_manager.clear();
     }
 
-    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=5)]
+    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=3)]
     /// Acts as a trampoline for data processing thus, hopefully reducing the
     /// time spent in `compute_vel`.
     async fn intermediary(mut cx: intermediary::Context) {
         info!("Waiting for message");
         // Wait for a new velocity reading, smooth it using the queue and then set the
         // average value in measurement.
+
+        // If we have scheduling issues again we should probably remove this.
+        // it is not impossible either that the issue is th
 
         while let Ok(vel) = cx.local.receiver_velocity.recv().await {
             cx.local.queue.push_back(vel);
@@ -338,6 +341,7 @@ mod app {
 
             // Register measurement and actuate.
             cx.local.servo.register_measurement(diff as f32, ts);
+            // TODO! Follow something else here.
             cx.local.servo.follow([0.]);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
 
