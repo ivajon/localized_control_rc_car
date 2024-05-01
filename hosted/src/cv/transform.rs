@@ -98,6 +98,9 @@ impl<
 
                 // Algorithm extesion allowing us to limit line length.
                 let dist = ((x.pow(2) + y.pow(2)) as f32).sqrt();
+                
+
+
                 let max_dist =
                     (((*x_max as f32).powf(2.) + (*y_max as f32).powf(2.)) as f32).sqrt();
                 let min_dist = ((*x_min as f32).powf(2.) + (*y_min as f32).powf(2.)).sqrt();
@@ -108,6 +111,7 @@ impl<
                 let length_if_new_max = ((*x as f32 - *x_min as f32).powf(2.)
                     + (*y as f32 - *y_min as f32).powf(2.))
                 .sqrt();
+
 
                 if dist > max_dist && length_if_new_max < self.line_length.1 as f32 {
                     *x_max = *x;
@@ -133,7 +137,6 @@ impl<
                     * 100.) as u32;
 
                 if dist > self.voting_threshold {
-                    info!("Line with vote {:?}", votes);
                     let ys = match taken.get_mut(x_min) {
                         Some(ys) => ys,
                         None => {
@@ -273,9 +276,6 @@ impl<Color: ColorCode<Marker = u8>> Transform<Color> for HoughCircles {
         for (a, bs) in param_space.iter() {
             for (b, radii) in bs.iter() {
                 for (radius, votes) in radii.iter() {
-                    //println!("Circle with center ({a},{b}) and radius {radius} has {votes}
-                    // votes");
-
                     for (idx, v) in top3.clone().iter().enumerate() {
                         if *v <= *votes {
                             if idx < 2 {
@@ -285,7 +285,14 @@ impl<Color: ColorCode<Marker = u8>> Transform<Color> for HoughCircles {
                             break;
                         }
                     }
-                    if *votes > self.voting_threshold
+
+                    let threshold =
+                        (100. * (*votes as f32 / (2. * 3.1415 * *radius as f32))) as u32;
+                    info!(
+                        "Circle with center ({a},{b}) and radius {radius} has {threshold}
+                    votes"
+                    );
+                    if threshold > self.voting_threshold
                         && taken.get(&(a + a_min, b + b_min)).is_none()
                     {
                         //println!("ACCEPTED CIRCLE with center ({a},{b}) and radius {radius} has

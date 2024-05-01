@@ -14,7 +14,7 @@ use super::{
     color_code::{ColorCode, GrayScale, Green, RGB},
     draw_on_canvas,
     graphical::{Circle, Line},
-    kernel::{averaging, GAUSSIAN, LAPLACIAN},
+    kernel::{averaging, GAUSSIAN, LAPLACIAN, SOBEL},
     rgb_stream::VideoStream,
     transform::{HoughCircles, HoughLines, Transform},
     HighLight,
@@ -82,12 +82,12 @@ impl Vision {
                 .x_bounds([0., img.width as f64])
                 .y_bounds([0., img.height as f64])
                 .paint(move |ctx| {
-                    // points.iter().for_each(|HighLight { x, y }| {
-                    //     ctx.draw(&Points {
-                    //         coords: &[(*x as f64, (img.height - *y) as f64)],
-                    //         color: GrayScale::get_color(&GrayScale::highlight()),
-                    //     })
-                    // });
+                    points.iter().for_each(|HighLight { x, y }| {
+                        ctx.draw(&Points {
+                            coords: &[(*x as f64, (img.height - *y) as f64)],
+                            color: GrayScale::get_color(&GrayScale::highlight()),
+                        })
+                    });
 
                     if let Some(mut gc) = gc.clone() {
                         gc.center.1 = img.height as isize - gc.center.1;
@@ -111,23 +111,25 @@ impl Vision {
     fn process<Color: ColorCode<Marker = u8>>(
         mut buffer: Buffer<Color>,
     ) -> (Buffer<Color>, Vec<Circle<Color>>) {
-        buffer.limit_upper(200);
-        //buffer.limit_lower(100);
-        buffer.conv(&GAUSSIAN);
-        buffer.conv(&averaging::<5>());
+        buffer.conv(&averaging::<{ SCALING + 1 }>());
 
         let mut smaller_buffer: Buffer<Color> = buffer.down_sample::<SCALING>();
 
         smaller_buffer.conv(&GAUSSIAN);
         smaller_buffer.conv(&LAPLACIAN);
-        smaller_buffer.threshold_percentile::<5>();
+        smaller_buffer.conv(&GAUSSIAN);
+        smaller_buffer.threshold_percentile::<10>();
+        smaller_buffer.conv(&GAUSSIAN);
+        smaller_buffer.threshold_percentile::<10>();
         let highlights: Vec<HighLight> = (&smaller_buffer).into();
 
         let circle_transform = HoughCircles::new(
             0..(smaller_buffer.width as isize),
             0..(smaller_buffer.height as isize),
-            10..(smaller_buffer.height / 2),
-            50,
+            (smaller_buffer.height / 5)..(smaller_buffer.height / 2),
+            // 50,
+            // We have to be this many percent sure that the circle is there.
+            80,
         );
         (smaller_buffer, circle_transform.apply(&highlights))
     }
@@ -154,7 +156,7 @@ impl Vision {
             kernel.apply(buffer, x, y, &mut target_buff);
             // This is super duper slow, we should re-do this.
             let to_check = Buffer::<Color>::new(target_buff.clone(), buffer.width, buffer.height);
-            if to_check[(x, y)] > 150 {
+            if to_check[(x, y)] > 200 {
                 return Some(circle.clone().convert());
             }
         }
@@ -176,23 +178,23 @@ impl Vision {
 
                 frames
             };
-            gray_frame.limit_upper(200);
-            //buffer.limit_lower(100);
-            gray_frame.conv(&GAUSSIAN);
-            gray_frame.conv(&averaging::<5>());
+            gray_frame.conv(&averaging::<{ SCALING + 1 }>());
 
             let mut smaller_buffer: Buffer<GrayScale> = gray_frame.down_sample::<SCALING>();
 
             smaller_buffer.conv(&GAUSSIAN);
             smaller_buffer.conv(&LAPLACIAN);
-            smaller_buffer.threshold_percentile::<5>();
+            smaller_buffer.threshold_percentile::<10>();
+            smaller_buffer.conv(&GAUSSIAN);
+            smaller_buffer.conv(&GAUSSIAN);
+            smaller_buffer.threshold_percentile::<10>();
             let highlights: Vec<HighLight> = (&smaller_buffer).into();
 
             let max_len = (smaller_buffer.width.pow(2) as f32 + smaller_buffer.height.pow(2) as f32)
                 .sqrt() as isize;
 
             let line_transform: HoughLines<std::ops::Range<isize>, std::ops::Range<isize>> =
-                HoughLines::new(0..180, 0..(max_len), 70, (5, 40));
+                HoughLines::new(0..180, 0..(max_len), 80, (30, 60));
 
             let lines: Vec<Line<GrayScale>> = line_transform.apply(&highlights);
             info!("Found lines : {:?}", lines);
@@ -227,8 +229,7 @@ impl Vision {
 
             if let Some(_circle) = green_circle.clone() {
                 unwrap_or_return!(sender.send(StateChange::Start).await);
-            }
-            if let Some(_circle) = red_circle.clone() {
+            } else if let Some(_circle) = red_circle.clone() {
                 unwrap_or_return!(sender.send(StateChange::Stop).await);
             }
             {
