@@ -35,6 +35,8 @@ pub struct InputBox {
 /// This channel gets an f64 whenever there is a new value
 /// to send to some target, spi or similar.
 pub type CommitReader = mpsc::Receiver<f64>;
+/// Writes to the commit channel.
+pub type CommitWriter = mpsc::Sender<f64>;
 /// This channel gets () whenever the program
 /// should be shut down i.e. q is pressed in normal mode.
 pub type KillReader = mpsc::Receiver<()>;
@@ -47,6 +49,7 @@ pub type RedrawWriter = mpsc::Sender<()>;
 pub type InputConstructor = (
     Arc<Mutex<Box<InputBox>>>,
     CommitReader,
+    CommitWriter,
     KillReader,
     Vec<tokio::task::JoinHandle<()>>,
 );
@@ -73,8 +76,6 @@ type EnterWriter = mpsc::Sender<()>;
 type QReader = mpsc::Receiver<()>;
 /// Sends () when q is pressed.
 type QWriter = mpsc::Sender<()>;
-/// Sends a number when enter is pressed and there is a number in the buffer.
-type CommitWriter = mpsc::Sender<f64>;
 /// Sends a request to the thread pool to exit the program when q is pressed in normal mode.
 type KillWriter = mpsc::Sender<()>;
 
@@ -112,6 +113,7 @@ impl InputBox {
         (
             ret.clone(),
             commit_reader,
+            commit_writer.clone(),
             kill_reader,
             vec![
                 tokio::spawn(Self::mode_switcher(ret.clone(), mode_reader)),

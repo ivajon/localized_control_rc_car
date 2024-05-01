@@ -19,6 +19,11 @@ shared = {path = "../shared"}
 
 linux-embedded-hal = { version = "0.4.0", features =["spidev"]} 
 
+eye = "0.5.0"
+eye-hal = "0.2.0"
+show-image = "0.14.0"
+image = "0.25.1"
+jpeg-decoder = "0.3.1"
 [profile.release]
 debug = true
 
@@ -26,6 +31,11 @@ debug = true
 [[example]]
 name = "graphing"
 path = "examples/graphing.rs"
+required-features = ["tui"]
+
+[[example]]
+name = "cv"
+path = "examples/cv.rs"
 required-features = ["tui"]
 
 [features]
