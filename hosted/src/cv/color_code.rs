@@ -102,7 +102,7 @@ impl ColorCode for Green {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct GrayScale {}
 impl ColorCode for GrayScale {
     type Marker = u8;

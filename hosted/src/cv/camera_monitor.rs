@@ -1,5 +1,6 @@
 use std::{io, sync::Arc};
 
+use log::info;
 use ratatui::widgets::{
     canvas::{Canvas, Points},
     Widget,
@@ -12,10 +13,10 @@ use super::{
     buffer::Buffer,
     color_code::{ColorCode, GrayScale, Green, RGB},
     draw_on_canvas,
-    graphical::Circle,
+    graphical::{Circle, Line},
     kernel::{averaging, GAUSSIAN, LAPLACIAN},
     rgb_stream::VideoStream,
-    transform::{HoughCircles, Transform},
+    transform::{HoughCircles, HoughLines, Transform},
     HighLight,
 };
 
@@ -26,6 +27,8 @@ pub struct Vision {
         Option<Circle<Green>>,
         Option<Circle<Red>>,
     )>,
+
+    latest_edges: Vec<Line<GrayScale>>,
 }
 
 #[derive(Clone, PartialEq)]
@@ -59,17 +62,19 @@ impl Vision {
         let vision = Arc::new(Mutex::new(Vision {
             latest_images: None,
             latest_process_result: None,
+            latest_edges: Vec::new(),
         }));
 
         let join_handles = vec![
             tokio::spawn(Self::stream_consumer(stream_handle, vision.clone())),
             tokio::spawn(Self::feature_extraction(vision.clone(), sender)),
+            tokio::spawn(Self::line_extraction(vision.clone())),
         ];
         Ok((vision, join_handles))
     }
 
     /// Returns a drawable widget with the latest information.
-    pub fn widget(&self) -> Option<impl Widget> {
+    pub fn widget(&self) -> Option<impl Widget + '_> {
         let (img, gc, rc) = self.latest_process_result.clone()?;
         let points: Vec<HighLight> = (&img).into();
         Some(
@@ -77,12 +82,12 @@ impl Vision {
                 .x_bounds([0., img.width as f64])
                 .y_bounds([0., img.height as f64])
                 .paint(move |ctx| {
-                    points.iter().for_each(|HighLight { x, y }| {
-                        ctx.draw(&Points {
-                            coords: &[(*x as f64, (img.height - *y) as f64)],
-                            color: GrayScale::get_color(&GrayScale::highlight()),
-                        })
-                    });
+                    // points.iter().for_each(|HighLight { x, y }| {
+                    //     ctx.draw(&Points {
+                    //         coords: &[(*x as f64, (img.height - *y) as f64)],
+                    //         color: GrayScale::get_color(&GrayScale::highlight()),
+                    //     })
+                    // });
 
                     if let Some(mut gc) = gc.clone() {
                         gc.center.1 = img.height as isize - gc.center.1;
@@ -91,6 +96,12 @@ impl Vision {
                     if let Some(mut rc) = rc.clone() {
                         rc.center.1 = img.height as isize - rc.center.1;
                         ctx.draw(&rc);
+                    }
+
+                    for mut line in self.latest_edges.clone() {
+                        line.start.1 = img.height as usize - line.start.1;
+                        line.stop.1 = img.height as usize - line.stop.1;
+                        ctx.draw(&line.clone());
                     }
                 })
                 .marker(ratatui::symbols::Marker::Dot),
@@ -150,10 +161,10 @@ impl Vision {
         None
     }
 
-    async fn feature_extraction<'device>(vision: Arc<Mutex<Vision>>, sender: FeatureSender) {
+    async fn line_extraction(vision: Arc<Mutex<Vision>>) {
         loop {
-            let (gray_frame, mut green_frame, mut red_frame) = {
-                let mut stream = vision.lock().await;
+            let (mut gray_frame, _green_frame, _red_frame) = {
+                let stream = vision.lock().await;
                 if stream.latest_images.is_none() {
                     // This will likely not happen.
                     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
@@ -161,7 +172,50 @@ impl Vision {
                 }
 
                 // This was just checked.
-                let frames = unsafe { stream.latest_images.take().unwrap_unchecked() };
+                let frames = unsafe { stream.latest_images.clone().unwrap_unchecked() };
+
+                frames
+            };
+            gray_frame.limit_upper(200);
+            //buffer.limit_lower(100);
+            gray_frame.conv(&GAUSSIAN);
+            gray_frame.conv(&averaging::<5>());
+
+            let mut smaller_buffer: Buffer<GrayScale> = gray_frame.down_sample::<SCALING>();
+
+            smaller_buffer.conv(&GAUSSIAN);
+            smaller_buffer.conv(&LAPLACIAN);
+            smaller_buffer.threshold_percentile::<5>();
+            let highlights: Vec<HighLight> = (&smaller_buffer).into();
+
+            let max_len = (smaller_buffer.width.pow(2) as f32 + smaller_buffer.height.pow(2) as f32)
+                .sqrt() as isize;
+
+            let line_transform: HoughLines<std::ops::Range<isize>, std::ops::Range<isize>> =
+                HoughLines::new(0..180, 0..(max_len), 70, (5, 40));
+
+            let lines: Vec<Line<GrayScale>> = line_transform.apply(&highlights);
+            info!("Found lines : {:?}", lines);
+
+            {
+                let mut stream = vision.lock().await;
+                stream.latest_edges = lines;
+            }
+        }
+    }
+
+    async fn feature_extraction(vision: Arc<Mutex<Vision>>, sender: FeatureSender) {
+        loop {
+            let (gray_frame, mut green_frame, mut red_frame) = {
+                let stream = vision.lock().await;
+                if stream.latest_images.is_none() {
+                    // This will likely not happen.
+                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                    continue;
+                }
+
+                // This was just checked.
+                let frames = unsafe { stream.latest_images.clone().unwrap_unchecked() };
 
                 frames
             };

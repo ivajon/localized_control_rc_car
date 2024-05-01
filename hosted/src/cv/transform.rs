@@ -4,6 +4,8 @@ use std::{
     ops::Range,
 };
 
+use log::info;
+
 use super::{
     buffer::Buffer,
     color_code::{ColorCode, GrayScale},
@@ -47,11 +49,12 @@ impl<
         Color: ColorCode<Marker = u8>,
     > Transform<Color> for HoughLines<RhoIter, ThetaIter>
 {
-    type Output = Vec<Line<GrayScale>>;
+    type Output = Vec<Line<Color>>;
 
     fn apply<'buffer>(&self, highlights: &Vec<HighLight>) -> Self::Output {
         let rho_min = self.rho.clone().min().unwrap();
         let rho_max = self.rho.clone().max().unwrap();
+        let theta_min = self.theta.clone().next().unwrap();
 
         let cs: Vec<(f32, f32, isize)> = self
             .theta
@@ -70,21 +73,10 @@ impl<
 
         // ASSUMING THAT THE IMAGE IS 0 or 255 at this point.
         for HighLight { x, y } in highlights {
-            let mut checked = HashSet::<(i32, i32)>::new();
             for (cos, sin, theta) in cs.iter() {
-                let (cos_i, sin_i) = (*cos as i32, *sin as i32);
-
-                if !checked.insert((cos_i, sin_i)) {
-                    //continue;
-                }
-
-                //self.theta.clone() {
                 let rho = (cos * *x as f32 + sin * *y as f32) as isize;
 
-                //println!("THETA : {theta} -> {rho} for {x},{y}");
-
                 if rho >= rho_max || rho < rho_min {
-                    //println!("GENERATED INVALID RHO");
                     continue;
                 }
 
@@ -96,7 +88,7 @@ impl<
                     }
                 };
 
-                let (count, (x_min, y_min), (x_max, y_max)) = match thetas.get_mut(&theta) {
+                let (votes, (x_min, y_min), (x_max, y_max)) = match thetas.get_mut(&theta) {
                     Some(value) => value,
                     None => {
                         thetas.insert(*theta, (0, (usize::MAX, usize::MAX), (0, 0)));
@@ -104,8 +96,7 @@ impl<
                     }
                 };
 
-                *count += 1;
-
+                // Algorithm extesion allowing us to limit line length.
                 let dist = ((x.pow(2) + y.pow(2)) as f32).sqrt();
                 let max_dist =
                     (((*x_max as f32).powf(2.) + (*y_max as f32).powf(2.)) as f32).sqrt();
@@ -121,12 +112,13 @@ impl<
                 if dist > max_dist && length_if_new_max < self.line_length.1 as f32 {
                     *x_max = *x;
                     *y_max = *y;
-                }
-                if (*x_min == *y_min && *x_min == usize::MAX)
+                    *votes += 1;
+                } else if (*x_min == *y_min && *x_min == usize::MAX)
                     || dist < min_dist && length_if_new_min < self.line_length.1 as f32
                 {
                     *x_min = *x;
                     *y_min = *y;
+                    *votes += 1;
                 }
             }
         }
@@ -136,7 +128,12 @@ impl<
         let mut taken: HashMap<usize, HashMap<usize, Vec<(usize, usize)>>> = HashMap::new();
         for (rho, thetas) in param_space.iter() {
             for (theta, (votes, (x_min, y_min), (x_max, y_max))) in thetas.iter() {
-                if *votes > self.voting_threshold {
+                let dist = ((*votes as f32
+                    / ((x_max - x_min).pow(2) as f32 + (y_max - y_min).pow(2) as f32).sqrt())
+                    * 100.) as u32;
+
+                if dist > self.voting_threshold {
+                    info!("Line with vote {:?}", votes);
                     let ys = match taken.get_mut(x_min) {
                         Some(ys) => ys,
                         None => {
@@ -153,10 +150,12 @@ impl<
                     };
 
                     if end_points.contains(&(*x_max, *y_max)) {
+                        // We have already covered these two points just with a sliiiiiightly
+                        // different set of angles.
                         continue;
-                    } else {
-                        end_points.push((*x_max, *y_max));
                     }
+
+                    end_points.push((*x_max, *y_max));
                     let x_dist = *x_max as f32 - *x_min as f32;
                     let y_dist = *y_max as f32 - *y_min as f32;
                     let dist = (x_dist.powf(2.) + y_dist.powf(2.)).sqrt() as usize;
@@ -164,7 +163,7 @@ impl<
                     if dist >= self.line_length.0 && dist <= self.line_length.1 {
                         ret.push(Line::new(
                             rho + rho_min,
-                            *theta as f32,
+                            (*theta + theta_min) as f32,
                             (*x_min, *y_min),
                             (*x_max, *y_max),
                         ))

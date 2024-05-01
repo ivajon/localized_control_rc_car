@@ -108,33 +108,16 @@ where
     }
 }
 
-impl<Color: ColorCode> Shape for Line<Color>
-where
-    Color::Marker: Debug + Display,
-{
+impl<Color: ColorCode> Shape for Line<Color> {
     fn draw(&self, painter: &mut ratatui::widgets::canvas::Painter) {
-        let ypx =
-            (self.stop.1 as f32 - self.start.1 as f32) / (self.stop.0 as f32 - self.start.0 as f32);
-
-        if self.start.0 == self.stop.0 {
-            let x = self.start.0;
-
-            for y in self.start.1..(self.stop.1 + 1) {
-                painter.paint(x, y, Color::get_color(&Color::highlight()))
-            }
-            return;
-        }
-        let mut y = self.start.1 as f32;
-        for x in self.start.0..(self.stop.0 + 1) {
-            /*
-            let (theta, rho, x_inner) = (self.theta, self.rho as f32, x as f32);
-            let y = ((-theta.cos() / theta.sin()) * x_inner + rho / theta.sin());
-            println!("Y float {y}");
-            let y = y.abs() as usize;
-            */
-            painter.paint(x, y as usize, Color::get_color(&Color::highlight()));
-            y += ypx;
-        }
+        ratatui::widgets::canvas::Line::new(
+            self.start.0 as f64,
+            self.start.1 as f64,
+            self.stop.0 as f64,
+            self.stop.1 as f64,
+            Color::get_color(&Color::highlight()),
+        )
+        .draw(painter)
     }
 }
 

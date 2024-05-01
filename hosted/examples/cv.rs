@@ -6,6 +6,7 @@
 
 use hosted::{
     cv::camera_monitor::{StateChange, Vision},
+    init_logging,
     spi::Spi,
     tui::{
         graph::{Graph, MeasurementWriter},
@@ -18,6 +19,11 @@ use rand::Rng;
 use ratatui::layout::{Constraint, Layout};
 use shared::protocol::v0_0_1::{Payload, V0_0_1};
 use std::{error::Error, sync::Arc};
+
+use log::{info, LevelFilter};
+use log4rs::append::{console::ConsoleAppender, file::FileAppender};
+use log4rs::config::{Appender, Config, Root};
+use log4rs::encode::pattern::PatternEncoder;
 
 use tokio::{
     sync::{
@@ -174,6 +180,7 @@ async fn thread_manager(
 ) {
     let _ = kill_command.recv().await;
 
+    println!("Killing the program");
     // Do not unwrap would be strange if the thread managed died due to a process having died.
     let _ = frontend_killer.send(()).await;
     threads.into_iter().for_each(|handle| {
@@ -184,8 +191,41 @@ async fn thread_manager(
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // console_subscriber::init();
+    let file_path = "/tmp/foo.log";
+
+    // Build a stderr logger.
+
+    // Logging to log file.
+    let logfile = FileAppender::builder()
+        // Pattern: https://docs.rs/log4rs/*/log4rs/encode/pattern/index.html
+        .encoder(Box::new(PatternEncoder::new("{l} - {m}\n")))
+        .build(file_path)
+        .unwrap();
+
+    // Log Trace level output to file where trace is the default level
+    // and the programmatically specified level to stderr.
+    let config = Config::builder()
+        .appender(Appender::builder().build("logfile", Box::new(logfile)))
+        .build(
+            Root::builder()
+                .appender("logfile")
+                .build(LevelFilter::Trace),
+        )
+        .unwrap();
+
+    // Use this to change log levels at runtime.
+    // This means you can change the default log level to trace
+    // if you are trying to debug an issue and need more logs on then turn it off
+    // once you are done.
+    let _handle = log4rs::init_config(config)?;
+
+
+    info!("Application started");
 
     let _ = start_app().await;
+    println!("Cleanup completed, cya :)");
+    info!("Application closed");
+
     Ok(())
 }
 
@@ -269,6 +309,7 @@ async fn start_app() -> Result<(), ()> {
 
     // Block until all threads exit
     let _ = kill_handle.await;
+
     Ok(())
 }
 
@@ -316,16 +357,13 @@ async fn run_frontend(
                 graph.widget()
             };
 
-            let image = {
-                let image = vision.lock().await;
-                image.widget()
-            };
-
             let vertical =
                 Layout::vertical([Constraint::Percentage(70), Constraint::Percentage(30)]);
             let horizontal =
                 Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
 
+            let image_source = vision.lock().await;
+            let image = image_source.widget();
             let res = terminal.draw(|frame| {
                 let [chart, text_area] = vertical.areas(frame.size());
                 let [chart, image_area] = horizontal.areas(chart);
