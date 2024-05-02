@@ -12,7 +12,7 @@ pub trait Draw<Color: ColorCode>: Shape {
     fn draw(&self, buffer: &mut Buffer<Color>, marker: Color::Marker);
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct Circle<Color: ColorCode> {
     pub center: (isize, isize),
     pub radius: isize,

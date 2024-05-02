@@ -6,6 +6,7 @@ use eye_hal::{
     traits::{Context, Device, Stream},
     Error, PlatformContext,
 };
+use log::info;
 
 use super::{buffer::Buffer, color_code::ColorCode};
 
@@ -29,6 +30,8 @@ impl<'device, Color: ColorCode> VideoStream<'device, Color> {
         // Query for available streams and just choose the first one.
         let streams = dev.streams()?;
         let description = streams[0].clone();
+
+        info!("Stream started with {:?}",description);
 
         let stream = dev.start_stream(&description)?;
 

@@ -12,7 +12,7 @@ use crate::cv::color_code::Red;
 use super::{
     buffer::Buffer,
     color_code::{ColorCode, GrayScale, Green, RGB},
-    draw_on_canvas,
+    display_buffer, draw_on_canvas,
     graphical::{Circle, Line},
     kernel::{averaging, GAUSSIAN, LAPLACIAN, SOBEL},
     rgb_stream::VideoStream,
@@ -68,7 +68,7 @@ impl Vision {
         let join_handles = vec![
             tokio::spawn(Self::stream_consumer(stream_handle, vision.clone())),
             tokio::spawn(Self::feature_extraction(vision.clone(), sender)),
-            tokio::spawn(Self::line_extraction(vision.clone())),
+            // tokio::spawn(Self::line_extraction(vision.clone())),
         ];
         Ok((vision, join_handles))
     }
@@ -117,19 +117,19 @@ impl Vision {
 
         smaller_buffer.conv(&GAUSSIAN);
         smaller_buffer.conv(&LAPLACIAN);
-        smaller_buffer.conv(&GAUSSIAN);
         smaller_buffer.threshold_percentile::<10>();
+        // smaller_buffer.conv(&LAPLACIAN);
         smaller_buffer.conv(&GAUSSIAN);
-        smaller_buffer.threshold_percentile::<10>();
+        smaller_buffer.threshold_percentile::<5>();
         let highlights: Vec<HighLight> = (&smaller_buffer).into();
 
         let circle_transform = HoughCircles::new(
             0..(smaller_buffer.width as isize),
             0..(smaller_buffer.height as isize),
-            (smaller_buffer.height / 5)..(smaller_buffer.height / 2),
+            15..(smaller_buffer.height / 2),
             // 50,
             // We have to be this many percent sure that the circle is there.
-            80,
+            95,
         );
         (smaller_buffer, circle_transform.apply(&highlights))
     }
@@ -145,7 +145,7 @@ impl Vision {
             return None;
         }
 
-        let kernel = averaging::<5>();
+        let kernel = averaging::<15>();
 
         let mut target_buff = buffer.buffer.clone();
         for circle in circles.iter() {
@@ -156,7 +156,8 @@ impl Vision {
             kernel.apply(buffer, x, y, &mut target_buff);
             // This is super duper slow, we should re-do this.
             let to_check = Buffer::<Color>::new(target_buff.clone(), buffer.width, buffer.height);
-            if to_check[(x, y)] > 200 {
+            info!("circle with color : {}", to_check[(x, y)]);
+            if to_check[(x, y)] > 220 {
                 return Some(circle.clone().convert());
             }
         }
@@ -197,7 +198,7 @@ impl Vision {
                 HoughLines::new(0..180, 0..(max_len), 80, (30, 60));
 
             let lines: Vec<Line<GrayScale>> = line_transform.apply(&highlights);
-            info!("Found lines : {:?}", lines);
+            // info!("Found lines : {:?}", lines);
 
             {
                 let mut stream = vision.lock().await;
@@ -223,14 +224,19 @@ impl Vision {
             };
 
             let (gray, circles) = Self::process(gray_frame);
-
+            // info!("Found circles : {circles:?}");
             let green_circle = Self::detect(&circles, &mut green_frame);
             let red_circle = Self::detect(&circles, &mut red_frame);
 
+            // display_buffer(&green_frame, "green.png");
+            // display_buffer(&red_frame, "red.png");
+
             if let Some(_circle) = green_circle.clone() {
                 unwrap_or_return!(sender.send(StateChange::Start).await);
-            } else if let Some(_circle) = red_circle.clone() {
-                unwrap_or_return!(sender.send(StateChange::Stop).await);
+            } else {
+                if let Some(_circle) = red_circle.clone() {
+                    unwrap_or_return!(sender.send(StateChange::Stop).await);
+                }
             }
             {
                 let mut stream = vision.lock().await;
@@ -256,8 +262,10 @@ impl Vision {
                 continue;
             }
             let grey_frame = rgb_frame.convert::<GrayScale>();
-            let green_frame = rgb_frame.convert::<Green>();
-            let red_frame = rgb_frame.convert::<Red>();
+            let mut green_frame = rgb_frame.convert::<Green>();
+            green_frame.threshold_percentile::<5>();
+            let mut red_frame = rgb_frame.convert::<Red>();
+            red_frame.threshold_percentile::<5>();
             {
                 let mut vision_inner = vision.lock().await;
                 vision_inner.latest_images = Some((grey_frame, green_frame, red_frame));

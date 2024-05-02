@@ -98,6 +98,8 @@ impl<
 
                 // Algorithm extesion allowing us to limit line length.
                 let dist = ((x.pow(2) + y.pow(2)) as f32).sqrt();
+                
+
 
                 let max_dist =
                     (((*x_max as f32).powf(2.) + (*y_max as f32).powf(2.)) as f32).sqrt();
@@ -109,6 +111,7 @@ impl<
                 let length_if_new_max = ((*x as f32 - *x_min as f32).powf(2.)
                     + (*y as f32 - *y_min as f32).powf(2.))
                 .sqrt();
+
 
                 if dist > max_dist && length_if_new_max < self.line_length.1 as f32 {
                     *x_max = *x;
@@ -220,21 +223,16 @@ impl<Color: ColorCode<Marker = u8>> Transform<Color> for HoughCircles {
             })
             .collect();
 
-        let bucket_size = 5.;
-
         // ASSUMING THAT THE IMAGE IS 0 or 255 at this point.
         for HighLight { x, y } in highlights {
             let mut taken = HashSet::new();
             for radius in self.radius.clone() {
                 for (cosine, sine) in cs.iter() {
-                    let radius = ((radius as f32 / bucket_size).round() * bucket_size) as usize;
                     let a = (*x as f32 - (radius as f32 * cosine)) as isize;
-                    let a = ((a as f32 / bucket_size).round() * bucket_size) as isize;
                     if a >= a_max || a <= a_min {
                         continue;
                     }
                     let b = (*y as f32 - (radius as f32 * sine)) as isize;
-                    let b = ((b as f32 / bucket_size).round() * bucket_size) as isize;
                     if b >= b_max || b <= b_min {
                         continue;
                     }
@@ -291,7 +289,7 @@ impl<Color: ColorCode<Marker = u8>> Transform<Color> for HoughCircles {
                     let threshold =
                         (100. * (*votes as f32 / (2. * 3.1415 * *radius as f32))) as u32;
                     // info!(
-                    // "Circle with center ({a},{b}) and radius {radius} has {threshold}
+                        // "Circle with center ({a},{b}) and radius {radius} has {threshold}
                     // votes"
                     // );
                     if threshold > self.voting_threshold

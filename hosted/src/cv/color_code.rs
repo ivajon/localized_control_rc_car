@@ -62,10 +62,17 @@ impl ColorCode for Red {
     }
 
     fn from_rgb(current: &Vec<u8>) -> Vec<u8> {
+        let gray = GrayScale::from_rgb(&current.clone());
+        let mut px = 0;
         let mut ret = Vec::with_capacity(current.len() / 3);
         for (idx, el) in current.iter().enumerate() {
             if idx % 3 == 0 {
-                ret.push(*el)
+                if *el > gray[px] {
+                    ret.push((*el - gray[px])*2);
+                } else {
+                    ret.push(0);
+                }
+                px += 1;
             }
         }
         ret
@@ -92,17 +99,24 @@ impl ColorCode for Green {
     }
 
     fn from_rgb(current: &Vec<u8>) -> Vec<u8> {
+        let gray = GrayScale::from_rgb(&current.clone());
+        let mut px = 0;
         let mut ret = Vec::with_capacity(current.len() / 3);
         for (idx, el) in current.iter().enumerate() {
             if ((idx) % 3) == 1 {
-                ret.push(*el)
+                if *el > gray[px] {
+                    ret.push((*el - gray[px])*10);
+                } else {
+                    ret.push(0);
+                }
+                px += 1;
             }
         }
         ret
     }
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct GrayScale {}
 impl ColorCode for GrayScale {
     type Marker = u8;

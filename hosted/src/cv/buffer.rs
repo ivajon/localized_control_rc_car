@@ -118,14 +118,19 @@ impl<Color: ColorCode<Marker = u8>> Buffer<Color> {
 
         let mut count = 0;
         let mut threshold = 255;
+        let mut old_thresh = 255;
         while count < target_count {
             match histogram.next() {
                 Some((new_thresh, to_add)) => {
                     count += *to_add as usize;
+                    old_thresh = threshold;
                     threshold = new_thresh as u8;
                 }
                 None => return,
             }
+        }
+        if histogram.next().is_none() {
+            threshold = old_thresh;
         }
 
         for el in self.buffer.iter_mut() {
