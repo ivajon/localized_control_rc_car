@@ -59,6 +59,9 @@ mod app {
     struct Shared {
         velocity: (f32, u64),
         velocity_reference: f32,
+        difference: f32,
+        left_distance: (f32, u64),
+        right_distance: (f32, u64),
     }
 
     // Local resources go here
@@ -77,7 +80,7 @@ mod app {
         trig_right: Pin<Output<PushPull>>,
         receiver_right: Receiver<'static, u32, CAPACITY>,
 
-        receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
+        // receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
         sender_sonar_packets: Sender<'static, ((u32, u32), u32), CAPACITY>,
 
         receiver_velocity: Receiver<'static, i32, CAPACITY>,
@@ -126,7 +129,7 @@ mod app {
         // Pair right sonars sender and receiver
         let (sender_right, receiver_right) = make_channel!(u32, CAPACITY);
         // Channel for packed sonar data.
-        let (sender_sonar_packets, receiver_sonar_packets) =
+        let (sender_sonar_packets, _receiver_sonar_packets) =
             make_channel!(((u32, u32), u32), CAPACITY);
 
         let (sender_velocity, receiver_velocity) = make_channel!(i32, CAPACITY);
@@ -142,12 +145,15 @@ mod app {
         trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
         controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
         controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
-        intermediary::spawn().unwrap_or_else(|_| panic!());
+        // intermediary::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 120.,
+                velocity_reference: 10.,
+                difference: 0.,
+                left_distance: (0., 0),
+                right_distance: (0., 0),
             },
             Local {
                 //Sonar 1
@@ -162,7 +168,7 @@ mod app {
                 trig_right,
                 receiver_right,
 
-                receiver_sonar_packets,
+                // receiver_sonar_packets,
                 sender_sonar_packets,
 
                 sender_velocity,
@@ -188,7 +194,7 @@ mod app {
            flank:bool=false,
            prev_time:Option<u64> = None,
            sender_velocity
-    ],shared = [])]
+    ],shared = [velocity,left_distance,right_distance])]
     /// Reads the echo pin and check which sonar that triggered an event using
     /// their channels
     ///
@@ -196,12 +202,12 @@ mod app {
     /// On the falling edge this interrupt computes the "width" in time
     /// of the square wave thus allowing us to compute the time it took
     /// to echo back to us.
-    fn echo(cx: echo::Context) {
+    fn echo(mut cx: echo::Context) {
         // Get time ASAP for highest granularity
         let time = Mono::now();
 
         // Check which sonar triggered the event and store it in the array
-        let channels = cx.local.senders;
+        let _channels = cx.local.senders;
         let times = cx.local.times;
 
         // Now automagiaclly clears the pending bit after a case is handled.
@@ -213,24 +219,35 @@ mod app {
                         continue;
                     }
                     *cx.local.flank = true;
-                    compute_velocity(
-                        cx.local.prev_time,
-                        time.duration_since_epoch().to_micros(),
-                        cx.local.sender_velocity,
-                    )
+                    cx.shared.velocity.lock(|vel| {
+                        compute_velocity(
+                            cx.local.prev_time,
+                            time.duration_since_epoch().to_micros(),
+                            vel,
+                        )
+                    });
                 }
                 GpioEvents::Sonar(sonar) => match sonar {
-                    Sonar::Forward => compute_distance(0, channels, times, time),
-                    Sonar::Left => compute_distance(1, channels, times, time),
-                    Sonar::Right => compute_distance(2, channels, times, time),
+                    Sonar::Forward => { /* compute_distance(0, channels, times, time) */ }
+                    Sonar::Left => {
+                        cx.shared
+                            .left_distance
+                            .lock(|left_dist| compute_distance(1, left_dist, times, time));
+                    }
+                    Sonar::Right => {
+                        cx.shared
+                            .right_distance
+                            .lock(|right_dist| compute_distance(1, right_dist, times, time));
+                        // compute_distance(2, channels, times, time)
+                    }
                 },
             }
         }
         // This should not be needed.
-        // cx.local.event_manager.clear();
+        cx.local.event_manager.clear();
     }
 
-    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=3)]
+    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=1)]
     /// Acts as a trampoline for data processing thus, hopefully reducing the
     /// time spent in `compute_vel`.
     async fn intermediary(mut cx: intermediary::Context) {
@@ -299,90 +316,124 @@ mod app {
             let outer = measurement;
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
-
+            info!("After lock");
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
+            info!("I went sleep");
         }
     }
 
-    #[task(priority = 3, local = [receiver_sonar_packets,servo])]
-    async fn controll_loop_steering(cx: controll_loop_steering::Context) {
-        let mut prev = None;
+    #[task(priority = 4, local = [servo], shared = [difference])]
+    async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         loop {
             let start_time = Mono::now();
             // This should ensure that the sampling time is correct.
 
             // Dequeue all of the measured values and grab the latest one
-            let mut latest = prev;
-            // If we have more than one value recorded we discard the previous values.
-            while let Ok(new) = cx.local.receiver_sonar_packets.try_recv() {
-                latest = Some(new);
-            }
-
-            if latest.is_none() {
-                Mono::delay(1.secs()).await;
-                info!("No measurements yet.");
-                continue;
-            }
+            let latest = cx.shared.difference.lock(|diff| *diff);
 
             // TODO! Add in some way to cope with to slow measurements.
-            if latest == prev {
-                continue;
-            }
+            // if latest == prev {
+            // Mono::delay(1.secs()).await;
+            // continue;
+            // }
 
             // Previous check makes this safe.
-            let latest = unsafe { latest.unwrap_unchecked() };
 
-            let ((dl, dr), ts) = latest;
-
-            let diff = (dl as i32) - (dr as i32);
+            let diff = latest;
 
             info!("Distance difference : {:?}", diff);
 
             // Register measurement and actuate.
-            cx.local.servo.register_measurement(diff as f32, ts);
+            cx.local.servo.register_measurement(diff as f32, 0);
             // TODO! Follow something else here.
             cx.local.servo.follow([0.]);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
 
-            prev = Some(latest);
+            // prev = latest;
 
             Mono::delay_until(
                 start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
             )
             .await;
+            info!("steering went sleep");
         }
     }
 
-    #[task(priority = 2,local = [
+    #[task(priority = 4,local = [
            receiver_left,trig_left,
            receiver_right,trig_right,
-           sender_sonar_packets])]
+           sender_sonar_packets
+    ],
+    shared = [difference,left_distance,right_distance])]
     /// Re-spawn trigger after every new distance is correctly measured.
-    async fn trigger_timestamped(cx: trigger_timestamped::Context) {
-        let mut time_stamp: u32 = 0;
-        loop {
+    async fn trigger_timestamped(mut cx: trigger_timestamped::Context) {
+        // let mut time_stamp: u32 = 0;
+        let mut prev_dist_left = (0., 0);
+        let mut prev_dist_right = (0., 0);
+
+        'main: loop {
+            info!("Sending pulse");
             // Receive data from the second sonar
             cx.local.trig_left.set_high().unwrap();
+            let now = Mono::now();
+            Mono::delay_until(now + 30.micros()).await;
+            cx.local.trig_left.set_low().unwrap();
+
+            info!("Pulses should have been sent");
+
+            let mut count = 0;
+            loop {
+                if count >= 10 {
+                    continue 'main;
+                }
+                let mut new = (0., 0);
+                cx.shared.left_distance.lock(|left| {
+                    new = *left;
+                });
+                if new != prev_dist_left {
+                    prev_dist_left = new;
+                    break;
+                }
+                info!("Waiting for left");
+                Mono::delay(50.millis()).await;
+                count += 1;
+            }
+
             cx.local.trig_right.set_high().unwrap();
             let now = Mono::now();
-            Mono::delay_until(now + 20.micros()).await;
-            cx.local.trig_left.set_low().unwrap();
+            Mono::delay_until(now + 30.micros()).await;
             cx.local.trig_right.set_low().unwrap();
+            let mut count = 0;
+            loop {
+                if count >= 10 {
+                    continue 'main;
+                }
+                let mut new = (0., 0);
+                cx.shared.right_distance.lock(|right| {
+                    new = *right;
+                });
+                if new != prev_dist_right {
+                    prev_dist_right = new;
+                    break;
+                }
+                info!("Waiting for right");
+                Mono::delay(50.millis()).await;
+                count += 1;
+            }
 
-            let distance_left = cx.local.receiver_left.recv().await.unwrap();
+            let distance_left = prev_dist_left; //cx.local.receiver_left.recv().await.unwrap();
             info!("Left distance : {:?}", distance_left);
-            let distance_right = cx.local.receiver_right.recv().await.unwrap();
+            let distance_right = prev_dist_right; //cx.local.receiver_right.recv().await.unwrap();
             info!("Right distance : {:?}", distance_right);
+            info!("Pulses recieved");
 
-            cx.local
-                .sender_sonar_packets
-                .send(((distance_left, distance_right), time_stamp))
-                .await
-                .unwrap_or_else(|_| panic!());
+            cx.shared
+                .difference
+                .lock(|diff| *diff = distance_left.0 - distance_right.0);
 
-            time_stamp += 1;
-            Mono::delay(10.millis()).await;
+            Mono::delay(50.millis()).await;
+            // time_stamp += 1;
         }
     }
 }

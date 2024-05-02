@@ -36,18 +36,18 @@ pub mod constants {
         KD: 1,
         // 10^2
         SCALE: 2,
-        TS: 250_000,
+        TS: 125_000,
         TIMESCALE: 1_000_000,
     };
 
     /// The PID parameters for the ESC.
     pub const SERVO_PID_PARAMS: PidParams = PidParams {
-        KP: 150,
-        KI: 80,
-        KD: 5,
+        KP: 5,
+        KI: 10,
+        KD: 1,
         // 10^2
         SCALE: 2,
-        TS: 100_000, // 4 Hz should probly be higher
+        TS: 50_000, // 4 Hz should probly be higher
         TIMESCALE: 1_000_000,
     };
 

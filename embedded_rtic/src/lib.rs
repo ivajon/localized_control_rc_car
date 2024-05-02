@@ -58,11 +58,10 @@
 #![allow(clippy::manual_range_contains)]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
-use car::{constants::CAPACITY, wrappers::Instant};
+use car::wrappers::Instant;
 use defmt::trace;
 use defmt_rtt as _; // global logger
 use panic_probe as _;
-use rtic_sync::channel::Sender;
 
 use crate::car::constants::{MAGNET_SPACING, RADIUS}; // memory layout
 
@@ -99,7 +98,8 @@ pub fn exit() -> ! {
 #[inline(always)]
 pub fn compute_distance(
     sonar: usize,
-    channels: &mut [Sender<'static, u32, CAPACITY>],
+    distance: &mut (f32, u64),
+    // channels: &mut [Sender<'static, u32, CAPACITY>],
     times: &mut [Instant],
     time: Instant,
 ) {
@@ -108,19 +108,23 @@ pub fn compute_distance(
     if times[sonar] == zero {
         times[sonar] = time;
     } else {
-        let distance = time
+        let distance_computed = time
             .checked_duration_since(times[sonar])
             .unwrap()
             .to_micros()
             / 56;
-        match channels[sonar].try_send(distance as u32) {
-            Ok(_) => {}
-            _ => {
-                defmt::error!(
-                    "Distance FORWARD did not fit in to the buffer, scheduling is probably broken."
-                );
-            }
-        }
+        *distance = (
+            distance_computed as f32,
+            time.duration_since_epoch().to_micros(),
+        );
+        // match channels[sonar].try_send(distance as u32) {
+        // Ok(_) => {}
+        // _ => {
+        // defmt::error!(
+        // "Distance did not fit in to the buffer, scheduling is probably broken."
+        // );
+        // }
+        // }
         times[sonar] = zero;
     }
 }
@@ -130,7 +134,8 @@ pub fn compute_distance(
 pub fn compute_velocity(
     previous_time: &mut Option<u64>,
     time: u64,
-    sender: &mut Sender<'static, i32, CAPACITY>,
+    // sender: &mut Sender<'static, i32, CAPACITY>,
+    vel: &mut (f32, u64),
 ) {
     match previous_time {
         Some(value) => {
@@ -138,11 +143,12 @@ pub fn compute_velocity(
             let angvel = (MAGNET_SPACING as u64) * 1_000_000 / dt;
             let angvel = angvel / 10_000;
             trace!("Angular velocity {:?}", angvel);
-            let vel = RADIUS * angvel;
+            let velocity = RADIUS * angvel;
             trace!("Velocity : {:?} cm/s", vel);
             *previous_time = Some(time);
 
-            let _ = sender.try_send(vel as i32);
+            *vel = (velocity as f32, time);
+            // let _ = sender.try_send(vel as i32);
         }
         None => {
             *previous_time = Some(time);
