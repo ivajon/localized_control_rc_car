@@ -65,7 +65,7 @@ impl PinMapping<false, false, false, false> {
         let servo_output = p0.p0_06.into_push_pull_output(gpio::Level::High).degrade();
 
         // Inputs
-        let encoder = p0.p0_31.into_pullup_input().degrade();
+        let encoder = p1.p1_02.into_pullup_input().degrade();
 
         // Sonars
 
@@ -75,13 +75,13 @@ impl PinMapping<false, false, false, false> {
         };
 
         let sonar_left = SonarPins {
-            trigger: p0.p0_14.into_push_pull_output(gpio::Level::Low).degrade(),
-            echo: p0.p0_13.into_pulldown_input().degrade(),
+            trigger: p1.p1_06.into_push_pull_output(gpio::Level::Low).degrade(),
+            echo: p1.p1_05.into_pulldown_input().degrade(),
         };
 
         let sonar_right = SonarPins {
-            trigger: p0.p0_16.into_push_pull_output(gpio::Level::Low).degrade(),
-            echo: p0.p0_15.into_pulldown_input().degrade(),
+            trigger: p1.p1_03.into_push_pull_output(gpio::Level::Low).degrade(),
+            echo: p1.p1_04.into_pulldown_input().degrade(),
         };
 
         // Communications.

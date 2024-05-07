@@ -100,7 +100,7 @@ mod app {
     #[allow(dead_code)]
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
-        info!("init");
+        // info!("init");
         let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
 
         let p0 = gpio::p0::Parts::new(cx.device.P0);
@@ -150,7 +150,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 10.,
+                velocity_reference: 30.,
                 difference: 0.,
                 left_distance: (0., 0),
                 right_distance: (0., 0),
@@ -237,7 +237,7 @@ mod app {
                     Sonar::Right => {
                         cx.shared
                             .right_distance
-                            .lock(|right_dist| compute_distance(1, right_dist, times, time));
+                            .lock(|right_dist| compute_distance(2, right_dist, times, time));
                         // compute_distance(2, channels, times, time)
                     }
                 },
@@ -251,7 +251,7 @@ mod app {
     /// Acts as a trampoline for data processing thus, hopefully reducing the
     /// time spent in `compute_vel`.
     async fn intermediary(mut cx: intermediary::Context) {
-        info!("Waiting for message");
+        // info!("Waiting for message");
         // Wait for a new velocity reading, smooth it using the queue and then set the
         // average value in measurement.
 
@@ -289,12 +289,11 @@ mod app {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
 
                 // Lets say that the minimum speed we want to achive is 10 cm/s.
-                let angle = { 0.00001f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angle = { 1.0f32 * MAGNET_SPACING as f32 / 10_000f32 };
                 let angvel =
                     angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
 
                 let vel = RADIUS as f32 * angvel;
-                info!("Expected min vel to be  {:?}", vel);
 
                 measurement.0 -= vel;
 
@@ -305,7 +304,7 @@ mod app {
                 previous = measurement;
             }
 
-            info!("Previous speed {:?} target : {:?}", measurement, reference);
+            // info!("Previous speed {:?} target : {:?}", measurement, reference);
 
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
@@ -316,33 +315,38 @@ mod app {
             let outer = measurement;
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
-            info!("After lock");
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
-            info!("I went sleep");
         }
     }
 
     #[task(priority = 4, local = [servo], shared = [difference])]
     async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
+        let mut prev = 0.;
+        let mut prev_modified = 0.;
+
         loop {
             let start_time = Mono::now();
             // This should ensure that the sampling time is correct.
 
             // Dequeue all of the measured values and grab the latest one
-            let latest = cx.shared.difference.lock(|diff| *diff);
+            let mut latest = cx.shared.difference.lock(|diff| *diff);
 
             // TODO! Add in some way to cope with to slow measurements.
-            // if latest == prev {
-            // Mono::delay(1.secs()).await;
-            // continue;
-            // }
+            if latest == prev {
+                // info!("Servo controll too fast");
+                // prev_modified = prev_modified / 2.;
+                latest = prev_modified;
+            } else {
+                prev = latest;
+                prev_modified = latest;
+            }
 
             // Previous check makes this safe.
 
             let diff = latest;
 
-            info!("Distance difference : {:?}", diff);
+            // info!("Distance difference : {:?}", diff);
 
             // Register measurement and actuate.
             cx.local.servo.register_measurement(diff as f32, 0);
@@ -350,13 +354,10 @@ mod app {
             cx.local.servo.follow([0.]);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
 
-            // prev = latest;
-
             Mono::delay_until(
                 start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
             )
             .await;
-            info!("steering went sleep");
         }
     }
 
@@ -371,16 +372,26 @@ mod app {
         // let mut time_stamp: u32 = 0;
         let mut prev_dist_left = (0., 0);
         let mut prev_dist_right = (0., 0);
+        let mut left_outlier = 0;
+        let mut right_outlier = 0;
+
+        const OUTLIER_LIMIT: f32 = 150.;
+        const VOTE_THRESH: usize = 2;
+        // Do not expect any value larger than 300.
+        // const MAX_VALUE: f32 = 300.;
+
+        const SMOOTHING: usize = 10;
+        let mut window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
 
         'main: loop {
-            info!("Sending pulse");
             // Receive data from the second sonar
             cx.local.trig_left.set_high().unwrap();
+            cx.local.trig_right.set_high().unwrap();
             let now = Mono::now();
-            Mono::delay_until(now + 30.micros()).await;
-            cx.local.trig_left.set_low().unwrap();
+            Mono::delay_until(now + 25.micros()).await;
 
-            info!("Pulses should have been sent");
+            cx.local.trig_left.set_low().unwrap();
+            cx.local.trig_right.set_low().unwrap();
 
             let mut count = 0;
             loop {
@@ -392,18 +403,27 @@ mod app {
                     new = *left;
                 });
                 if new != prev_dist_left {
+                    // if new.0 > MAX_VALUE {
+                    // window.drain(..);
+                    // cx.shared.difference.lock(|diff| *diff = 0.);
+                    // continue 'main;
+                    // }
+                    let mut val = new.0 - prev_dist_left.0;
+                    if val < 0. {
+                        val = -val;
+                    }
+                    if val > OUTLIER_LIMIT && left_outlier < VOTE_THRESH {
+                        left_outlier += 1;
+                        continue 'main;
+                    }
+
                     prev_dist_left = new;
                     break;
                 }
-                info!("Waiting for left");
-                Mono::delay(50.millis()).await;
+                Mono::delay(1.millis()).await;
                 count += 1;
             }
 
-            cx.local.trig_right.set_high().unwrap();
-            let now = Mono::now();
-            Mono::delay_until(now + 30.micros()).await;
-            cx.local.trig_right.set_low().unwrap();
             let mut count = 0;
             loop {
                 if count >= 10 {
@@ -414,25 +434,47 @@ mod app {
                     new = *right;
                 });
                 if new != prev_dist_right {
+                    // if new.0 > MAX_VALUE {
+                    // window.drain(..);
+                    // cx.shared.difference.lock(|diff| *diff = 0.);
+                    // continue 'main;
+                    // }
+                    let mut val = new.0 - prev_dist_right.0;
+                    if val < 0. {
+                        val = -val;
+                    }
+                    if val > OUTLIER_LIMIT && right_outlier < VOTE_THRESH {
+                        right_outlier += 1;
+                        continue 'main;
+                    }
                     prev_dist_right = new;
                     break;
                 }
-                info!("Waiting for right");
-                Mono::delay(50.millis()).await;
+                Mono::delay(1.millis()).await;
                 count += 1;
             }
+            // info!("Right measured");
 
             let distance_left = prev_dist_left; //cx.local.receiver_left.recv().await.unwrap();
-            info!("Left distance : {:?}", distance_left);
+                                                // info!("Left distance : {:?}", distance_left);
             let distance_right = prev_dist_right; //cx.local.receiver_right.recv().await.unwrap();
-            info!("Right distance : {:?}", distance_right);
-            info!("Pulses recieved");
+                                                  // info!("Right distance : {:?}", distance_right);
+            let difference = distance_left.0 - distance_right.0;
 
-            cx.shared
-                .difference
-                .lock(|diff| *diff = distance_left.0 - distance_right.0);
+            window.push_back(difference);
+            let sum = (0..(window.len()))
+                .map(|idx| (idx as f32) / { SMOOTHING as f32 })
+                .sum::<f32>();
+            let avg = window
+                .iter()
+                .enumerate()
+                .map(|(idx, value)| (idx as f32) / { SMOOTHING as f32 } * value)
+                .sum::<f32>()
+                / sum;
+            info!("New diff set to : {:?}", avg);
+            cx.shared.difference.lock(|diff| *diff = avg);
 
-            Mono::delay(50.millis()).await;
+            // Mono::delay(50.millis()).await;
             // time_stamp += 1;
         }
     }

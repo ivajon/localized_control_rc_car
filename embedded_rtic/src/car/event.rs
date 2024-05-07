@@ -1,4 +1,5 @@
 //! Provides a neat way to manage interrupts.
+
 use nrf52840_hal::gpiote::Gpiote;
 
 use super::constants::Sonar;
@@ -63,6 +64,8 @@ impl<'a> Iterator for EventIter<'a> {
         match self.idx {
             1 => {
                 if gpiote.channel0().is_event_triggered() {
+                    // info!("Event 0 triggered");
+                    gpiote.channel0().clear();
                     Some(GpioEvents::Encoder)
                 } else {
                     self.next()
@@ -70,6 +73,8 @@ impl<'a> Iterator for EventIter<'a> {
             }
             2 => {
                 if gpiote.channel1().is_event_triggered() {
+                    // info!("Event 1 triggered");
+                    gpiote.channel1().clear();
                     Some(GpioEvents::Sonar(SONAR_MAPPING[0]))
                 } else {
                     self.next()
@@ -77,6 +82,9 @@ impl<'a> Iterator for EventIter<'a> {
             }
             3 => {
                 if gpiote.channel2().is_event_triggered() {
+                    // info!("Event 2 triggered");
+
+                    gpiote.channel2().clear();
                     Some(GpioEvents::Sonar(SONAR_MAPPING[1]))
                 } else {
                     self.next()
@@ -84,21 +92,23 @@ impl<'a> Iterator for EventIter<'a> {
             }
             4 => {
                 if gpiote.channel3().is_event_triggered() {
+                    // info!("Event 3 triggered");
+                    gpiote.channel3().clear();
                     Some(GpioEvents::Sonar(SONAR_MAPPING[2]))
                 } else {
                     self.next()
                 }
             }
             5 => {
-                gpiote.channel0().clear();
-                gpiote.channel1().clear();
-                gpiote.channel2().clear();
-                gpiote.channel3().clear();
                 gpiote.reset_events();
                 // gpiote.port().reset_events();
                 None
             }
-            _ => None,
+            _ => {
+                gpiote.reset_events();
+
+                None
+            }
         }
     }
 }

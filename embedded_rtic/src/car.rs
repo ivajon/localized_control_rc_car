@@ -1,4 +1,5 @@
 //! BSP for our car, defines some specifics for out car.
+//!
 
 pub mod event;
 pub mod pin_map;
@@ -33,20 +34,20 @@ pub mod constants {
     pub const ESC_PID_PARAMS: PidParams = PidParams {
         KP: 100,
         KI: 300,
-        KD: 1,
+        KD: 0,
         // 10^2
         SCALE: 2,
-        TS: 125_000,
+        TS: 50_000,
         TIMESCALE: 1_000_000,
     };
 
     /// The PID parameters for the ESC.
     pub const SERVO_PID_PARAMS: PidParams = PidParams {
-        KP: 5,
-        KI: 10,
-        KD: 1,
-        // 10^2
-        SCALE: 2,
+        KP: 25,
+        KI: 5,
+        KD: 16,
+        // 10^3
+        SCALE: 3,
         TS: 50_000, // 4 Hz should probly be higher
         TIMESCALE: 1_000_000,
     };
@@ -130,8 +131,8 @@ pub mod wrappers {
         { SERVO_PID_PARAMS.KI },
         { SERVO_PID_PARAMS.KD },
         { SERVO_PID_PARAMS.TS },
-        15,
-        -15,
+        10,
+        -10,
         { SERVO_PID_PARAMS.TIMESCALE },
         { SERVO_PID_PARAMS.SCALE },
     >;
