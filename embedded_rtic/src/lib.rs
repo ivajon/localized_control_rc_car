@@ -53,6 +53,8 @@
 #![no_main]
 #![no_std]
 #![deny(warnings)]
+#![feature(async_fn_traits)]
+#![feature(async_closure)]
 #![deny(missing_docs)]
 #![deny(clippy::all)]
 #![allow(clippy::manual_range_contains)]

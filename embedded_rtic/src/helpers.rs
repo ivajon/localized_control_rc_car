@@ -1,14 +1,26 @@
 //! Provides a few helper functions.
 #![allow(async_fn_in_trait)]
 
-use core::ops::Sub;
+use core::{
+    future::Future,
+    ops::{AsyncFn, Sub},
+};
 
 use arraydeque::{ArrayDeque, Wrapping};
+use defmt::info;
 use embedded_hal::digital::{ErrorType, OutputPin};
 use nrf52840_hal::gpio::{Output, Pin, PushPull};
-use rtic_monotonics::nrf::timer::{ExtU64, Timer0};
+use rtic_monotonics::{
+    nrf::timer::{ExtU64, Timer0},
+    systick::fugit::Duration,
+    Monotonic,
+};
+use rtic_sync::channel::{Receiver, Sender};
 
-use super::car::constants::SMOOTHING;
+use super::car::{
+    constants::{CAPACITY, SMOOTHING},
+    wrappers::Mono,
+};
 
 /// Computes sum of the smoothing window with a recency bias.
 pub fn sum(window: &ArrayDeque<f32, SMOOTHING, Wrapping>) -> f32 {
@@ -21,6 +33,30 @@ pub fn sum(window: &ArrayDeque<f32, SMOOTHING, Wrapping>) -> f32 {
         .map(|(idx, value)| (idx as f32) / { SMOOTHING as f32 } * value)
         .sum::<f32>()
         / sum
+}
+
+/// Sends a message on the channel after the given time.
+pub async fn timeout(
+    channel: &mut Sender<'static, f32, CAPACITY>,
+    kill_channel: &mut Receiver<'static, (), 1>,
+    timeout: Duration<u64, 1, 1_000_000>,
+) {
+    let now = Mono::now();
+    Mono::delay_until(now + timeout).await;
+    if kill_channel.try_recv().is_ok() {
+        return;
+    }
+    channel.send(0.).await.unwrap();
+}
+
+/// Measures the time required for the function call.
+pub async fn tictoc<ReturnType: Future, F: AsyncFn() -> ReturnType>(function: F) -> ReturnType {
+    let start_time = Mono::now();
+    let ret = function().await;
+    let end_time = Mono::now();
+    let duration = end_time.checked_duration_since(start_time).unwrap();
+    info!("Call took {:?}", duration.to_micros());
+    ret
 }
 
 /// Denotes the absolute value of a variable.
@@ -63,7 +99,7 @@ impl Trigger for Pin<Output<PushPull>> {
     async fn trigger(&mut self) -> Result<(), <Self as ErrorType>::Error> {
         self.set_high()?;
 
-        Timer0::delay(25.micros()).await;
+        Timer0::delay(50.micros()).await;
 
         self.set_low()?;
         Ok(())
@@ -77,7 +113,7 @@ impl Trigger for (Pin<Output<PushPull>>, Pin<Output<PushPull>>) {
         self.0.set_high()?;
         self.1.set_high()?;
 
-        Timer0::delay(25.micros()).await;
+        Timer0::delay(50.micros()).await;
 
         self.0.set_low()?;
         self.1.set_low()?;

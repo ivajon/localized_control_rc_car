@@ -36,9 +36,9 @@ mod app {
         },
         compute_distance,
         compute_velocity,
-        helpers::{sum, OutlierRejection, Trigger},
+        helpers::{sum, timeout, OutlierRejection, Trigger},
     };
-    use defmt::{debug, info};
+    use defmt::{debug, error, info};
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Output, Pin, PushPull},
@@ -79,10 +79,14 @@ mod app {
         second_pair: (Pin<Output<PushPull>>, Pin<Output<PushPull>>),
 
         receiver_left_1: Receiver<'static, f32, CAPACITY>,
+        sender_left_1_clone: Sender<'static, f32, CAPACITY>,
         receiver_left_2: Receiver<'static, f32, CAPACITY>,
+        sender_left_2_clone: Sender<'static, f32, CAPACITY>,
 
         receiver_right_1: Receiver<'static, f32, CAPACITY>,
+        sender_right_1_clone: Sender<'static, f32, CAPACITY>,
         receiver_right_2: Receiver<'static, f32, CAPACITY>,
+        sender_right_2_clone: Sender<'static, f32, CAPACITY>,
 
         wall_difference_sender_1: Sender<'static, f32, CAPACITY>,
         wall_difference_sender_2: Sender<'static, f32, CAPACITY>,
@@ -136,10 +140,14 @@ mod app {
         // ===================== CONFIGURE CHANNLES =====================
         // Pair left sonars sender and receiver
         let (sender_left_1, receiver_left_1) = make_channel!(f32, CAPACITY);
+        let sender_left_1_clone = sender_left_1.clone();
         let (sender_left_2, receiver_left_2) = make_channel!(f32, CAPACITY);
+        let sender_left_2_clone = sender_left_2.clone();
         // Pair right sonars sender and receiver
         let (sender_right_1, receiver_right_1) = make_channel!(f32, CAPACITY);
+        let sender_right_1_clone = sender_right_1.clone();
         let (sender_right_2, receiver_right_2) = make_channel!(f32, CAPACITY);
+        let sender_right_2_clone = sender_right_2.clone();
 
         let (wall_difference_sender_1, wall_difference_recv) = make_channel!(f32, CAPACITY);
         let wall_difference_sender_2 = wall_difference_sender_1.clone();
@@ -153,7 +161,7 @@ mod app {
         let times = [Instant::from_ticks(0); 4];
 
         trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
-        trigger_timestamped_2::spawn().unwrap_or_else(|_| panic!());
+        // trigger_timestamped_2::spawn().unwrap_or_else(|_| panic!());
         controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
         controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
 
@@ -171,11 +179,15 @@ mod app {
             Local {
                 first_pair: (trig_left_1, trig_right_1),
                 receiver_left_1,
+                sender_left_1_clone,
                 receiver_right_1,
+                sender_right_1_clone,
 
                 second_pair: (trig_left_2, trig_right_2),
                 receiver_left_2,
+                sender_left_2_clone,
                 receiver_right_2,
+                sender_right_2_clone,
 
                 wall_difference_recv,
                 wall_difference_sender_1,
@@ -232,13 +244,15 @@ mod app {
                         )
                     });
                 }
-                GpioEvents::Sonar(sonar) => match sonar {
-                    Sonar::Forward => { /* compute_distance(0, channels, times, time) */ }
-                    Sonar::Left => compute_distance(0, cx.local.senders, times, time),
-                    Sonar::Left2 => compute_distance(1, cx.local.senders, times, time),
-                    Sonar::Right => compute_distance(2, cx.local.senders, times, time),
-                    Sonar::Right2 => compute_distance(3, cx.local.senders, times, time),
-                },
+                GpioEvents::Sonar(sonar) => {
+                    match sonar {
+                        Sonar::Forward => { /* compute_distance(0, channels, times, time) */ }
+                        Sonar::Left => compute_distance(0, cx.local.senders, times, time),
+                        Sonar::Left2 => compute_distance(1, cx.local.senders, times, time),
+                        Sonar::Right => compute_distance(2, cx.local.senders, times, time),
+                        Sonar::Right2 => compute_distance(3, cx.local.senders, times, time),
+                    }
+                }
             }
         }
         // This should not be needed.
@@ -325,6 +339,7 @@ mod app {
             //     prev_modified = latest;
             // }
 
+            info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
             cx.local.servo.register_measurement(latest as f32, 0);
             // TODO! Follow something else here.
@@ -334,9 +349,10 @@ mod app {
             let now = Mono::now();
             let took = now.checked_duration_since(start_time).unwrap().to_micros();
             if took > SERVO_PID_PARAMS.TS as u64 {
-                defmt::error!("Controll loop for servo out of sync, took {:?} uS", took);
+                // defmt::error!("Controll loop for servo out of sync, took {:?} uS", took);
                 continue;
             }
+            // info!("Controll loop for servo out of sync, took {:?} uS", took);
 
             Mono::delay_until(
                 start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
@@ -345,9 +361,21 @@ mod app {
         }
     }
 
+    #[task(priority = 5)]
+    async fn timeout_task(
+        _cx: timeout_task::Context,
+        mut channel: Sender<'static, f32, CAPACITY>,
+        mut kill_channel: Receiver<'static, (), 1>,
+    ) {
+        timeout(&mut channel, &mut kill_channel, 25.micros()).await;
+    }
+
     #[task(priority = 4,local = [
            receiver_left_1,
+           sender_left_1_clone,
+
            receiver_right_1,
+           sender_right_1_clone,
            wall_difference_sender_1,
            sender_sonar_packets,
            first_pair
@@ -369,27 +397,52 @@ mod app {
 
         let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
         let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+
+        const MAX_POLL: usize = 500;
+        let mut poll_counter;
 
         'main: loop {
-            let start_time = Mono::now();
             let mut found_outlier = false;
             cx.shared
                 .side_lock
                 .lock(|_| async {
                     let now = Mono::now();
-                    Mono::delay_until(now + 50.micros()).await;
+                    Mono::delay_until(now + 6.millis()).await;
                     cx.local.first_pair.trigger().await.unwrap();
                 })
                 .await;
 
             // ======================= LEFT DISTANCE =========================
-            let left_distance = match cx.local.receiver_left_1.recv().await {
-                Ok(value) => value,
-                Err(_) => {
-                    defmt::error!("Left channel 1 broken!\n\n\n");
-                    break 'main;
+
+            // THIS IS BAD, FIX LATER
+            //
+
+            poll_counter = 0;
+            let left_distance = 'poll: loop {
+                if poll_counter >= MAX_POLL {
+                    error!("Max polling exceeded");
+                    break 'poll 0.;
                 }
+                match cx.local.receiver_left_1.try_recv() {
+                    Ok(value) => {
+                        let mut val = value;
+                        while let Ok(inner_val) = cx.local.receiver_left_1.try_recv() {
+                            val = inner_val;
+                        }
+                        break 'poll val;
+                    }
+                    Err(_) => {
+                        poll_counter += 1;
+                        Mono::delay(1.millis()).await;
+                        continue;
+                        // continue 'main;
+                    }
+                };
             };
+            if left_distance == 0. {
+                found_outlier = true;
+            }
 
             found_outlier |= left_distance.reject::<VOTE_THRESH>(
                 &mut prev_dist_left,
@@ -398,13 +451,34 @@ mod app {
             );
 
             // ======================= RIGHT DISTANCE =========================
-            let right_distance = match cx.local.receiver_left_1.recv().await {
-                Ok(value) => value,
-                Err(_) => {
-                    defmt::error!("Left channel 1 broken!\n\n\n");
-                    break 'main;
+            poll_counter = 0;
+            let right_distance = 'poll: loop {
+                if poll_counter >= MAX_POLL {
+                    error!("Max poll exceeded");
+                    break 'poll 0.;
                 }
+                match cx.local.receiver_right_1.try_recv() {
+                    Ok(value) => {
+                        let mut val = value;
+                        // Consume all enqueued messages.
+                        while let Ok(inner_val) = cx.local.receiver_right_1.try_recv() {
+                            val = inner_val;
+                        }
+                        break 'poll val;
+                    }
+                    Err(rtic_sync::channel::ReceiveError::Empty) => {
+                        poll_counter += 1;
+                        Mono::delay(1.millis()).await;
+                        continue;
+                        // continue 'main;
+                    }
+                    _ => panic!(),
+                };
             };
+
+            if right_distance == 0. {
+                found_outlier = true;
+            }
 
             found_outlier |= right_distance.reject::<VOTE_THRESH>(
                 &mut prev_dist_right,
@@ -414,35 +488,35 @@ mod app {
 
             // DISCARD OUTLIERS
             if found_outlier {
+                // Mono::delay(250.millis()).await;
                 continue 'main;
             }
+
+            info!("Distance ({:?},{:?})",left_distance,right_distance);
 
             left_window.push_back(left_distance);
             right_window.push_back(right_distance);
 
             let difference = sum(&left_window) - sum(&right_window);
+            diff_window.push_back(difference);
+            let difference = sum(&diff_window);
 
             match cx.local.wall_difference_sender_1.send(difference).await {
                 Ok(_) => {}
                 Err(_) => {
-                    info!("difference sender 1 channel full.");
+                    error!("difference sender 1 channel full.");
                     continue 'main;
                 }
             };
-            let end_time = Mono::now();
-
-            let duration = end_time
-                .checked_duration_since(start_time)
-                .unwrap()
-                .to_micros();
-            info!("Mesuring sonars took {:?} uS", duration);
         }
     }
 
     #[task(priority = 4,local = [
            second_pair,
            receiver_left_2,
+           sender_left_2_clone,
            receiver_right_2,
+           sender_right_2_clone,
            wall_difference_sender_2
     ],
     shared = [
@@ -461,6 +535,10 @@ mod app {
 
         let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
         let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+
+        const MAX_POLL: usize = 100;
+        let mut poll_counter;
 
         'main: loop {
             let mut found_outlier = false;
@@ -468,19 +546,33 @@ mod app {
                 .side_lock
                 .lock(|_| async {
                     let now = Mono::now();
-                    Mono::delay_until(now + 50.micros()).await;
+                    Mono::delay_until(now + 6.millis()).await;
                     cx.local.second_pair.trigger().await.unwrap();
                 })
                 .await;
 
             // ======================= LEFT DISTANCE =========================
-            let left_distance = match cx.local.receiver_left_2.recv().await {
-                Ok(value) => value,
-                Err(_) => {
-                    defmt::error!("Left channel 1 broken!\n\n\n");
-                    break 'main;
+
+            poll_counter = 0;
+            let left_distance = 'poll: loop {
+                if poll_counter >= MAX_POLL {
+                    break 'poll 0.;
                 }
+                match cx.local.receiver_left_2.try_recv() {
+                    Ok(value) => {
+                        break 'poll value;
+                    }
+                    Err(_) => {
+                        poll_counter += 1;
+                        Mono::delay(1.millis()).await;
+                        continue;
+                    }
+                };
             };
+
+            if left_distance == 0. {
+                found_outlier = true;
+            }
 
             found_outlier |= left_distance.reject::<VOTE_THRESH>(
                 &mut prev_dist_left,
@@ -489,13 +581,27 @@ mod app {
             );
 
             // ======================= RIGHT DISTANCE =========================
-            let right_distance = match cx.local.receiver_right_2.recv().await {
-                Ok(value) => value,
-                Err(_) => {
-                    defmt::error!("Left channel 1 broken!\n\n\n");
-                    break 'main;
+
+            poll_counter = 0;
+            let right_distance = 'poll: loop {
+                if poll_counter >= MAX_POLL {
+                    break 'poll 0.;
                 }
+                match cx.local.receiver_right_2.try_recv() {
+                    Ok(value) => {
+                        break 'poll value;
+                    }
+                    Err(_) => {
+                        poll_counter += 1;
+                        Mono::delay(1.millis()).await;
+                        continue;
+                    }
+                };
             };
+
+            if right_distance == 0. {
+                found_outlier = true;
+            }
 
             found_outlier |= right_distance.reject::<VOTE_THRESH>(
                 &mut prev_dist_right,
@@ -505,6 +611,7 @@ mod app {
 
             // DISCARD OUTLIERS
             if found_outlier {
+                Mono::delay(250.millis()).await;
                 continue 'main;
             }
 
@@ -512,6 +619,8 @@ mod app {
             right_window.push_back(right_distance);
 
             let difference = sum(&left_window) - sum(&right_window);
+            diff_window.push_back(difference);
+            let difference = sum(&diff_window);
 
             match cx.local.wall_difference_sender_2.send(difference).await {
                 Ok(_) => {}

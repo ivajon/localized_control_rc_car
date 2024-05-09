@@ -47,12 +47,12 @@ pub mod constants {
         KD: 20,
         // 10^3
         SCALE: 3,
-        TS: 1_000, // 4 Hz should probly be higher
+        TS: 2_000, // 4 Hz should probly be higher
         TIMESCALE: 1_000_000,
     };
 
     /// The message queue capacity.
-    pub const CAPACITY: usize = 30;
+    pub const CAPACITY: usize = 100;
 
     /// How much smoothing should be applied to signals.
     pub const SMOOTHING: usize = 5;
@@ -101,7 +101,7 @@ pub mod constants {
 /// Defines wrapper types that make the [`rtic`] code easier to read.
 pub mod wrappers {
     use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
-    use rtic_monotonics::nrf::timer::Timer0 as Mono;
+    pub use rtic_monotonics::nrf::timer::Timer0 as Mono;
 
     use super::{
         constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS},
