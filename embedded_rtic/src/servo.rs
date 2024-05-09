@@ -43,7 +43,6 @@ impl<PWM: Instance> Servo<PWM> {
     ///
     /// This allows use of any [`Pwm`] peripheral and [`Pin`] on the board.
     pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
-        trace!("Instantiating servo from pwm : {:?} on pin {:?}", pwm, pin);
         let pwm = Pwm::new(pwm);
 
         // Pwm configuration.

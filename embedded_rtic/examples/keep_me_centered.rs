@@ -248,6 +248,7 @@ mod app {
     #[task(local = [esc], shared = [velocity,velocity_reference],priority=4)]
     /// Provides a PID controller for the ESC.
     async fn controll_loop_velocity(mut cx: controll_loop_velocity::Context) {
+        info!("Controll loop velocity spawned");
         let controller = cx.local.esc;
         let mut previous = (0f32, 0);
         loop {
@@ -255,10 +256,10 @@ mod app {
             let mut measurement = cx.shared.velocity.lock(|measurement| *measurement);
             let reference = cx.shared.velocity_reference.lock(|reference| *reference);
 
+            // MIIIIIIGHT be better to just wait here?
             if measurement.1 == previous.1 {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
 
-                // Lets say that the minimum speed we want to achive is 10 cm/s.
                 let angle = { 1.0f32 * MAGNET_SPACING as f32 / 10_000f32 };
                 let angvel =
                     angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
@@ -284,9 +285,13 @@ mod app {
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
 
-            let duration = Mono::now().checked_duration_since(time).unwrap().to_micros();
+            // Mono::delay(1.secs()).await;
+            let duration = Mono::now()
+                .checked_duration_since(time)
+                .unwrap()
+                .to_micros();
             if duration > ESC_PID_PARAMS.TS as u64 {
-                defmt::error!("ESC controll loop took {:?} us",duration);
+                defmt::error!("ESC controll loop took {:?} us", duration);
             }
 
             // Delay between entry time and actuation time.
@@ -296,6 +301,7 @@ mod app {
 
     #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference])]
     async fn controll_loop_steering(cx: controll_loop_steering::Context) {
+        info!("Controll loop steering spawned");
         loop {
             let start_time = Mono::now();
 
@@ -354,6 +360,7 @@ mod app {
     ])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(mut cx: trigger_timestamped::Context) {
+        info!("Trigger for first pair spawned");
         // let mut time_stamp: u32 = 0;
         let mut prev_dist_left = 0.;
         let mut prev_dist_right = 0.;
@@ -446,6 +453,7 @@ mod app {
     ])]
     /// Triggers the second set of sonars.
     async fn trigger_timestamped_2(mut cx: trigger_timestamped_2::Context) {
+        info!("Trigger for second pair spawned");
         let mut prev_dist_left = 0.;
         let mut prev_dist_right = 0.;
         let mut left_outlier = 0;
