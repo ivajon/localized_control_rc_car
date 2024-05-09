@@ -1,5 +1,4 @@
 //! BSP for our car, defines some specifics for out car.
-//!
 
 pub mod event;
 pub mod pin_map;
@@ -43,23 +42,34 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const SERVO_PID_PARAMS: PidParams = PidParams {
-        KP: 25,
+        KP: 100,
         KI: 5,
-        KD: 16,
+        KD: 20,
         // 10^3
         SCALE: 3,
-        TS: 50_000, // 4 Hz should probly be higher
+        TS: 1_000, // 4 Hz should probly be higher
         TIMESCALE: 1_000_000,
     };
 
     /// The message queue capacity.
     pub const CAPACITY: usize = 30;
 
+    /// How much smoothing should be applied to signals.
+    pub const SMOOTHING: usize = 5;
+
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
 
     /// The wheel radius in centimeters.
     pub const RADIUS: u64 = 3;
+
+    /// How much can a sonar value increase/decrease wihout being concidered an
+    /// outlier.
+    pub const OUTLIER_LIMIT: f32 = 150.;
+
+    /// How many outliers in a row have to occur before we accept that it is the
+    /// truth?
+    pub const VOTE_THRESH: usize = 3;
 
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
@@ -68,8 +78,12 @@ pub mod constants {
         Forward,
         /// Sonar position: Left
         Left,
+        /// Second Sonar position: Left
+        Left2,
         /// Sonar positions: Right
         Right,
+        /// Second Sonar position: Right
+        Right2,
     }
 
     /// The minimum measurable velocity in cm / s.

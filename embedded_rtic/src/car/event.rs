@@ -19,7 +19,7 @@ pub struct EventManager {
 }
 
 /// The order of the snars.
-const SONAR_MAPPING: [Sonar; 3] = [Sonar::Forward, Sonar::Left, Sonar::Right];
+const SONAR_MAPPING: [Sonar; 4] = [Sonar::Left, Sonar::Left2, Sonar::Right, Sonar::Right2];
 
 /// Itterates over the generated events, and clears the previous one
 /// automatically after each iteration
@@ -51,6 +51,7 @@ impl EventManager {
         self.gpiote.channel1().clear();
         self.gpiote.channel2().clear();
         self.gpiote.channel3().clear();
+        self.gpiote.channel4().clear();
     }
 }
 
@@ -100,13 +101,17 @@ impl<'a> Iterator for EventIter<'a> {
                 }
             }
             5 => {
-                gpiote.reset_events();
-                // gpiote.port().reset_events();
-                None
+                if gpiote.channel4().is_event_triggered() {
+                    // info!("Event 3 triggered");
+                    gpiote.channel4().clear();
+                    Some(GpioEvents::Sonar(SONAR_MAPPING[3]))
+                } else {
+                    self.next()
+                }
             }
             _ => {
                 gpiote.reset_events();
-
+                // gpiote.port().reset_events();
                 None
             }
         }

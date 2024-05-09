@@ -1,9 +1,4 @@
-//! Defines a distance measurement example for multiple sonars.
-//!
-//! This example measures the distance to nearby objects, preferably a wall
-//! using a sonar sensors on the front, left and right side of the car. It then
-//! smooths the result over a few timestamps to avoid small peaks in the
-//! measured distance.
+//! Defines a simple PID controller for both steering and velocity controll.
 
 #![no_main]
 #![no_std]
@@ -23,16 +18,27 @@ mod app {
     use arraydeque::{ArrayDeque, Wrapping};
     use controller::{
         car::{
-            constants::{Sonar, CAPACITY, ESC_PID_PARAMS, MAGNET_SPACING, MIN_VEL, RADIUS},
+            constants::{
+                Sonar,
+                CAPACITY,
+                ESC_PID_PARAMS,
+                MAGNET_SPACING,
+                MIN_VEL,
+                OUTLIER_LIMIT,
+                RADIUS,
+                SERVO_PID_PARAMS,
+                SMOOTHING,
+                VOTE_THRESH,
+            },
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
             wrappers::{MotorController, ServoController},
         },
         compute_distance,
         compute_velocity,
+        helpers::{sum, OutlierRejection, Trigger},
     };
     use defmt::{debug, info};
-    use embedded_hal::digital::OutputPin;
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Output, Pin, PushPull},
@@ -49,9 +55,6 @@ mod app {
         make_channel,
     };
 
-    /// The message queue capacity
-    const SMOOTHING: usize = 10;
-
     /// The duration type
     type Instant = <Mono as rtic_monotonics::Monotonic>::Instant;
 
@@ -61,38 +64,38 @@ mod app {
         velocity_reference: f32,
         difference: f32,
         left_distance: (f32, u64),
+        left_distance_2: (f32, u64),
         right_distance: (f32, u64),
+        right_distance_2: (f32, u64),
+
+        side_lock: (),
     }
 
     // Local resources go here
     #[local]
     #[allow(dead_code)]
     struct Local {
-        //Sonar 1
-        // trig_forward: Pin<Output<PushPull>>,
-        // receiver_forward: Receiver<'static, u32, CAPACITY>,
+        first_pair: (Pin<Output<PushPull>>, Pin<Output<PushPull>>),
+        second_pair: (Pin<Output<PushPull>>, Pin<Output<PushPull>>),
 
-        // Sonar 2
-        trig_left: Pin<Output<PushPull>>,
-        receiver_left: Receiver<'static, u32, CAPACITY>,
+        receiver_left_1: Receiver<'static, f32, CAPACITY>,
+        receiver_left_2: Receiver<'static, f32, CAPACITY>,
 
-        // Sonar 3
-        trig_right: Pin<Output<PushPull>>,
-        receiver_right: Receiver<'static, u32, CAPACITY>,
+        receiver_right_1: Receiver<'static, f32, CAPACITY>,
+        receiver_right_2: Receiver<'static, f32, CAPACITY>,
+
+        wall_difference_sender_1: Sender<'static, f32, CAPACITY>,
+        wall_difference_sender_2: Sender<'static, f32, CAPACITY>,
+        wall_difference_recv: Receiver<'static, f32, CAPACITY>,
 
         // receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
         sender_sonar_packets: Sender<'static, ((u32, u32), u32), CAPACITY>,
 
-        receiver_velocity: Receiver<'static, i32, CAPACITY>,
-        sender_velocity: Sender<'static, i32, CAPACITY>,
-
-        senders: [Sender<'static, u32, CAPACITY>; 3],
-        times: [Instant; 3],
+        senders: [Sender<'static, f32, CAPACITY>; 4],
+        times: [Instant; 4],
 
         servo: ServoController<PWM1>,
         esc: MotorController<PWM0>,
-
-        queue: ArrayDeque<i32, SMOOTHING, Wrapping>,
 
         event_manager: EventManager,
     }
@@ -100,52 +103,59 @@ mod app {
     #[allow(dead_code)]
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
-        // info!("init");
         let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
+
+        let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
+        Mono::start(cx.device.TIMER0, token);
 
         let p0 = gpio::p0::Parts::new(cx.device.P0);
         let p1 = gpio::p1::Parts::new(cx.device.P1);
 
+        // ===================== CONFIGURE PINS =====================
         let pins = PinMapping::new(p0, p1);
 
+        // ===================== CONFIGURE CONTROLLERS =====================
         let (pins, servo) = pins.servo_controller(cx.device.PWM1);
         let (pins, esc) = pins.esc_controller(cx.device.PWM0);
 
+        // ===================== CONFIGURE INTERRUPTS =====================
         // Configure GPIOTE and PPI for all sonars
         let gpiote = Gpiote::new(cx.device.GPIOTE);
         let ppi_channels = ppi::Parts::new(cx.device.PPI);
         let (pins, event_manager) = pins.configure_events(gpiote, ppi_channels);
 
-        let (sonar_forward, sonar_left, sonar_right, _hal_effect) = pins.consume();
+        // ===================== CONFIGURE SONARS =====================
+        let (sonar_forward, sonars_left, sonars_right, _hal_effect) = pins.consume();
 
         let (_trig_forward, _echo_forward) = sonar_forward.split();
-        let (trig_left, _echo_left) = sonar_left.split();
-        let (trig_right, _echo_right) = sonar_right.split();
+        let (trig_left_1, _echo_left) = sonars_left.0.split();
+        let (trig_left_2, _echo_left) = sonars_left.1.split();
+        let (trig_right_1, _echo_right) = sonars_right.0.split();
+        let (trig_right_2, _echo_right) = sonars_right.1.split();
 
-        // Pair forward sonars sender and receiver
-        let (sender_forward, _receiver_forward) = make_channel!(u32, CAPACITY);
+        // ===================== CONFIGURE CHANNLES =====================
         // Pair left sonars sender and receiver
-        let (sender_left, receiver_left) = make_channel!(u32, CAPACITY);
+        let (sender_left_1, receiver_left_1) = make_channel!(f32, CAPACITY);
+        let (sender_left_2, receiver_left_2) = make_channel!(f32, CAPACITY);
         // Pair right sonars sender and receiver
-        let (sender_right, receiver_right) = make_channel!(u32, CAPACITY);
+        let (sender_right_1, receiver_right_1) = make_channel!(f32, CAPACITY);
+        let (sender_right_2, receiver_right_2) = make_channel!(f32, CAPACITY);
+
+        let (wall_difference_sender_1, wall_difference_recv) = make_channel!(f32, CAPACITY);
+        let wall_difference_sender_2 = wall_difference_sender_1.clone();
         // Channel for packed sonar data.
         let (sender_sonar_packets, _receiver_sonar_packets) =
             make_channel!(((u32, u32), u32), CAPACITY);
 
-        let (sender_velocity, receiver_velocity) = make_channel!(i32, CAPACITY);
-
         // Array with respective senders
-        let senders = [sender_forward, sender_left, sender_right];
+        let senders = [sender_left_1, sender_left_2, sender_right_1, sender_right_2];
 
-        let times = [Instant::from_ticks(0); 3];
-
-        let token = rtic_monotonics::create_nrf_timer0_monotonic_token!();
-        Mono::start(cx.device.TIMER0, token);
+        let times = [Instant::from_ticks(0); 4];
 
         trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
+        trigger_timestamped_2::spawn().unwrap_or_else(|_| panic!());
         controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
         controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
-        // intermediary::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
@@ -153,36 +163,32 @@ mod app {
                 velocity_reference: 30.,
                 difference: 0.,
                 left_distance: (0., 0),
+                left_distance_2: (0., 0),
                 right_distance: (0., 0),
+                right_distance_2: (0., 0),
+                side_lock: (),
             },
             Local {
-                //Sonar 1
-                // trig_forward,
-                // receiver_forward: Receiver<'static, u32, CAPACITY>,
+                first_pair: (trig_left_1, trig_right_1),
+                receiver_left_1,
+                receiver_right_1,
 
-                // Sonar 2
-                trig_left,
-                receiver_left,
+                second_pair: (trig_left_2, trig_right_2),
+                receiver_left_2,
+                receiver_right_2,
 
-                // Sonar 3
-                trig_right,
-                receiver_right,
+                wall_difference_recv,
+                wall_difference_sender_1,
+                wall_difference_sender_2,
 
-                // receiver_sonar_packets,
                 sender_sonar_packets,
-
-                sender_velocity,
-                receiver_velocity,
 
                 senders,
                 times,
+                event_manager,
 
                 servo,
                 esc,
-
-                queue: ArrayDeque::new(),
-
-                event_manager,
             },
         )
     }
@@ -193,21 +199,20 @@ mod app {
            event_manager,
            flank:bool=false,
            prev_time:Option<u64> = None,
-           sender_velocity
-    ],shared = [velocity,left_distance,right_distance])]
-    /// Reads the echo pin and check which sonar that triggered an event using
-    /// their channels
-    ///
-    /// Whenever the echo pin goes high or low this interrupt is triggered.
-    /// On the falling edge this interrupt computes the "width" in time
-    /// of the square wave thus allowing us to compute the time it took
-    /// to echo back to us.
+    ],shared = [
+        velocity,
+        left_distance,
+        left_distance_2,
+        right_distance,
+        right_distance_2
+    ])]
+    /// Reads the interrupts and computes distance or velocity depending on
+    /// which interrupt was triggered.
     fn echo(mut cx: echo::Context) {
         // Get time ASAP for highest granularity
         let time = Mono::now();
 
         // Check which sonar triggered the event and store it in the array
-        let _channels = cx.local.senders;
         let times = cx.local.times;
 
         // Now automagiaclly clears the pending bit after a case is handled.
@@ -229,17 +234,10 @@ mod app {
                 }
                 GpioEvents::Sonar(sonar) => match sonar {
                     Sonar::Forward => { /* compute_distance(0, channels, times, time) */ }
-                    Sonar::Left => {
-                        cx.shared
-                            .left_distance
-                            .lock(|left_dist| compute_distance(1, left_dist, times, time));
-                    }
-                    Sonar::Right => {
-                        cx.shared
-                            .right_distance
-                            .lock(|right_dist| compute_distance(2, right_dist, times, time));
-                        // compute_distance(2, channels, times, time)
-                    }
+                    Sonar::Left => compute_distance(0, cx.local.senders, times, time),
+                    Sonar::Left2 => compute_distance(1, cx.local.senders, times, time),
+                    Sonar::Right => compute_distance(2, cx.local.senders, times, time),
+                    Sonar::Right2 => compute_distance(3, cx.local.senders, times, time),
                 },
             }
         }
@@ -247,36 +245,8 @@ mod app {
         cx.local.event_manager.clear();
     }
 
-    #[task(local = [queue, receiver_velocity], shared = [velocity],priority=1)]
-    /// Acts as a trampoline for data processing thus, hopefully reducing the
-    /// time spent in `compute_vel`.
-    async fn intermediary(mut cx: intermediary::Context) {
-        // info!("Waiting for message");
-        // Wait for a new velocity reading, smooth it using the queue and then set the
-        // average value in measurement.
-
-        // If we have scheduling issues again we should probably remove this.
-        // it is not impossible either that the issue is th
-
-        while let Ok(vel) = cx.local.receiver_velocity.recv().await {
-            cx.local.queue.push_back(vel);
-            let avg = cx.local.queue.iter().sum::<i32>() / { SMOOTHING as i32 };
-            cx.shared
-                .velocity
-                .lock(|measurement| *measurement = (avg as f32, measurement.1 + 1));
-        }
-        debug!("Channel closed.");
-    }
-
     #[task(local = [esc], shared = [velocity,velocity_reference],priority=4)]
-    /// Highest priority as this should be ran no matter what is running (aside
-    /// from measurements).
-    ///
-    /// Uses the PID to set an appropriate control signal for the motor.
-    /// Will re-run every sample time.
-    ///
-    /// NOTE! If we notice that we this takes too long, use [`Symex`](https://github.com/ivario123/symex) to get the
-    /// longest possible time the PID takes and subtract that form TS.
+    /// Provides a PID controller for the ESC.
     async fn controll_loop_velocity(mut cx: controll_loop_velocity::Context) {
         let controller = cx.local.esc;
         let mut previous = (0f32, 0);
@@ -304,8 +274,6 @@ mod app {
                 previous = measurement;
             }
 
-            // info!("Previous speed {:?} target : {:?}", measurement, reference);
-
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
             let _actuation = controller
@@ -315,44 +283,54 @@ mod app {
             let outer = measurement;
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
+
+            let duration = Mono::now().checked_duration_since(time).unwrap().to_micros();
+            if duration > ESC_PID_PARAMS.TS as u64 {
+                defmt::error!("ESC controll loop took {:?} us",duration);
+            }
+
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
         }
     }
 
-    #[task(priority = 4, local = [servo], shared = [difference])]
-    async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
-        let mut prev = 0.;
-        let mut prev_modified = 0.;
-
+    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference])]
+    async fn controll_loop_steering(cx: controll_loop_steering::Context) {
         loop {
             let start_time = Mono::now();
-            // This should ensure that the sampling time is correct.
 
-            // Dequeue all of the measured values and grab the latest one
-            let mut latest = cx.shared.difference.lock(|diff| *diff);
+            // Read from the channel, if sensor values are slow we will miss deadlines.
+            let latest = match cx.local.wall_difference_recv.recv().await {
+                Ok(val) => val,
+                Err(_) => {
+                    defmt::error!("WALL DIFFERENCE CHANNEL BROKEN");
+                    break;
+                }
+            };
 
-            // TODO! Add in some way to cope with to slow measurements.
-            if latest == prev {
-                // info!("Servo controll too fast");
-                // prev_modified = prev_modified / 2.;
-                latest = prev_modified;
-            } else {
-                prev = latest;
-                prev_modified = latest;
-            }
-
-            // Previous check makes this safe.
-
-            let diff = latest;
-
-            // info!("Distance difference : {:?}", diff);
+            // // TODO! Add in some way to cope with to slow measurements.
+            // if latest == prev {
+            //     // info!("Servo controll too fast");
+            //     prev_modified = prev_modified / 1.001;
+            //     latest = prev_modified;
+            //     info!("Using err = {:?}", latest);
+            // } else {
+            //     prev = latest;
+            //     prev_modified = latest;
+            // }
 
             // Register measurement and actuate.
-            cx.local.servo.register_measurement(diff as f32, 0);
+            cx.local.servo.register_measurement(latest as f32, 0);
             // TODO! Follow something else here.
             cx.local.servo.follow([0.]);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
+
+            let now = Mono::now();
+            let took = now.checked_duration_since(start_time).unwrap().to_micros();
+            if took > SERVO_PID_PARAMS.TS as u64 {
+                defmt::error!("Controll loop for servo out of sync, took {:?} uS", took);
+                continue;
+            }
 
             Mono::delay_until(
                 start_time + { controller::car::constants::SERVO_PID_PARAMS.TS as u64 }.micros(),
@@ -362,120 +340,178 @@ mod app {
     }
 
     #[task(priority = 4,local = [
-           receiver_left,trig_left,
-           receiver_right,trig_right,
-           sender_sonar_packets
+           receiver_left_1,
+           receiver_right_1,
+           wall_difference_sender_1,
+           sender_sonar_packets,
+           first_pair
     ],
-    shared = [difference,left_distance,right_distance])]
+    shared = [
+        difference,
+        left_distance,
+        right_distance,
+        side_lock,
+    ])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(mut cx: trigger_timestamped::Context) {
         // let mut time_stamp: u32 = 0;
-        let mut prev_dist_left = (0., 0);
-        let mut prev_dist_right = (0., 0);
+        let mut prev_dist_left = 0.;
+        let mut prev_dist_right = 0.;
         let mut left_outlier = 0;
         let mut right_outlier = 0;
 
-        const OUTLIER_LIMIT: f32 = 150.;
-        const VOTE_THRESH: usize = 2;
-        // Do not expect any value larger than 300.
-        // const MAX_VALUE: f32 = 300.;
-
-        const SMOOTHING: usize = 10;
-        let mut window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
 
         'main: loop {
-            // Receive data from the second sonar
-            cx.local.trig_left.set_high().unwrap();
-            cx.local.trig_right.set_high().unwrap();
-            let now = Mono::now();
-            Mono::delay_until(now + 25.micros()).await;
+            let start_time = Mono::now();
+            let mut found_outlier = false;
+            cx.shared
+                .side_lock
+                .lock(|_| async {
+                    let now = Mono::now();
+                    Mono::delay_until(now + 50.micros()).await;
+                    cx.local.first_pair.trigger().await.unwrap();
+                })
+                .await;
 
-            cx.local.trig_left.set_low().unwrap();
-            cx.local.trig_right.set_low().unwrap();
-
-            let mut count = 0;
-            loop {
-                if count >= 10 {
-                    continue 'main;
+            // ======================= LEFT DISTANCE =========================
+            let left_distance = match cx.local.receiver_left_1.recv().await {
+                Ok(value) => value,
+                Err(_) => {
+                    defmt::error!("Left channel 1 broken!\n\n\n");
+                    break 'main;
                 }
-                let mut new = (0., 0);
-                cx.shared.left_distance.lock(|left| {
-                    new = *left;
-                });
-                if new != prev_dist_left {
-                    // if new.0 > MAX_VALUE {
-                    // window.drain(..);
-                    // cx.shared.difference.lock(|diff| *diff = 0.);
-                    // continue 'main;
-                    // }
-                    let mut val = new.0 - prev_dist_left.0;
-                    if val < 0. {
-                        val = -val;
-                    }
-                    if val > OUTLIER_LIMIT && left_outlier < VOTE_THRESH {
-                        left_outlier += 1;
-                        continue 'main;
-                    }
+            };
 
-                    prev_dist_left = new;
-                    break;
+            found_outlier |= left_distance.reject::<VOTE_THRESH>(
+                &mut prev_dist_left,
+                &mut left_outlier,
+                &OUTLIER_LIMIT,
+            );
+
+            // ======================= RIGHT DISTANCE =========================
+            let right_distance = match cx.local.receiver_left_1.recv().await {
+                Ok(value) => value,
+                Err(_) => {
+                    defmt::error!("Left channel 1 broken!\n\n\n");
+                    break 'main;
                 }
-                Mono::delay(1.millis()).await;
-                count += 1;
+            };
+
+            found_outlier |= right_distance.reject::<VOTE_THRESH>(
+                &mut prev_dist_right,
+                &mut right_outlier,
+                &OUTLIER_LIMIT,
+            );
+
+            // DISCARD OUTLIERS
+            if found_outlier {
+                continue 'main;
             }
 
-            let mut count = 0;
-            loop {
-                if count >= 10 {
+            left_window.push_back(left_distance);
+            right_window.push_back(right_distance);
+
+            let difference = sum(&left_window) - sum(&right_window);
+
+            match cx.local.wall_difference_sender_1.send(difference).await {
+                Ok(_) => {}
+                Err(_) => {
+                    info!("difference sender 1 channel full.");
                     continue 'main;
                 }
-                let mut new = (0., 0);
-                cx.shared.right_distance.lock(|right| {
-                    new = *right;
-                });
-                if new != prev_dist_right {
-                    // if new.0 > MAX_VALUE {
-                    // window.drain(..);
-                    // cx.shared.difference.lock(|diff| *diff = 0.);
-                    // continue 'main;
-                    // }
-                    let mut val = new.0 - prev_dist_right.0;
-                    if val < 0. {
-                        val = -val;
-                    }
-                    if val > OUTLIER_LIMIT && right_outlier < VOTE_THRESH {
-                        right_outlier += 1;
-                        continue 'main;
-                    }
-                    prev_dist_right = new;
-                    break;
+            };
+            let end_time = Mono::now();
+
+            let duration = end_time
+                .checked_duration_since(start_time)
+                .unwrap()
+                .to_micros();
+            info!("Mesuring sonars took {:?} uS", duration);
+        }
+    }
+
+    #[task(priority = 4,local = [
+           second_pair,
+           receiver_left_2,
+           receiver_right_2,
+           wall_difference_sender_2
+    ],
+    shared = [
+        difference,
+        left_distance_2,
+        right_distance_2,
+        side_lock,
+    ])]
+    /// Triggers the second set of sonars.
+    async fn trigger_timestamped_2(mut cx: trigger_timestamped_2::Context) {
+        let mut prev_dist_left = 0.;
+        let mut prev_dist_right = 0.;
+        let mut left_outlier = 0;
+        let mut right_outlier = 0;
+
+        let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+
+        'main: loop {
+            let mut found_outlier = false;
+            cx.shared
+                .side_lock
+                .lock(|_| async {
+                    let now = Mono::now();
+                    Mono::delay_until(now + 50.micros()).await;
+                    cx.local.second_pair.trigger().await.unwrap();
+                })
+                .await;
+
+            // ======================= LEFT DISTANCE =========================
+            let left_distance = match cx.local.receiver_left_2.recv().await {
+                Ok(value) => value,
+                Err(_) => {
+                    defmt::error!("Left channel 1 broken!\n\n\n");
+                    break 'main;
                 }
-                Mono::delay(1.millis()).await;
-                count += 1;
+            };
+
+            found_outlier |= left_distance.reject::<VOTE_THRESH>(
+                &mut prev_dist_left,
+                &mut left_outlier,
+                &OUTLIER_LIMIT,
+            );
+
+            // ======================= RIGHT DISTANCE =========================
+            let right_distance = match cx.local.receiver_right_2.recv().await {
+                Ok(value) => value,
+                Err(_) => {
+                    defmt::error!("Left channel 1 broken!\n\n\n");
+                    break 'main;
+                }
+            };
+
+            found_outlier |= right_distance.reject::<VOTE_THRESH>(
+                &mut prev_dist_right,
+                &mut right_outlier,
+                &OUTLIER_LIMIT,
+            );
+
+            // DISCARD OUTLIERS
+            if found_outlier {
+                continue 'main;
             }
-            // info!("Right measured");
 
-            let distance_left = prev_dist_left; //cx.local.receiver_left.recv().await.unwrap();
-                                                // info!("Left distance : {:?}", distance_left);
-            let distance_right = prev_dist_right; //cx.local.receiver_right.recv().await.unwrap();
-                                                  // info!("Right distance : {:?}", distance_right);
-            let difference = distance_left.0 - distance_right.0;
+            left_window.push_back(left_distance);
+            right_window.push_back(right_distance);
 
-            window.push_back(difference);
-            let sum = (0..(window.len()))
-                .map(|idx| (idx as f32) / { SMOOTHING as f32 })
-                .sum::<f32>();
-            let avg = window
-                .iter()
-                .enumerate()
-                .map(|(idx, value)| (idx as f32) / { SMOOTHING as f32 } * value)
-                .sum::<f32>()
-                / sum;
-            info!("New diff set to : {:?}", avg);
-            cx.shared.difference.lock(|diff| *diff = avg);
+            let difference = sum(&left_window) - sum(&right_window);
 
-            // Mono::delay(50.millis()).await;
-            // time_stamp += 1;
+            match cx.local.wall_difference_sender_2.send(difference).await {
+                Ok(_) => {}
+                Err(_) => {
+                    info!("difference sender 2 channel full.");
+                    continue 'main;
+                }
+            };
         }
     }
 }

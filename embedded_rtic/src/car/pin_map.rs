@@ -45,8 +45,12 @@ pub struct PinMapping<
     sonar_forward: SonarPins,
     /// The pins used for the left sonar.
     sonar_left: SonarPins,
+    /// The second sonar on the left side.
+    sonar_left_2: SonarPins,
     /// The pins used for the right sonar.
     sonar_right: SonarPins,
+    /// The second sonar on the right side.
+    sonar_right_2: SonarPins,
     /// The pin used for the [`Servo`](crate::servo::Servo).
     servo_output: Option<Pin<Output<PushPull>>>,
     /// The pin used for the [`Esc`](crate::esc::Esc).
@@ -79,9 +83,19 @@ impl PinMapping<false, false, false, false> {
             echo: p1.p1_05.into_pulldown_input().degrade(),
         };
 
+        let sonar_left_2 = SonarPins {
+            trigger: p1.p1_10.into_push_pull_output(gpio::Level::Low).degrade(),
+            echo: p1.p1_11.into_pulldown_input().degrade(),
+        };
+
         let sonar_right = SonarPins {
             trigger: p1.p1_03.into_push_pull_output(gpio::Level::Low).degrade(),
             echo: p1.p1_04.into_pulldown_input().degrade(),
+        };
+
+        let sonar_right_2 = SonarPins {
+            trigger: p1.p1_07.into_push_pull_output(gpio::Level::Low).degrade(),
+            echo: p1.p1_08.into_pulldown_input().degrade(),
         };
 
         // Communications.
@@ -89,7 +103,8 @@ impl PinMapping<false, false, false, false> {
         let mosi = p1.p1_12.into_floating_input().degrade();
         let miso = p1.p1_13.into_floating_input().degrade();
         let sck = p1.p1_14.into_floating_input().degrade();
-        let cs = p1.p1_11.into_floating_input().degrade();
+        // Needs testing.
+        let cs = p0.p0_02.into_floating_input().degrade();
 
         let spi_pins = SpiPins {
             mosi,
@@ -100,7 +115,9 @@ impl PinMapping<false, false, false, false> {
 
         PinMapping {
             sonar_left,
+            sonar_left_2,
             sonar_right,
+            sonar_right_2,
             sonar_forward,
             servo_output: Some(servo_output),
             esc_output: Some(esc_output),
@@ -129,7 +146,9 @@ impl<const SERVO_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool
         let spis = spi.transfer(buffer).unwrap_or_else(|_| panic!());
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
+            sonar_left_2: self.sonar_left_2,
             sonar_right: self.sonar_right,
+            sonar_right_2: self.sonar_right_2,
             sonar_forward: self.sonar_forward,
             servo_output: self.servo_output,
             esc_output: self.esc_output,
@@ -157,7 +176,9 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const EVENTS_CONFIGURED: bool
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
+            sonar_left_2: self.sonar_left_2,
             sonar_right: self.sonar_right,
+            sonar_right_2: self.sonar_right_2,
             sonar_forward: self.sonar_forward,
             servo_output: self.servo_output,
             esc_output: None,
@@ -180,7 +201,9 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const EVENTS_CONFIGURED: bool
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
+            sonar_left_2: self.sonar_left_2,
             sonar_right: self.sonar_right,
+            sonar_right_2: self.sonar_right_2,
             sonar_forward: self.sonar_forward,
             servo_output: self.servo_output,
             esc_output: None,
@@ -208,7 +231,9 @@ impl<const SPI_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
+            sonar_left_2: self.sonar_left_2,
             sonar_right: self.sonar_right,
+            sonar_right_2: self.sonar_right_2,
             sonar_forward: self.sonar_forward,
             servo_output: None,
             esc_output: self.esc_output,
@@ -231,7 +256,9 @@ impl<const SPI_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
+            sonar_left_2: self.sonar_left_2,
             sonar_right: self.sonar_right,
+            sonar_right_2: self.sonar_right_2,
             sonar_forward: self.sonar_forward,
             servo_output: None,
             esc_output: self.esc_output,
@@ -246,11 +273,18 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
     PinMapping<SPI_USED, SERVO_USED, ESC_USED, true>
 {
     /// Consumes the type returning the raw pins.
-    pub fn consume(self) -> (SonarPins, SonarPins, SonarPins, Pin<Input<PullUp>>) {
+    pub fn consume(
+        self,
+    ) -> (
+        SonarPins,
+        (SonarPins, SonarPins),
+        (SonarPins, SonarPins),
+        Pin<Input<PullUp>>,
+    ) {
         (
             self.sonar_forward,
-            self.sonar_left,
-            self.sonar_right,
+            (self.sonar_left, self.sonar_left_2),
+            (self.sonar_right, self.sonar_right_2),
             self.encoder,
         )
     }
@@ -275,12 +309,12 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
             .enable_interrupt();
         gpiote
             .channel1()
-            .input_pin(&self.sonar_forward.echo)
+            .input_pin(&self.sonar_left.echo)
             .toggle()
             .enable_interrupt();
         gpiote
             .channel2()
-            .input_pin(&self.sonar_left.echo)
+            .input_pin(&self.sonar_left_2.echo)
             .toggle()
             .enable_interrupt();
         gpiote
@@ -289,15 +323,26 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
             .toggle()
             .toggle()
             .enable_interrupt();
+        gpiote
+            .channel4()
+            .input_pin(&self.sonar_right_2.echo)
+            .toggle()
+            .toggle()
+            .enable_interrupt();
 
         gpiote.port().input_pin(&self.encoder).high();
         gpiote.port().input_pin(&self.sonar_forward.echo).high();
         gpiote.port().input_pin(&self.sonar_left.echo).high();
         gpiote.port().input_pin(&self.sonar_right.echo).high();
+        gpiote.port().input_pin(&self.sonar_left_2.echo).high();
+        gpiote.port().input_pin(&self.sonar_right_2.echo).high();
 
         gpiote.port().input_pin(&self.sonar_forward.echo).low();
         gpiote.port().input_pin(&self.sonar_left.echo).low();
         gpiote.port().input_pin(&self.sonar_right.echo).low();
+        gpiote.port().input_pin(&self.sonar_left_2.echo).low();
+        gpiote.port().input_pin(&self.sonar_right_2.echo).low();
+
         let mut ppi0 = ppi.ppi0;
         ppi0.set_event_endpoint(gpiote.channel0().event());
         ppi0.set_task_endpoint(gpiote.channel0().task_out());
@@ -318,10 +363,17 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
         ppi3.set_task_endpoint(gpiote.channel3().task_out());
         ppi3.enable();
 
+        let mut ppi4 = ppi.ppi4;
+        ppi4.set_event_endpoint(gpiote.channel4().event());
+        ppi4.set_task_endpoint(gpiote.channel4().task_out());
+        ppi4.enable();
+
         gpiote.port().enable_interrupt();
         let new_self = PinMapping {
             sonar_left: self.sonar_left,
+            sonar_left_2: self.sonar_left_2,
             sonar_right: self.sonar_right,
+            sonar_right_2: self.sonar_right_2,
             sonar_forward: self.sonar_forward,
             servo_output: self.servo_output,
             esc_output: self.esc_output,

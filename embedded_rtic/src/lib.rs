@@ -62,11 +62,13 @@ use car::wrappers::Instant;
 use defmt::trace;
 use defmt_rtt as _; // global logger
 use panic_probe as _;
+use rtic_sync::channel::Sender;
 
 use crate::car::constants::{MAGNET_SPACING, RADIUS}; // memory layout
 
 pub mod car;
 pub mod esc;
+pub mod helpers;
 pub mod servo;
 pub mod wrapper;
 
@@ -98,8 +100,7 @@ pub fn exit() -> ! {
 #[inline(always)]
 pub fn compute_distance(
     sonar: usize,
-    distance: &mut (f32, u64),
-    // channels: &mut [Sender<'static, u32, CAPACITY>],
+    channels: &mut [Sender<'static, f32, { car::constants::CAPACITY }>],
     times: &mut [Instant],
     time: Instant,
 ) {
@@ -108,23 +109,19 @@ pub fn compute_distance(
     if times[sonar] == zero {
         times[sonar] = time;
     } else {
-        let distance_computed = time
+        let distance = time
             .checked_duration_since(times[sonar])
             .unwrap()
-            .to_micros()
-            / 56;
-        *distance = (
-            distance_computed as f32,
-            time.duration_since_epoch().to_micros(),
-        );
-        // match channels[sonar].try_send(distance as u32) {
-        // Ok(_) => {}
-        // _ => {
-        // defmt::error!(
-        // "Distance did not fit in to the buffer, scheduling is probably broken."
-        // );
-        // }
-        // }
+            .to_micros() as f32
+            / 56.;
+        match channels[sonar].try_send(distance) {
+            Ok(_) => {}
+            _ => {
+                defmt::error!(
+                    "Distance did not fit in to the buffer, scheduling is probably broken."
+                );
+            }
+        }
         times[sonar] = zero;
     }
 }
