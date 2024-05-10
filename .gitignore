@@ -22,3 +22,5 @@ Cargo.lock
 # VS code
 # Intellisense 
 *.ipch
+*.vsidx
+*.opendb

@@ -10,9 +10,10 @@
 using namespace cv;
 using namespace std;
 
-//Methods
+//Function for rotating 
 static Mat rotateImage(Mat image, double angle);
 
+//For measuring elapsed time
 template <
 	class result_t = std::chrono::milliseconds,
 	class clock_t = std::chrono::steady_clock,
@@ -24,51 +25,36 @@ auto since(std::chrono::time_point<clock_t, duration_t> const& start)
 }
 
 
+//Main loop
 int main(int argc, char** argv)
 {
-	// Read the image file
+	//Vector for storing filenames
 	vector<cv::String> fn;
-	
-
 	cv::glob("capture4/*.png", fn, true);
+	if (fn.size() == 0) {
+		cout << "No files in folder" << endl;
+		return -1;
+	}
 
-	vector<Mat> images;
-	size_t count = fn.size(); //number of png files in images folder
-	for (size_t i = 0; i < count; i++) {
-		cv::Mat image = imread(fn[i]);
+	//Open windows for showing progress
+	String windowName = "Drivability map"; 
+	namedWindow(windowName); 
+	String windowName2 = "Lines";
+	namedWindow(windowName2); 
+
+	Point2i centerPoint(100, 100); //Intial guess for center point(in scaled coordinates)
+	DrivabilityDetector test(0.8, centerPoint,5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
+	for (size_t i = 0;i < fn.size();i++)
+	{
+		auto start = std::chrono::steady_clock::now(); //Start time meas
+		Mat image = imread(fn[i]); // Read image
 		if (image.empty()) // Check for failure
 		{
 			cout << "Could not open or find the image" << endl;
 			system("pause"); //wait for any key press
 			return -1;
 		}
-		images.push_back(image);
-	}
-	
-	if (images.empty()) // Check for failure
-	{
-		cout << "Could not open or find the image" << endl;
-		system("pause"); //wait for any key press
-		return -1;
-	}
 
-
-	String windowName = "Drivability map"; //Name of the window
-	namedWindow(windowName); // Create a window
-
-
-
-	String windowName2 = "Lines";
-	namedWindow(windowName2); // Create a window
-
-
-	/*START OF FUNCTION, I'm just to lazy to rewrite it*/
-	Point2i centerPoint(100, 100); //Intial guess, it is
-	DrivabilityDetector test(0.8, centerPoint,5);
-	for (size_t i = 0;i < count;i++)
-	{
-		auto start = std::chrono::steady_clock::now(); //Start time meas
-		Mat image = images[i];
 		Mat grayImage;
 		cvtColor(image, grayImage, COLOR_RGB2GRAY); //GRAYSCALE
 		cv::flip(grayImage, grayImage, 0);
@@ -110,6 +96,7 @@ int main(int argc, char** argv)
 
 
 
+//Rotates an image by an angle, kinda sketchy and slow, should not be used in final version(align camera properly instead)
 Mat rotateImage(Mat image, double angle) {
 	Point2f center(static_cast<float>(image.cols / 2), static_cast<float>(image.rows / 2)); //Find center of image
 	Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, 1.0 + angle / 10);						//Rotatation matrix around image, scale up slightly to fill image

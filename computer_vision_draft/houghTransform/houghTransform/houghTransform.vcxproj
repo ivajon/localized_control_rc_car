@@ -137,9 +137,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\..\Pictures\Fotografier\2024\_DSC2368.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="DrivabilityDetector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
