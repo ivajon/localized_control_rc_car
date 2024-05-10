@@ -3,24 +3,46 @@
 
 //Constructor definition
 DrivabilityDetector::DrivabilityDetector(float prevWeight, Point2i initialPoint, int averageSize) {
+	//Centerpoint
 	this->prevWeight = prevWeight;
 	this->centerPoint = initialPoint;
+
+	//Drivable rows
 	this->rowFromBottom = 0;
+	this->averageSize = averageSize;
 	this->rawRowFromBottom = vector<int>(averageSize, 0);
+
+	//Initializing images
 	this->drivabilityMap = Mat(480, 640, CV_8UC1, Scalar(0));
 	this->drivabilityMap.copyTo(this->lineImage);
 }
 
 //Function definitions
+
+
+/*
+Using Hough Lines transform to determine the drivable parts of the floor.
+* Basic process is
+* 1 - Blur image with Gaussian filter
+* 2 - Find edges using Canny edge detector
+* 3 - Find nearly horizontal lines using Hough line transform
+* 4 - Print lines onto empty array
+* 5 - Search through array until line is found, find row furthest from bottom of image
+* 6 - Calculate center row, take as centerpoint(+ weighted average with last value)
+* 7 - Pass last n values for number of rows from the bottom of the array through moving average filter
+* 8 - Return no. rows from bottom
+*/
 int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
+	//1 - Blur image with Gaussian filter
 	Size2i kernelSize = Size(7, 7);			    //Size of kernel for convolution, larger -> smoother output + slower
 	GaussianBlur(image, image, kernelSize, 0); //Stdev calculated to fit Kernel
 
-	//Edge detection
+	
+	//2 - Find edges using Canny edge detector
 	Mat edge;
 	Canny(image, edge, 25, 80);
 
-	//Detect lines
+	//3 - Find nearly horizontal lines using Hough line transform
 	std::vector<Vec2f> lines;
 	double rho = 1.0;    //Pixel resolution
 	double theta = 1.0 / 180 * CV_PI; //Angle resolution
@@ -30,7 +52,7 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	int minVotes = 36; //Mininum number of votes for a line
 	HoughLines(edge, lines, rho, theta, minVotes, 0, 0, minAngle, maxAngle);
 
-	//Print lines in empty matrix
+	//4 - Print lines onto empty array
 	int width = image.cols;
 	int height = image.rows;
 	Mat emptyMatrix(height, width, CV_8UC1, Scalar(0)); //Initialize empty matrix, 8-bit, 1-color channel, 
@@ -48,15 +70,14 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 
 	}
 
-	//Get furthest row, that is the minimum row, also create drivability map
+	//5 - Search through array until line is found, find row furthest from bottom of image
+	//6 - Calculate center row, take as centerpoint(+weighted average with last value)
 	int minRow = height - 1;
 	int lastRow = height - 1;
 	Mat drivabilityMap(height, width, CV_8UC1, Scalar(0));
-
 	//Get center point
 	int centCol = 0;
 	int nonZero = 0;
-
 	for (size_t col = 0; col < width;col++) {
 		for (size_t row = height - 1; row > 0;row--) {
 			drivabilityMap.at<uchar>(row, col) = 255;
@@ -76,20 +97,22 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 		}
 	}
 	centCol = centCol / nonZero; //Calculate average(integer rounding is fine)
-
-
 	float prevFactor = this->prevWeight;
 	Point2i calcCenter(centCol, (float)minRow);
 	this->centerPoint = this->centerPoint * prevFactor + (1 - prevFactor) * calcCenter;
+
 	
-	//Shift vector to the right and add a new value
+	//7 - Pass last n values for number of rows from the bottom of the array through moving average filter
 	vector<int> vec = this->rawRowFromBottom;
 	std::rotate(vec.rbegin(), vec.rbegin() + 1, vec.rend());
 	vec[0] = height - minRow;
 	this->rawRowFromBottom = vec;
 	this->rowFromBottom = std::accumulate(vec.begin(),vec.end(),0.0)/vec.size();
+
 	this->lineImage = emptyMatrix;
 	this->drivabilityMap = drivabilityMap;
-	return rowFromBottom;
+
+	//8 - Return no.rows from bottom
+	return this->rowFromBottom;
 }
 
