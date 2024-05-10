@@ -61,8 +61,10 @@
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use car::wrappers::Instant;
-use defmt::trace;
-use defmt_rtt as _; // global logger
+use defmt::{trace, warn};
+use defmt_rtt as _; use embedded_hal::digital::InputPin;
+use nrf52840_hal::gpio::{Input, Pin, PullDown};
+// global logger
 use panic_probe as _;
 use rtic_sync::channel::Sender;
 
@@ -103,13 +105,19 @@ pub fn exit() -> ! {
 pub fn compute_distance(
     sonar: usize,
     channels: &mut [Sender<'static, f32, { car::constants::CAPACITY }>],
+    pins: &mut [Pin<Input<PullDown>>],
     times: &mut [Instant],
     time: Instant,
 ) {
     let zero = Instant::from_ticks(0);
 
     if times[sonar] == zero {
-        times[sonar] = time;
+        if pins[sonar].is_high().is_ok_and(|el| el) {
+            times[sonar] = time;
+        }
+        else {
+            warn!("Tried to set time on falling edge");
+        }
     } else {
         let distance = time
             .checked_duration_since(times[sonar])

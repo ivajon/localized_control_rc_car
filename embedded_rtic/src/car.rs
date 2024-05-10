@@ -2,7 +2,7 @@
 
 pub mod event;
 pub mod pin_map;
-use shared::controller::Pid;
+use shared::controller::{Pid,PidDynamic};
 
 #[allow(non_snake_case)]
 /// A collection of PID parameters.
@@ -42,12 +42,13 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const SERVO_PID_PARAMS: PidParams = PidParams {
-        KP: 100,
+        KP: 150,
         KI: 5,
-        KD: 20,
+        KD: 60,
         // 10^3
         SCALE: 3,
-        TS: 2_000, // 4 Hz should probly be higher
+        // This is not used.
+        TS: 60_000, // 4 Hz should probly be higher
         TIMESCALE: 1_000_000,
     };
 
@@ -55,7 +56,7 @@ pub mod constants {
     pub const CAPACITY: usize = 100;
 
     /// How much smoothing should be applied to signals.
-    pub const SMOOTHING: usize = 5;
+    pub const SMOOTHING: usize = 10;
 
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
@@ -65,11 +66,11 @@ pub mod constants {
 
     /// How much can a sonar value increase/decrease wihout being concidered an
     /// outlier.
-    pub const OUTLIER_LIMIT: f32 = 150.;
+    pub const OUTLIER_LIMIT: f32 = 90.;
 
     /// How many outliers in a row have to occur before we accept that it is the
     /// truth?
-    pub const VOTE_THRESH: usize = 3;
+    pub const VOTE_THRESH: usize = 2;
 
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
@@ -105,7 +106,7 @@ pub mod wrappers {
 
     use super::{
         constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS},
-        Pid,
+        Pid,PidDynamic,
     };
 
     /// The spi device used.
@@ -136,7 +137,7 @@ pub mod wrappers {
     >;
 
     /// A wrapper around the [`Pid`] controller with predefined coefficients.
-    pub type ServoController<PWM> = Pid<
+    pub type ServoController<PWM> = PidDynamic<
         crate::servo::Error,
         crate::servo::Servo<PWM>,
         f32,
@@ -144,9 +145,8 @@ pub mod wrappers {
         { SERVO_PID_PARAMS.KP },
         { SERVO_PID_PARAMS.KI },
         { SERVO_PID_PARAMS.KD },
-        { SERVO_PID_PARAMS.TS },
-        10,
-        -10,
+        7,
+        -7,
         { SERVO_PID_PARAMS.TIMESCALE },
         { SERVO_PID_PARAMS.SCALE },
     >;
