@@ -15,3 +15,10 @@ Cargo.lock
 
 # Matlab autosave files
 *.asv
+
+# Images
+*.png
+
+# VS code
+# Intellisense 
+*.ipch
