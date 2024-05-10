@@ -7,23 +7,28 @@
 using namespace cv;
 using namespace std;
 
-
 #pragma once
+
+//Class containing parameters for function used for estimating the distance to the wall
 class DrivabilityDetector
 {
 private:
 	//Members
-	int rowFromBottom;
-	vector<int> rawRowFromBottom;
-	float prevWeight;
-	Point2i centerPoint;
-	Mat drivabilityMap;
+	int rowFromBottom;				//Maximum number of rows from bottom of image(after moving average filter)
+	vector<int> rawRowFromBottom;	//Vector containing the last n values calculated
+	int averageSize;				//Size of moving average filter
+
+	Point2i centerPoint;			//Center point estimate of image
+	float prevWeight;				//Weight given to previous centerpoint in calculations
+	
+	//Images for visualization
+	Mat drivabilityMap;			
 	Mat lineImage;
 public:
 	//Constructor
 	DrivabilityDetector(float prevWeight, Point2i initialPoint, int averageSize);
 
-	//Methods
+	//Method(s)
 	int calculateRowFromBottom(cv::Mat grayScaleImage);
 
 	// Get/set functions
@@ -37,5 +42,8 @@ public:
 	Mat getDrivabilityMap() const { return drivabilityMap; }
 
 	Mat getLineImage() const { return lineImage; }
+
+	void setAverageSize(int averageSize) { this->averageSize = averageSize; }
+	int getAverageSize() const { return averageSize; }
 };
 
