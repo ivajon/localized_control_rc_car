@@ -46,6 +46,7 @@ int main(int argc, char** argv)
 	DrivabilityDetector test(0.8, centerPoint,5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
 	for (size_t i = 0;i < fn.size();i++)
 	{
+		//Read image
 		auto start = std::chrono::steady_clock::now(); //Start time meas
 		Mat image = imread(fn[i]); // Read image
 		if (image.empty()) // Check for failure
@@ -55,16 +56,20 @@ int main(int argc, char** argv)
 			return -1;
 		}
 
+		//Process image
 		Mat grayImage;
-		cvtColor(image, grayImage, COLOR_RGB2GRAY); //GRAYSCALE
-		cv::flip(grayImage, grayImage, 0);
-		float scale = 0.5;
-		resize(grayImage, grayImage, Size(), scale, scale);
-		grayImage = rotateImage(grayImage, (double)3); //Only done to correct for the tilt of the camera
+		cvtColor(image, grayImage, COLOR_RGB2GRAY);			//GRAYSCALE
+		cv::flip(grayImage, grayImage, 0);					//Flip image if camera was upside down
+		float scale = 0.5;									//Scale down image
+		resize(grayImage, grayImage, Size(), scale, scale); // Resize
+		grayImage = rotateImage(grayImage, (double)3);		//Correct tilt of camera
 		
-		auto preprocess = since(start).count();
+		auto preprocess = since(start).count();									
 		std::cout << "Preprocessing complete(ms) =" << preprocess;
+
+		//Run computer vision function
 		int rowFromBottom = test.calculateRowFromBottom(grayImage);
+
 		auto end = since(start).count() - preprocess;
 		std::cout << " Calculations complete(ms) =" << end << std::endl;
 		
@@ -83,13 +88,8 @@ int main(int argc, char** argv)
 		cv::waitKey(1000/freq);
 	}
 
-
-	/*END OF FUNCTION*/
 	cv::waitKey(10000); // Wait for any keystroke in the window
 	cv::destroyWindow(windowName); //destroy the created window
-
-	
-
 
 	return 0;
 }
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 //Rotates an image by an angle, kinda sketchy and slow, should not be used in final version(align camera properly instead)
 Mat rotateImage(Mat image, double angle) {
 	Point2f center(static_cast<float>(image.cols / 2), static_cast<float>(image.rows / 2)); //Find center of image
-	Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, 1.0 + angle / 10);						//Rotatation matrix around image, scale up slightly to fill image
+	Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, 1.0 + abs(angle) / 10);						//Rotatation matrix around image, scale up slightly to fill image
 	Mat rotatedImage;																		// Declare new variable
 	warpAffine(image, rotatedImage, rotationMatrix, image.size());
 	return rotatedImage;
