@@ -24,3 +24,6 @@ Cargo.lock
 *.ipch
 *.vsidx
 *.opendb
+**/x64
+**/Release
+**/Debug
