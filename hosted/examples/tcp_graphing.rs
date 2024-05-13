@@ -141,7 +141,7 @@ async fn start_app() -> Result<(), ()> {
     let (input, commit, commit_writer, kill, input_handles) = InputBox::init(redraw_writer);
 
     TcpMonitor::init(commit_writer);
-    tokio::spawn(protocol());
+    //tokio::spawn(protocol());
 
     // TODO! Replace this with the real SPI manager.
     let mock_spi_channels: Vec<JoinHandle<()>> = match MockSpi::init(register_channel, commit) {
