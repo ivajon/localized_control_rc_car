@@ -75,18 +75,20 @@ static int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int Hig
 
 		GaussianBlur(imgThreshold, imgThreshold, Size(9, 9), 2, 2);	//Doesn't work without
 
-		Canny(imgThreshold, imgCanny, 150, 3, 3, false);
+		Mat imgLap, abs_Lap;
 
+		Laplacian(imgThreshold, imgLap, CV_16S, 3, 1, 0, BORDER_DEFAULT);
+		convertScaleAbs(imgLap, abs_Lap);
 
 		vector<Vec3f> circles;
-		HoughCircles(imgCanny, circles, HOUGH_GRADIENT, 2, imgThreshold.rows / 4, 200, 100); //detect the circle
+		HoughCircles(abs_Lap, circles, HOUGH_GRADIENT, 2, abs_Lap.rows, 250, 350, 100, 0); //detect the circle
 
 		if (!circles.empty()) {
 			return 1;
 		}
 
 		imshow("image", imgThreshold);
-		imshow("canny", imgCanny);
+		imshow("Lap", abs_Lap);
 		if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
 		{
 			cout << "esc key is pressed by user" << endl;
