@@ -21,9 +21,15 @@
     <ClCompile Include="DrivabilityDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Camera_Preprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DrivabilityDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera_Preprocessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
