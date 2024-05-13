@@ -22,12 +22,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 2,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 2,
@@ -60,7 +56,7 @@
               "RelativeDocumentMoniker": "houghTransform\\main.cpp",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\main.cpp",
               "RelativeToolTip": "houghTransform\\main.cpp",
-              "ViewState": "AQIAABQAAAAAAAAAAAArwBoAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-05-05T18:02:06.747Z",
               "EditorCaption": ""

@@ -7,6 +7,8 @@
 #include<cmath>
 #include "DrivabilityDetector.h"
 
+#define RACE
+
 using namespace cv;
 using namespace std;
 
@@ -37,14 +39,18 @@ int main(int argc, char** argv)
 	}
 
 	//Open windows for showing progress
-	String windowName = "Drivability map"; 
-	namedWindow(windowName); 
+	String windowName = "Drivability map";
 	String windowName2 = "Lines";
-	namedWindow(windowName2); 
+	#ifndef RACE
+	{
+		namedWindow(windowName);
+		namedWindow(windowName2);
+	}
+	#endif
 
 	Point2i centerPoint(100, 100); //Intial guess for center point(in scaled coordinates)
 	DrivabilityDetector test(0.8, centerPoint,5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
-	for (size_t i = 0;i < fn.size();i++)
+	for (size_t i = 0; i < fn.size(); i++)
 	{
 		//Read image
 		auto start = std::chrono::steady_clock::now(); //Start time meas
@@ -63,34 +69,42 @@ int main(int argc, char** argv)
 		float scale = 0.5;									//Scale down image
 		resize(grayImage, grayImage, Size(), scale, scale); // Resize
 		grayImage = rotateImage(grayImage, (double)3);		//Correct tilt of camera
-		
-		auto preprocess = since(start).count();									
+
+		auto preprocess = since(start).count();
 		std::cout << "Preprocessing complete(ms) =" << preprocess;
 
 		//Run computer vision function
 		int rowFromBottom = test.calculateRowFromBottom(grayImage);
 
+		
 		auto end = since(start).count() - preprocess;
 		std::cout << " Calculations complete(ms) =" << end << std::endl;
-		
+
 		cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
-		//Display images
+		#ifndef RACE
+		{
+			//Display images
 		Mat overlayedImage;
 		Mat testImage = test.getDrivabilityMap();
 		addWeighted(grayImage, 1, test.getDrivabilityMap(), 0.5, 0, overlayedImage);
 		cvtColor(overlayedImage, overlayedImage, COLOR_GRAY2RGB); //GRAYSCALE
-		circle(overlayedImage,test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
+		circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
 		imshow(windowName, overlayedImage);     // Show our image inside the created 
 		//imshow(windowName, edge);
 		imshow(windowName2, test.getLineImage());
 		int freq = 5;				  //Not really tho
-		cv::waitKey(1000/freq);
+		cv::waitKey(1000 / freq);
+		}
+		#endif
 	}
 
-	cv::waitKey(10000); // Wait for any keystroke in the window
-	cv::destroyWindow(windowName); //destroy the created window
-
+	#ifndef RACE
+	{
+		cv::waitKey(10000); // Wait for any keystroke in the window
+		cv::destroyWindow(windowName); //destroy the created window
+	}
+	#endif
 	return 0;
 }
 
