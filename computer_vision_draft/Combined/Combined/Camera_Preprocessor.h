@@ -4,13 +4,21 @@
 using namespace cv;
 using namespace std;
 #pragma once
+
+extern std::mutex mutex_var;
+extern Mat grayImage;
+extern Mat hsvImage;
+extern int frameID;
+extern bool stop;
+
 class Camera_Preprocessor
 {
 private:
 	float scaleFactor;
 	cv::VideoCapture camera;
-	int fileid;
 	std::mutex *mutex_var;
+
+
 public:
 	/**
 	* Constructor for Camera_Preprocessor
@@ -29,6 +37,10 @@ public:
 	* @param grayImage pointer to output image for grayscale image
 	*/
 	void readCameraFeed();
-
+	
+	/// Read camera feed in a new thread
+	std::thread startThread() {
+		return std::thread([this] { this->readCameraFeed(); });
+	}
 };
 
