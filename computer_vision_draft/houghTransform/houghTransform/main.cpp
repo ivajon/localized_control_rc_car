@@ -2,9 +2,9 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include<windows.h>  
-#include<chrono>
-#include<cmath>
+#include <windows.h>  
+#include <chrono>
+#include <cmath>
 #include "DrivabilityDetector.h"
 
 #define RACE
@@ -75,6 +75,7 @@ int main(int argc, char** argv)
 
 		//Run computer vision function
 		int rowFromBottom = test.calculateRowFromBottom(grayImage);
+	
 		
 		auto end = since(start).count() - preprocess;
 		std::cout << " Calculations complete(ms) =" << end << std::endl;

@@ -7,12 +7,12 @@
       "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|solutionrelative:houghTransform\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|solutionrelative:houghTransform\\DrivabilityDetector.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|solutionrelative:houghTransform\\DrivabilityDetector.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|houghTransform\\houghTransform.vcxproj|solutionrelative:houghTransform\\DrivabilityDetector.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,27 +26,29 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "DrivabilityDetector.h",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.h",
               "RelativeDocumentMoniker": "houghTransform\\DrivabilityDetector.h",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.h",
               "RelativeToolTip": "houghTransform\\DrivabilityDetector.h",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABcAAAAUAAAA",
+              "ViewState": "AQIAACMAAAAAMzMzMzMLwC8AAABmAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-05-10T11:45:56.895Z"
+              "WhenOpened": "2024-05-10T11:45:56.895Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "DrivabilityDetector.cpp",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.cpp",
               "RelativeDocumentMoniker": "houghTransform\\DrivabilityDetector.cpp",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\houghTransform\\houghTransform\\DrivabilityDetector.cpp",
               "RelativeToolTip": "houghTransform\\DrivabilityDetector.cpp",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABgAAAAoAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABgAAAASAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-05-10T11:52:00.391Z"
+              "WhenOpened": "2024-05-10T11:52:00.391Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",

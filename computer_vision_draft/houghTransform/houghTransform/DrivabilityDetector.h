@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <string>
-#include<windows.h>  
+#include <windows.h>  
 #include <iostream>
 #include <fstream>
 #include <numeric>
@@ -45,7 +45,7 @@ public:
 	* 
 	* @param grayScaleImage Grayscale image to run algorithm on
 	* 
-	* @returns rowFromBottom The furthest row from the bottom correpsonding to the floor
+	* @returns rowFromBottom The furthest row from the bottom which was determined to belong to the floor
 	*/
 	int calculateRowFromBottom(cv::Mat grayScaleImage);
 
