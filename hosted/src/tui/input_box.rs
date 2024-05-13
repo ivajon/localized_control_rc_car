@@ -47,6 +47,7 @@ pub type RedrawWriter = mpsc::Sender<()>;
 pub type InputConstructor = (
     Arc<Mutex<Box<InputBox>>>,
     CommitReader,
+    CommitWriter,
     KillReader,
     Vec<tokio::task::JoinHandle<()>>,
 );
@@ -74,7 +75,7 @@ type QReader = mpsc::Receiver<()>;
 /// Sends () when q is pressed.
 type QWriter = mpsc::Sender<()>;
 /// Sends a number when enter is pressed and there is a number in the buffer.
-type CommitWriter = mpsc::Sender<f64>;
+pub type CommitWriter = mpsc::Sender<f64>;
 /// Sends a request to the thread pool to exit the program when q is pressed in normal mode.
 type KillWriter = mpsc::Sender<()>;
 
@@ -112,6 +113,7 @@ impl InputBox {
         (
             ret.clone(),
             commit_reader,
+            commit_writer.clone(),
             kill_reader,
             vec![
                 tokio::spawn(Self::mode_switcher(ret.clone(), mode_reader)),

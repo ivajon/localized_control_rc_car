@@ -42,7 +42,7 @@ impl MockSpi {
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
     ) -> Option<Vec<JoinHandle<()>>> {
-        let spi = Spi::init("/dev/spidev0.0")?;
+        let spi = Spi::init("/dev/spidev1.0")?;
 
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
@@ -135,7 +135,7 @@ async fn start_app() -> Result<(), ()> {
     // Spawn everything for the graph.
     let (graph, register_channel, graph_handles) = Graph::init(redraw_writer.clone());
     // Spawn everything for the input box.
-    let (input, commit, kill, input_handles) = InputBox::init(redraw_writer);
+    let (input, commit, _, kill, input_handles) = InputBox::init(redraw_writer);
 
     // TODO! Replace this with the real SPI manager.
     let mock_spi_channels: Vec<JoinHandle<()>> = match MockSpi::init(register_channel, commit) {
