@@ -12,3 +12,18 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Matlab autosave files
+*.asv
+
+# Images
+*.png
+
+# VS code
+# Intellisense 
+*.ipch
+*.vsidx
+*.opendb
+**/x64
+**/Release
+**/Debug
