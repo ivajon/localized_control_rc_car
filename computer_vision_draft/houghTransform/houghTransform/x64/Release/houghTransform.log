@@ -1,26 +1,5 @@
-﻿  DrivabilityDetector.cpp
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(83,34): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(83,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(84,35): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(84,30): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(85,15): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(91,14): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(95,15): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(101,37): warning C4244: 'argument': conversion from 'float' to '_Tp', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(101,37): warning C4244:         with
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(101,37): warning C4244:         [
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(101,37): warning C4244:             _Tp=int
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(101,37): warning C4244:         ]
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(110,66): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(110,66): warning C4244:         with
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(110,66): warning C4244:         [
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(110,66): warning C4244:             _Ty=double
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\DrivabilityDetector.cpp(110,66): warning C4244:         ]
-  main.cpp
-C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\houghTransform\main.cpp(52,27): warning C4305: 'argument': truncation from 'double' to 'float'
-  Generating code
-  0 of 274 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+﻿  Generating code
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+  All 274 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   houghTransform.vcxproj -> C:\Users\Viktor Lundström\Documents\E7012E_software\computer_vision_draft\houghTransform\x64\Release\houghTransform.exe

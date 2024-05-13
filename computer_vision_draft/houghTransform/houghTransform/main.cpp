@@ -27,6 +27,11 @@ auto since(std::chrono::time_point<clock_t, duration_t> const& start)
 }
 
 
+struct {             // Structure declaration
+	int myNum;         // Member (int variable)
+	string myString;   // Member (string variable)
+} myStructure;
+
 //Main loop
 int main(int argc, char** argv)
 {
