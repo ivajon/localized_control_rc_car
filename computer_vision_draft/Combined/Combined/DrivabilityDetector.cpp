@@ -74,7 +74,12 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	//6 - Calculate center row, take as centerpoint(+weighted average with last value)
 	int minRow = height - 1;
 	int lastRow = height - 1;
+
+	cout << "minRow: " << minRow << " lastRow " << lastRow << endl;
+
 	Mat drivabilityMap(height, width, CV_8UC1, Scalar(0));
+
+	//cout << "driveMap " << drivabilityMap << endl;
 	//Get center point
 	int centCol = 0;
 	int nonZero = 0;
