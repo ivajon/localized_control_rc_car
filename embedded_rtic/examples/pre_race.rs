@@ -131,8 +131,8 @@ mod app {
         let (sonar_forward, sonar_left, sonar_right, _hal_effect) = pins.consume();
 
         let (trig_forward, _echo_forward) = sonar_forward.split();
-        let (trig_left, _echo_left) = sonar_left.split();
-        let (trig_right, _echo_right) = sonar_right.split();
+        let (trig_left, _echo_left) = sonar_left.0.split();
+        let (trig_right, _echo_right) = sonar_right.0.split();
 
         // Pair forward sonars sender and receiver
         let (sender, _receiver_forward) = make_channel!(u32, CAPACITY);
@@ -296,6 +296,7 @@ mod app {
                     Sonar::Forward => compute_distance(0, channels, times, time),
                     Sonar::Left => compute_distance(1, channels, times, time),
                     Sonar::Right => compute_distance(2, channels, times, time),
+                    _ => {}
                 },
             }
         }
