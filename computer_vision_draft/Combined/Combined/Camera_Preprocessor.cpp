@@ -26,6 +26,7 @@ void Camera_Preprocessor::readCameraFeed() {
 		Mat grayTemp, hsvTemp;
 		cvtColor(img, grayTemp, COLOR_RGB2GRAY);
 		cvtColor(img, hsvTemp, COLOR_RGB2HSV);
+		this->grayTemp = grayTemp.clone();
 
 		mutex_var->lock();
 		keepGoing = !stop;
