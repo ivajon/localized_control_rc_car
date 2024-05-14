@@ -159,7 +159,7 @@ mod app {
         trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
         trigger_timestamped_forward::spawn().unwrap_or_else(|_| panic!());
         controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
-        controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
+        // controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
@@ -335,7 +335,7 @@ mod app {
             cx.shared
                 .velocity
                 .lock(|velocity| cx.local.servo.set_bucket(velocity.0));
-            if latest > 100. {
+            if latest > 80. {
                 cx.local.servo.set_bucket(1.);
             }
             cx.shared.forward_distance.lock(|forward_distance| {
