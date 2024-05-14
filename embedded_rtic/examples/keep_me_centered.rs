@@ -66,6 +66,7 @@ mod app {
         difference: f32,
         left_distance: (f32, u64),
         right_distance: (f32, u64),
+        forward_distance: f32,
 
         side_lock: (),
         times: [Instant; 3],
@@ -163,11 +164,12 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 80.,
+                velocity_reference: 110.,
                 safety_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
                 right_distance: (0., 0),
+                forward_distance: f32::MAX,
                 side_lock: (),
                 times,
             },
@@ -316,14 +318,12 @@ mod app {
         }
     }
 
-    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity])]
+    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity,forward_distance])]
     async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         info!("Controll loop steering spawned");
         // let mut start_time = Instant::from_ticks(0);
         loop {
-            cx.shared
-                .velocity
-                .lock(|velocity| cx.local.servo.set_bucket(velocity.0));
+
             // Read from the channel, if sensor values are slow we will miss deadlines.
             let latest = match cx.local.wall_difference_recv.recv().await {
                 Ok(val) => val,
@@ -332,6 +332,17 @@ mod app {
                     break;
                 }
             };
+            cx.shared
+                .velocity
+                .lock(|velocity| cx.local.servo.set_bucket(velocity.0));
+            if latest > 100. {
+                cx.local.servo.set_bucket(1.);
+            }
+            cx.shared.forward_distance.lock(|forward_distance| {
+                if *forward_distance < 0.7 {
+                    cx.local.servo.set_bucket(0.);
+                }
+            });
 
             info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
@@ -532,7 +543,8 @@ mod app {
     ],
     shared = [
         safety_velocity_reference,
-        times
+        times,
+        forward_distance
     ])]
     /// Triggers the forward sensor.
     async fn trigger_timestamped_forward(mut cx: trigger_timestamped_forward::Context) {
@@ -612,6 +624,10 @@ mod app {
             }
 
             forward_window.push_back(forward_distance);
+
+            cx.shared
+                .forward_distance
+                .lock(|fwd| *fwd = forward_distance);
 
             let distance = sum(&forward_window);
 

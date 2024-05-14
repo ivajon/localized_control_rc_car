@@ -1,4 +1,6 @@
 //! BSP for our car, defines some specifics for out car.
+//!
+//!
 
 pub mod event;
 pub mod pin_map;
@@ -55,16 +57,30 @@ pub mod constants {
     pub const SERVO_SCALE: u32 = 2;
 
     /// The scheduling ranges.
-    pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 2] = [
+    pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 4] = [
         GainParams {
-            kp: 25,
-            ki: 4,
-            kd: 15,
-            max_value: 60.,
+            kp: 150,
+            ki: 0,
+            kd: 0,
+            max_value: 1.,
             min_value: 0.,
         },
         GainParams {
-            kp: { 25 / 3 },
+            kp: { 20 / 3 },
+            ki: { 4 / 2 },
+            kd: { 15 / 3 },
+            max_value: 2.,
+            min_value: 1.,
+        },
+        GainParams {
+            kp: 10,
+            ki: 3,
+            kd: 12,
+            max_value: 60.,
+            min_value: 2.,
+        },
+        GainParams {
+            kp: { 20 / 3 },
             ki: { 4 / 2 },
             kd: { 15 / 3 },
             max_value: 150.,
@@ -93,12 +109,13 @@ pub mod constants {
     pub const VOTE_THRESH: usize = 2;
 
     /// How far before we should slow the car down a notch?
-    pub const OHSHIT_MAP: [(f32, Option<f32>); 5] = [
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 6] = [
         (30., Some(0.)),
         (40., Some(0.)),
-        (60., Some(20.)),
-        (100., Some(40.)),
-        (150., None),
+        (60., Some(10.)),
+        (100., Some(20.)),
+        (150., Some(40.)),
+        (170., None),
     ];
 
     /// Sonar Channels for multiple.
