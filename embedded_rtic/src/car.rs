@@ -64,6 +64,8 @@ pub mod constants {
     pub const SERVO_PID_PARAMS_SCHEDULE: GAINSTORE = [
         // 0..50 cm from the wall we simply use a really harsh PID.
         (0., [
+            // In all cases we use the harsh PID controller. This will simply make us turn away
+            // from the wall in the direction of the error.
             Some((0., [
                 Some(GainParams {
                     kp: 150,
@@ -78,6 +80,8 @@ pub mod constants {
         ]),
         // Distance from wall to start using the really harsh PID.
         (50., [
+            // If we are far away from the wall but the side fireing sonars are "close" to a wall
+            // we use gain scheduling that should support up towards 150 cm/s
             Some((0., [
                 Some(GainParams {
                     kp: 10,
@@ -94,7 +98,8 @@ pub mod constants {
                     min_value: 60.,
                 }),
             ])),
-            // If the largest distance to the wall is large use a really slow moving PID..
+            // If we are "far" away from either of the walls we use a really smooth PID controller,
+            // this allows us to stay in the middle even when traveling throughwide  hallways.
             Some((150., [
                 Some(GainParams {
                     kp: { 20 / 3 },
@@ -129,12 +134,16 @@ pub mod constants {
     pub const VOTE_THRESH: usize = 2;
 
     /// How far before we should slow the car down a notch?
-    pub const OHSHIT_MAP: [(f32, Option<f32>); 6] = [
-        (30., Some(0.)),
-        (40., Some(0.)),
-        (60., Some(10.)),
-        (100., Some(20.)),
-        (150., Some(40.)),
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 8] = [
+        (0., Some(0.)),
+        // Crawl in to the wall
+        (10., Some(2.)),
+        (20., Some(5.)),
+        (40., Some(10.)),
+        // Prepare for a turn.
+        (60., Some(20.)),
+        (100., Some(40.)),
+        (150., Some(50.)),
         (170., None),
     ];
 

@@ -35,6 +35,14 @@ pub struct SpiPins {
     pub cs: Pin<Input<Floating>>,
 }
 
+/// The cluster of pins that can be used without anny wrappers.
+pub type PinCluster = (
+    SonarPins,
+    (SonarPins, SonarPins),
+    (SonarPins, SonarPins),
+    Pin<Input<PullUp>>,
+);
+
 /// The pin mapping used in the car.
 pub struct PinMapping<
     const SPI_USED: bool,
@@ -274,14 +282,7 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
     PinMapping<SPI_USED, SERVO_USED, ESC_USED, true>
 {
     /// Consumes the type returning the raw pins.
-    pub fn consume(
-        self,
-    ) -> (
-        SonarPins,
-        (SonarPins, SonarPins),
-        (SonarPins, SonarPins),
-        Pin<Input<PullUp>>,
-    ) {
+    pub fn consume(self) -> PinCluster {
         (
             self.sonar_forward,
             (self.sonar_left, self.sonar_left_2),

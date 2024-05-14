@@ -387,7 +387,7 @@ mod app {
     ])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(mut cx: trigger_timestamped::Context) {
-        info!("Trigger for first pair spawned");
+        info!("Trigger for side-fireing sonars spawned.");
         // let mut time_stamp: u32 = 0;
         let mut prev_dist_left = 0.;
         let mut prev_dist_right = 0.;
@@ -410,6 +410,7 @@ mod app {
             poll_counter = 0;
             let zero = Instant::from_ticks(0);
             let left_distance = 'poll: loop {
+                // Wait until we have found a rising edge.
                 while cx.shared.times.lock(|times| times[1] == zero) {
                     if poll_counter >= MAX_POLL {
                         error!("Max polling exceeded");
@@ -421,6 +422,8 @@ mod app {
                     }
                     poll_counter += 1;
                 }
+
+                // When we have found a rising edge we wait until the falling ege comes.
                 if poll_counter >= MAX_POLL {
                     error!("Max polling exceeded for falling edge");
                     break 'poll 0.;
@@ -443,6 +446,7 @@ mod app {
                     }
                 };
             };
+
             if left_distance == 0. {
                 cx.shared.times.lock(|times| {
                     times[1] = zero;
