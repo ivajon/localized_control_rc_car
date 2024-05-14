@@ -17,6 +17,10 @@ pub trait PidParams<const FIXED_POINT: u32>: Copy {
     fn get_max(&self) -> f32;
 }
 
+pub trait GainGetter<Idx: Sized, PrevIdx: Sized, const FIXED_POINT: u32> {
+    fn get(&self, prev_idx: &mut PrevIdx, idx: Idx) -> impl PidParams<FIXED_POINT>;
+}
+
 #[derive(Copy, Clone)]
 pub struct GainParams<const FIXED_POINT: u32> {
     pub kp: i32,
@@ -29,21 +33,21 @@ pub struct GainParams<const FIXED_POINT: u32> {
 pub struct GainScheduler<
     Error: Debug,
     Interface: Channel<Error, Output = f32>,
-    ParamsStore: PidParams<FIXED_POINT>,
-    const REGIONS: usize,
+    ParamsStore: GainGetter<Index, PrevIdx, FIXED_POINT>,
+    Index: Sized,
+    PrevIdx: Sized,
     const THRESHOLD_MAX: i32,
     const THRESHOLD_MIN: i32,
     const TIMESCALE: i32,
     const FIXED_POINT: u32,
 > {
-    index_map: [(f32, usize); REGIONS],
-    parameters: [ParamsStore; REGIONS],
-    prev_idx: usize,
+    parameters: ParamsStore,
+    prev_idx: PrevIdx,
     interface: Interface,
     measurement: (f32, u64),
     reference: f32,
     prev_time: u64,
-    bucketer: f32,
+    bucketer: Index,
     previous_actuation: f32,
     previous_error: f32,
     integral: f32,
@@ -75,8 +79,9 @@ impl<const FIXED_POINT: u32> PidParams<FIXED_POINT> for GainParams<FIXED_POINT> 
 impl<
         Error: Debug,
         Interface: Channel<Error, Output = f32>,
-        ParamsStore: PidParams<FIXED_POINT>,
-        const REGIONS: usize,
+        ParamsStore: GainGetter<Index, PrevIdx, FIXED_POINT>,
+        Index: Sized + Copy,
+        PrevIdx: Sized + Copy,
         const THRESHOLD_MAX: i32,
         const THRESHOLD_MIN: i32,
         const TIMESCALE: i32,
@@ -86,7 +91,8 @@ impl<
         Error,
         Interface,
         ParamsStore,
-        REGIONS,
+        Index,
+        PrevIdx,
         THRESHOLD_MAX,
         THRESHOLD_MIN,
         TIMESCALE,
@@ -95,37 +101,18 @@ impl<
 {
     /// Creates a new controller that sets the output on the
     /// [`Interface`](`Channel`) using a PID control strategy.
-    pub fn new(
-        channel: Interface,
-        params: [ParamsStore; REGIONS],
-    ) -> GainScheduler<
-        Error,
-        Interface,
-        ParamsStore,
-        REGIONS,
-        THRESHOLD_MAX,
-        THRESHOLD_MIN,
-        TIMESCALE,
-        FIXED_POINT,
-    > {
-        let mut index_map = [(0., 0); REGIONS];
-        let mut prev_thresh = f32::MIN;
-        for (idx, el) in params.iter().enumerate() {
-            if el.get_min() <= prev_thresh {
-                panic!()
-            }
-            prev_thresh = el.get_min();
-            index_map[idx] = (prev_thresh, idx);
-        }
-
+    pub fn new(channel: Interface, params: ParamsStore) -> Self
+    where
+        PrevIdx: Default,
+        Index: Default,
+    {
         GainScheduler {
-            index_map,
             parameters: params,
             prev_time: 0,
             measurement: (0., 0),
             reference: 0.,
-            prev_idx: 0,
-            bucketer: 0.,
+            prev_idx: PrevIdx::default(),
+            bucketer: Index::default(),
             previous_actuation: 0.,
             previous_error: 0.,
             integral: 0.,
@@ -138,7 +125,7 @@ impl<
         self.reference = reference;
     }
 
-    pub fn set_bucket(&mut self, bucketer: f32) {
+    pub fn set_bucket(&mut self, bucketer: Index) {
         self.bucketer = bucketer;
     }
 
@@ -147,26 +134,8 @@ impl<
         self.measurement = measurement;
     }
 
-    pub fn get_gain(&self) -> ParamsStore {
-        let mut min_idx = 0;
-
-        for (idx, (lower_bound, _target_idx)) in self.index_map.iter().enumerate() {
-            if self.bucketer as f32 > *lower_bound * 1.05 {
-                info!("IDX : {:?}",idx);
-                min_idx = idx;
-            } else {
-                break;
-            }
-        }
-        if min_idx < self.prev_idx {
-            if self.bucketer >= self.index_map[self.prev_idx].0 * 0.95 {
-                min_idx = self.prev_idx;
-            }
-        }
-
-        info!("using idx : {:?}",min_idx);
-
-        self.parameters[self.index_map[min_idx].1]
+    pub fn get_gain(&mut self) -> impl PidParams<FIXED_POINT> + '_ {
+        self.parameters.get(&mut self.prev_idx, self.bucketer)
     }
 
     /// Computes the control signal using a PID control strategy.
@@ -174,7 +143,7 @@ impl<
     /// if successful it returns the expected value and the read value.
     pub fn actuate(&mut self) -> Result<ControlInfo<f32>, ()> {
         let output = self.compute_output()?;
-        info!("Applying {:?}",output);
+        info!("Applying {:?}", output);
 
         self.interface.set(output.actuation).unwrap();
         self.previous_actuation = output.actuation;
@@ -231,5 +200,138 @@ impl<
             d,
             pre_threshold: (p + i + d) / fixed_point,
         })
+    }
+}
+
+impl<Params: PidParams<FIXED_POINT>, const FIXED_POINT: u32, const LEN: usize>
+    GainGetter<f32, usize, FIXED_POINT> for [Params; LEN]
+{
+    fn get(&self, prev_idx: &mut usize, idx: f32) -> impl PidParams<FIXED_POINT> {
+        let mut sugested_idx = 0;
+        for (inner_idx, param_set) in self.iter().enumerate().rev() {
+            if idx > param_set.get_min() as f32 * 1.05 {
+                sugested_idx = inner_idx;
+            }
+        }
+
+        if sugested_idx < *prev_idx {
+            if idx > self[*prev_idx].get_min() as f32 * 0.95 {
+                sugested_idx = *prev_idx;
+            }
+        }
+        *prev_idx = sugested_idx;
+
+        self[sugested_idx]
+    }
+}
+
+impl<
+        Params: PidParams<FIXED_POINT>,
+        const FIXED_POINT: u32,
+        const LEN1: usize,
+        const LEN2: usize,
+    > GainGetter<(f32, f32), (usize, usize), FIXED_POINT>
+    for [(f32, [Option<Params>; LEN2]); LEN1]
+{
+    fn get(&self, prev_idx: &mut (usize, usize), idx: (f32, f32)) -> impl PidParams<FIXED_POINT> {
+        let mut sugested_row = 0;
+        for (row, (thresh, _)) in self.iter().enumerate().rev() {
+            if idx.0 > *thresh as f32 * 1.05 {
+                sugested_row = row;
+            }
+        }
+
+        if sugested_row < prev_idx.0 {
+            if idx.0 > self[prev_idx.0].0 * 0.95 {
+                sugested_row = prev_idx.0;
+            }
+        }
+
+        let mut sugested_col = 0;
+        let mut col_iter = self[sugested_row].1.iter().enumerate().rev();
+        while let Some((col, Some(parameters))) = col_iter.next() {
+            if idx.1 > parameters.get_min() as f32 * 1.05 {
+                sugested_col = col;
+            }
+        }
+
+        if sugested_col < prev_idx.1 {
+            if let Some(value) = self[prev_idx.0].1[prev_idx.1] {
+                if idx.1 > value.get_min() as f32 * 0.95 {
+                    sugested_col = prev_idx.1;
+                }
+            }
+        }
+        *prev_idx = (sugested_row, sugested_col);
+
+        // It should be safe to assume that the value exists here.
+        self[sugested_row].1[sugested_col].unwrap()
+    }
+}
+
+impl<
+        Params: PidParams<FIXED_POINT>,
+        const FIXED_POINT: u32,
+        const LEN1: usize,
+        const LEN2: usize,
+        const LEN3: usize,
+    > GainGetter<(f32, f32, f32), (usize, usize, usize), FIXED_POINT>
+    for [(f32, [Option<(f32, [Option<Params>; LEN3])>; LEN2]); LEN1]
+{
+    fn get(
+        &self,
+        prev_idx: &mut (usize, usize, usize),
+        idx: (f32, f32, f32),
+    ) -> impl PidParams<FIXED_POINT> {
+        let mut sugested_row = 0;
+        for (row, (thresh, _)) in self.iter().enumerate().rev() {
+            if idx.0 > *thresh as f32 * 1.05 {
+                sugested_row = row;
+            }
+        }
+
+        if sugested_row < prev_idx.0 {
+            if idx.0 > self[prev_idx.0].0 * 0.95 {
+                sugested_row = prev_idx.0;
+            }
+        }
+
+        let mut sugested_col = 0;
+        let mut col_iter = self[sugested_row].1.iter().enumerate().rev();
+        while let Some((col, Some(parameters))) = col_iter.next() {
+            if idx.1 > parameters.0 as f32 * 1.05 {
+                sugested_col = col;
+            }
+        }
+
+        if sugested_col < prev_idx.1 {
+            if let Some(value) = self[prev_idx.0].1[prev_idx.1] {
+                if idx.1 > value.0 as f32 * 0.95 {
+                    sugested_col = prev_idx.1;
+                }
+            }
+        }
+
+        let mut sugested_depth = 0;
+        let col = self[sugested_row].1[sugested_col].unwrap();
+        let mut col_iter = col.1.iter().enumerate().rev();
+
+        while let Some((col, Some(parameters))) = col_iter.next() {
+            if idx.1 > parameters.get_min() as f32 * 1.05 {
+                sugested_depth = col;
+            }
+        }
+
+        if sugested_col < prev_idx.1 {
+            if let Some(value) = self[prev_idx.0].1[prev_idx.1] {
+                if idx.1 > value.1[sugested_depth].unwrap().get_min() as f32 * 0.95 {
+                    sugested_col = prev_idx.1;
+                }
+            }
+        }
+        *prev_idx = (sugested_row, sugested_col, sugested_depth);
+
+        // It should be safe to assume that the value exists here.
+        self[sugested_row].1[sugested_col].unwrap().1[sugested_depth].unwrap()
     }
 }

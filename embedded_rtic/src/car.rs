@@ -1,6 +1,4 @@
 //! BSP for our car, defines some specifics for out car.
-//!
-//!
 
 pub mod event;
 pub mod pin_map;
@@ -56,8 +54,11 @@ pub mod constants {
 
     pub const SERVO_SCALE: u32 = 2;
 
+    /// The type of gain store used.
+    pub type GAINSTORE = [GainParams<SERVO_SCALE>; 4];
+
     /// The scheduling ranges.
-    pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 4] = [
+    pub const SERVO_PID_PARAMS_SCHEDULE: GAINSTORE = [
         GainParams {
             kp: 150,
             ki: 0,
@@ -149,12 +150,9 @@ pub mod constants {
 pub mod wrappers {
     use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
     pub use rtic_monotonics::nrf::timer::Timer0 as Mono;
-    use shared::{
-        controller::Pid,
-        gain_scheduling::{GainParams, GainScheduler},
-    };
+    use shared::{controller::Pid, gain_scheduling::GainScheduler};
 
-    use super::constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS_SCHEDULE, SERVO_SCALE};
+    use super::constants::{ESC_PID_PARAMS, GAINSTORE, SERVO_SCALE};
 
     /// The spi device used.
     pub type SpiInstance = SPIS0;
@@ -187,8 +185,9 @@ pub mod wrappers {
     pub type ServoController<PWM> = GainScheduler<
         crate::servo::Error,
         crate::servo::Servo<PWM>,
-        GainParams<SERVO_SCALE>,
-        { SERVO_PID_PARAMS_SCHEDULE.len() },
+        GAINSTORE,
+        f32,
+        usize,
         10,
         -10,
         { ESC_PID_PARAMS.TIMESCALE },
