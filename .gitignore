@@ -27,3 +27,4 @@ Cargo.lock
 **/x64
 **/Release
 **/Debug
+**/.vscode
