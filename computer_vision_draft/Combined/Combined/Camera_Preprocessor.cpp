@@ -1,17 +1,25 @@
 #include "Camera_Preprocessor.h"
 
-Camera_Preprocessor::Camera_Preprocessor(float scaleFactor, VideoCapture camera) {
+Camera_Preprocessor::Camera_Preprocessor(float scaleFactor, VideoCapture camera, mutex* mutex_var) {
 	this->scaleFactor = scaleFactor;
 	this->camera = camera;
+	this->mutex_var = mutex_var;
+
 }
 
 void Camera_Preprocessor::readCameraFeed() {
 	Mat img;
 	bool keepGoing = true;
 	frameID = 0;
+
 	while (keepGoing) {
 		bool readImage = this->camera.read(img);
-		if(readImage){
+
+
+		if (!readImage) {
+
+			cout << "2222222" << endl;
+
 			continue;
 		}
 		resize(img, img, Size(), this->scaleFactor, this->scaleFactor);
@@ -21,8 +29,10 @@ void Camera_Preprocessor::readCameraFeed() {
 
 		mutex_var->lock();
 		keepGoing = !stop;
-		grayTemp.copyTo(grayImage);
-		hsvTemp.copyTo(hsvImage);
+		grayImage = grayTemp.clone();
+		hsvImage = hsvTemp.clone();
+		//grayTemp.copyTo(grayImage);
+		//hsvTemp.copyTo(hsvImage);
 		frameID++;
 		mutex_var->unlock();
 	}

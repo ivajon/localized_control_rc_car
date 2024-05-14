@@ -4,6 +4,8 @@
 #include <windows.h>  
 #include "DrivabilityDetector.h"
 #include "Camera_Preprocessor.h"
+#include "StartStop.h"
+#include "TCP.h"
 #include <mutex>
 #include <thread> 
 
@@ -13,38 +15,48 @@ using namespace cv;
 using namespace std;
 
 std::mutex mutex_var;
+std::condition_variable cp;
 Mat grayImage;
 Mat hsvImage;
 int frameID;
 bool stop = false;
+bool initialized = false; // Flag to indicate if Camera_Preprocessor has finished initialization
 
 
 
-//Main loop
-int main(int argc, char** argv)
-{
-	VideoCapture cap(0);
-	cap.set(cv::CAP_PROP_FRAME_WIDTH, 640); // valueX = your wanted width
-	cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480); // valueY = your wanted heigth
-	Point2i centerPoint(100, 100); //Intial guess for center point(in scaled coordinates)
-	DrivabilityDetector test(0.8, centerPoint, 5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
-	Camera_Preprocessor camReader(0.5, cap);
-	std::thread camThread = camReader.startThread();
-
-
+void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
+	cout << "MAIN LOPTILOOP" << endl;
 	while (true) {
 		Mat grayTemp;
+
+		cout << "LOCKING" << endl;
 		mutex_var.lock();
-		grayImage.copyTo(grayTemp);
+		cout << "LOCKED" << endl;
+
+
+		grayTemp = camReader.getGrayTemp().clone();
+		//grayTemp.copyTo(grayImage);
+
+		if (grayImage.empty()) {
+			mutex_var.unlock();
+
+			std::this_thread::sleep_for(100ms);
+			cout << "WAITING FOR IMAGE" << endl;
+			continue;
+		}
+
+
+
 		mutex_var.unlock();
+		cout << "IMG RECV" << endl;
 
 		int rowFromBottom = test.calculateRowFromBottom(grayImage);
 
 		namedWindow("Test");
-		#ifndef RACE
+#ifndef RACE
 		{
 			cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
-		
+
 			//Display images
 			Mat overlayedImage;
 			Mat testImage = test.getDrivabilityMap();
@@ -54,15 +66,47 @@ int main(int argc, char** argv)
 			imshow("Test", overlayedImage);     // Show our image inside the created 
 
 		}
-		#endif
+#endif
 
 		if (waitKey(2) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
 		{
 			cout << "esc key is pressed by user" << endl;
 			break;
 		}
-		
+
 	}
+}
+
+//Main loop
+int main(int argc, char** argv)
+{
+	VideoCapture cap(0);
+
+	if (cap.isOpened() == false)
+	{
+		cout << "Cannot open the video camera" << endl;
+		cin.get(); //wait for any key press
+		return -1;
+	}
+
+	cap.set(cv::CAP_PROP_FRAME_WIDTH, 640); // valueX = your wanted width
+	cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480); // valueY = your wanted heigth
+	Camera_Preprocessor camReader(0.5, cap, &mutex_var);
+	Point2i centerPoint(100, 100); //Intial guess for center point(in scaled coordinates)
+	DrivabilityDetector test(0.8, centerPoint, 5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
+
+	// SPAWN THE THREADS
+	thread camera_handle = camReader.startThread();
+
+	StartStop start();
+	//TCP tcp();
+	cout << "HEYA" << endl;
+	std::thread looptiloop(main_loop, camReader, test);
+
+
+	looptiloop.join();
+	camera_handle.join();
+
 	return 0;
 }
 
