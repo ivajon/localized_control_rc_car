@@ -141,7 +141,6 @@ pub fn compute_distance(
 pub fn compute_velocity(
     previous_time: &mut Option<u64>,
     time: u64,
-    // sender: &mut Sender<'static, i32, CAPACITY>,
     vel: &mut (f32, u64),
 ) {
     match previous_time {
@@ -155,7 +154,6 @@ pub fn compute_velocity(
             *previous_time = Some(time);
 
             *vel = (velocity as f32, time);
-            // let _ = sender.try_send(vel as i32);
         }
         None => {
             *previous_time = Some(time);

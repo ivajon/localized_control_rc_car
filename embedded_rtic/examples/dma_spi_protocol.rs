@@ -138,7 +138,7 @@ mod app {
 
             let queue = ArrayDeque::new();
 
-            let controller = Pid::new(esc);
+            let controller = Pid::new(esc, 0.);
 
             let (sender, receiver) = make_channel!(i32, 30);
 

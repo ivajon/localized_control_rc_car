@@ -281,6 +281,12 @@ mod app {
                         }
                     }
                 }
+                Sonar::Right2 => {
+                    unimplemented!("NOT MOUNTED");
+                }
+                Sonar::Left2 => {
+                    unimplemented!("NOT MOUNTED");
+                }
             }
         }
         // Clear interrupt pending bits.
