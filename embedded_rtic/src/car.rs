@@ -2,7 +2,6 @@
 
 pub mod event;
 pub mod pin_map;
-use shared::controller::Pid;
 
 #[allow(non_snake_case)]
 /// A collection of PID parameters.
@@ -58,20 +57,19 @@ pub mod constants {
     /// The scheduling ranges.
     pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 2] = [
         GainParams {
-            kp: 30,
+            kp: 25,
             ki: 4,
-            kd: 20,
-            max_value: 70.,
+            kd: 15,
+            max_value: 60.,
             min_value: 0.,
         },
         GainParams {
-            kp: {35/3},
-            ki: {8/2},
-            kd: {25/3},
+            kp: { 25 / 3 },
+            ki: { 4 / 2 },
+            kd: { 15 / 3 },
             max_value: 150.,
-            min_value: 70.,
+            min_value: 60.,
         },
-
     ];
 
     /// The message queue capacity.
@@ -95,7 +93,11 @@ pub mod constants {
     pub const VOTE_THRESH: usize = 2;
 
     /// How far before we should slow the car down a notch?
-    pub const OHSHIT_MAP: [(f32,Option<f32>);4] = [(10.,Some(0.)),(20.,Some(10.)),(40.,Some(20.)),(60.,None)];
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 3] = [
+        (30., Some(0.)),
+        (40., Some(10.)),
+        (60., None),
+    ];
 
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
@@ -128,11 +130,13 @@ pub mod constants {
 pub mod wrappers {
     use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
     pub use rtic_monotonics::nrf::timer::Timer0 as Mono;
-    use shared::gain_scheduling::{GainParams, GainScheduler};
+    use shared::{
+        controller::Pid,
+        gain_scheduling::{GainParams, GainScheduler},
+    };
 
     use super::{
         constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS_SCHEDULE, SERVO_SCALE},
-        Pid,
     };
 
     /// The spi device used.

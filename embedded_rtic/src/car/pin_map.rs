@@ -171,8 +171,9 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const EVENTS_CONFIGURED: bool
         MotorController<EscPwm>,
     ) {
         let esc = unsafe { self.esc_output.take().unwrap_unchecked() };
-        let esc = Esc::new(device, esc);
-        let controller = MotorController::new(esc);
+        let mut esc = Esc::new(device, esc);
+        esc.speed(0).unwrap();
+        let controller = MotorController::new(esc,70.);
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,

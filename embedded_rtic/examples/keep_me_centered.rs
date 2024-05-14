@@ -155,15 +155,15 @@ mod app {
 
         let times = [Instant::from_ticks(0); 3];
 
-        // trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
+        trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
         trigger_timestamped_forward::spawn().unwrap_or_else(|_| panic!());
-        // controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
+        controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
         controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 150.,
+                velocity_reference: 110.,
                 safety_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
@@ -257,6 +257,11 @@ mod app {
         info!("Controll loop velocity spawned");
         let controller = cx.local.esc;
         let mut previous = (0f32, 0);
+        // let mut counter = 0;
+        controller.follow([0.0]);
+        controller.actuate().unwrap();
+        Mono::delay(10.millis()).await;
+
         loop {
             let time = Mono::now();
             let mut measurement = cx.shared.velocity.lock(|measurement| *measurement);
@@ -288,12 +293,14 @@ mod app {
                         reference = *safe;
                     }
                 });
+
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
-            let _actuation = controller
+            let actuation = controller
                 .actuate()
                 .expect("Example is broken this should work");
-
+            info!("ACTUATION GOES BRRR");
+            info!("{:?}", actuation);
             let outer = measurement;
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
@@ -395,7 +402,7 @@ mod app {
             poll_counter = 0;
             let zero = Instant::from_ticks(0);
             let left_distance = 'poll: loop {
-                while cx.shared.times.lock(|times| times[0] == zero) {
+                while cx.shared.times.lock(|times| times[1] == zero) {
                     if poll_counter >= MAX_POLL {
                         error!("Max polling exceeded");
                         break 'poll 0.;
@@ -430,7 +437,7 @@ mod app {
             };
             if left_distance == 0. {
                 cx.shared.times.lock(|times| {
-                    times[0] = zero;
+                    times[1] = zero;
                     times[2] = zero;
                 });
                 found_outlier = true;
@@ -483,6 +490,10 @@ mod app {
 
             if right_distance == 0. {
                 found_outlier = true;
+                cx.shared.times.lock(|times| {
+                    times[1] = zero;
+                    times[2] = zero;
+                });
             }
 
             found_outlier |= right_distance.reject::<VOTE_THRESH>(
@@ -517,12 +528,13 @@ mod app {
         }
     }
 
-    #[task(priority = 4,local = [
+    #[task(priority = 3,local = [
            receiver_forward,
            trig_forward
     ],
     shared = [
-        safety_velocity_reference
+        safety_velocity_reference,
+        times
     ])]
     /// Triggers the forward sensor.
     async fn trigger_timestamped_forward(mut cx: trigger_timestamped_forward::Context) {
@@ -543,25 +555,50 @@ mod app {
             cx.local.trig_forward.trigger().await.unwrap();
 
             poll_counter = 0;
+            let zero = Instant::from_ticks(0);
             let forward_distance = 'poll: loop {
+                while cx.shared.times.lock(|times| times[0] == zero) {
+                    if poll_counter >= MAX_POLL {
+                        error!("Max polling exceeded");
+                        break 'poll 0.;
+                    }
+                    Mono::delay(1.millis()).await;
+                    if let Ok(value) = cx.local.receiver_forward.try_recv() {
+                        break 'poll value;
+                    }
+                    poll_counter += 1;
+                }
                 if poll_counter >= MAX_POLL {
-                    info!("MAX POLLING FORWARD EXCEEDED");
+                    error!("Max polling exceeded for falling edge");
                     break 'poll 0.;
                 }
                 match cx.local.receiver_forward.try_recv() {
                     Ok(value) => {
-                        break 'poll value;
+                        info!("Right value : {:?}", value);
+                        let mut val = value;
+                        // Consume all enqueued messages.
+                        while let Ok(inner_val) = cx.local.receiver_forward.try_recv() {
+                            info!("Forward value : {:?}", inner_val);
+                            val = inner_val;
+                        }
+                        break 'poll val;
                     }
-                    Err(_) => {
+                    Err(rtic_sync::channel::ReceiveError::Empty) => {
                         poll_counter += 1;
                         Mono::delay(1.millis()).await;
                         continue;
+                        // continue 'main;
                     }
+                    _ => panic!(),
                 };
             };
 
             if forward_distance == 0. {
                 found_outlier = true;
+                cx.shared.times.lock(|times| {
+                    times[0] = zero;
+                });
+                Mono::delay(100.millis()).await;
             }
 
             found_outlier |= forward_distance.reject::<VOTE_THRESH>(
