@@ -73,7 +73,6 @@ impl PinMapping<false, false, false, false> {
         let encoder = p1.p1_02.into_pullup_input().degrade();
 
         // Sonars
-
         let sonar_right_2 = SonarPins {
             trigger: p0.p0_12.into_push_pull_output(gpio::Level::Low).degrade(),
             echo: p0.p0_11.into_pulldown_input().degrade(),
@@ -330,6 +329,12 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
             .toggle()
             .toggle()
             .enable_interrupt();
+        gpiote
+            .channel5()
+            .input_pin(&self.sonar_forward.echo)
+            .toggle()
+            .toggle()
+            .enable_interrupt();
 
         gpiote.port().input_pin(&self.encoder).high();
         gpiote.port().input_pin(&self.sonar_forward.echo).high();
@@ -337,12 +342,14 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
         gpiote.port().input_pin(&self.sonar_right.echo).high();
         gpiote.port().input_pin(&self.sonar_left_2.echo).high();
         gpiote.port().input_pin(&self.sonar_right_2.echo).high();
+        gpiote.port().input_pin(&self.sonar_forward.echo).high();
 
         gpiote.port().input_pin(&self.sonar_forward.echo).low();
         gpiote.port().input_pin(&self.sonar_left.echo).low();
         gpiote.port().input_pin(&self.sonar_right.echo).low();
         gpiote.port().input_pin(&self.sonar_left_2.echo).low();
         gpiote.port().input_pin(&self.sonar_right_2.echo).low();
+        gpiote.port().input_pin(&self.sonar_forward.echo).low();
 
         let mut ppi0 = ppi.ppi0;
         ppi0.set_event_endpoint(gpiote.channel0().event());
@@ -368,6 +375,11 @@ impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
         ppi4.set_event_endpoint(gpiote.channel4().event());
         ppi4.set_task_endpoint(gpiote.channel4().task_out());
         ppi4.enable();
+
+        let mut ppi5 = ppi.ppi5;
+        ppi5.set_event_endpoint(gpiote.channel5().event());
+        ppi5.set_task_endpoint(gpiote.channel5().task_out());
+        ppi5.enable();
 
         gpiote.port().enable_interrupt();
         let new_self = PinMapping {

@@ -94,6 +94,9 @@ pub mod constants {
     /// truth?
     pub const VOTE_THRESH: usize = 2;
 
+    /// How far before we should slow the car down a notch?
+    pub const OHSHIT_MAP: [(f32,Option<f32>);4] = [(10.,Some(0.)),(20.,Some(10.)),(40.,Some(20.)),(60.,None)];
+
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
     pub enum Sonar {

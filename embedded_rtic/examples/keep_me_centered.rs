@@ -24,6 +24,7 @@ mod app {
                 ESC_PID_PARAMS,
                 MAGNET_SPACING,
                 MIN_VEL,
+                OHSHIT_MAP,
                 OUTLIER_LIMIT,
                 RADIUS,
                 SMOOTHING,
@@ -61,14 +62,13 @@ mod app {
     struct Shared {
         velocity: (f32, u64),
         velocity_reference: f32,
+        safety_velocity_reference: Option<f32>,
         difference: f32,
         left_distance: (f32, u64),
-        left_distance_2: (f32, u64),
         right_distance: (f32, u64),
-        right_distance_2: (f32, u64),
 
         side_lock: (),
-        times: [Instant; 4],
+        times: [Instant; 3],
     }
 
     // Local resources go here
@@ -76,28 +76,25 @@ mod app {
     #[allow(dead_code)]
     struct Local {
         first_pair: (Pin<Output<PushPull>>, Pin<Output<PushPull>>),
-        second_pair: (Pin<Output<PushPull>>, Pin<Output<PushPull>>),
+        trig_forward: Pin<Output<PushPull>>,
 
-        receiver_left_1: Receiver<'static, f32, CAPACITY>,
-        sender_left_1_clone: Sender<'static, f32, CAPACITY>,
-        receiver_left_2: Receiver<'static, f32, CAPACITY>,
-        sender_left_2_clone: Sender<'static, f32, CAPACITY>,
+        receiver_left: Receiver<'static, f32, CAPACITY>,
+        sender_left_clone: Sender<'static, f32, CAPACITY>,
 
-        receiver_right_1: Receiver<'static, f32, CAPACITY>,
-        sender_right_1_clone: Sender<'static, f32, CAPACITY>,
-        receiver_right_2: Receiver<'static, f32, CAPACITY>,
-        sender_right_2_clone: Sender<'static, f32, CAPACITY>,
+        receiver_forward: Receiver<'static, f32, CAPACITY>,
 
-        wall_difference_sender_1: Sender<'static, f32, CAPACITY>,
-        wall_difference_sender_2: Sender<'static, f32, CAPACITY>,
+        receiver_right: Receiver<'static, f32, CAPACITY>,
+        sender_right_clone: Sender<'static, f32, CAPACITY>,
+
+        wall_difference_sender: Sender<'static, f32, CAPACITY>,
         wall_difference_recv: Receiver<'static, f32, CAPACITY>,
 
         // receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
         sender_sonar_packets: Sender<'static, ((u32, u32), u32), CAPACITY>,
 
-        echo_pins: [Pin<Input<PullDown>>; 4],
+        echo_pins: [Pin<Input<PullDown>>; 3],
 
-        senders: [Sender<'static, f32, CAPACITY>; 4],
+        senders: [Sender<'static, f32, CAPACITY>; 3],
 
         servo: ServoController<PWM1>,
         esc: MotorController<PWM0>,
@@ -132,73 +129,64 @@ mod app {
         // ===================== CONFIGURE SONARS =====================
         let (sonar_forward, sonars_left, sonars_right, _hal_effect) = pins.consume();
 
-        let (_trig_forward, _echo_forward) = sonar_forward.split();
-        let (trig_left_1, echo_left_1) = sonars_left.0.split();
-        let (trig_left_2, echo_left_2) = sonars_left.1.split();
-        let (trig_right_1, echo_right_1) = sonars_right.0.split();
-        let (trig_right_2, echo_right_2) = sonars_right.1.split();
+        let (trig_forward, echo_forward) = sonar_forward.split();
+        let (trig_left, echo_left) = sonars_left.0.split();
+        let (trig_right, echo_right) = sonars_right.0.split();
 
         // ===================== CONFIGURE CHANNLES =====================
         // Pair left sonars sender and receiver
-        let (sender_left_1, receiver_left_1) = make_channel!(f32, CAPACITY);
-        let sender_left_1_clone = sender_left_1.clone();
-        let (sender_left_2, receiver_left_2) = make_channel!(f32, CAPACITY);
-        let sender_left_2_clone = sender_left_2.clone();
+        let (sender_left, receiver_left) = make_channel!(f32, CAPACITY);
+        let sender_left_clone = sender_left.clone();
         // Pair right sonars sender and receiver
-        let (sender_right_1, receiver_right_1) = make_channel!(f32, CAPACITY);
-        let sender_right_1_clone = sender_right_1.clone();
-        let (sender_right_2, receiver_right_2) = make_channel!(f32, CAPACITY);
-        let sender_right_2_clone = sender_right_2.clone();
+        let (sender_right, receiver_right) = make_channel!(f32, CAPACITY);
+        let sender_right_clone = sender_right.clone();
 
-        let (wall_difference_sender_1, wall_difference_recv) = make_channel!(f32, CAPACITY);
-        let wall_difference_sender_2 = wall_difference_sender_1.clone();
+        // Channel for forward measurements.
+        let (sender_forward, receiver_forward) = make_channel!(f32, CAPACITY);
+
+        let (wall_difference_sender, wall_difference_recv) = make_channel!(f32, CAPACITY);
+        let wall_difference_sender = wall_difference_sender.clone();
         // Channel for packed sonar data.
         let (sender_sonar_packets, _receiver_sonar_packets) =
             make_channel!(((u32, u32), u32), CAPACITY);
 
         // Array with respective senders
-        let senders = [sender_left_1, sender_left_2, sender_right_1, sender_right_2];
+        let senders = [sender_forward, sender_left, sender_right];
 
-        let times = [Instant::from_ticks(0); 4];
+        let times = [Instant::from_ticks(0); 3];
 
-        trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
-        // trigger_timestamped_2::spawn().unwrap_or_else(|_| panic!());
-        controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
+        // trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
+        trigger_timestamped_forward::spawn().unwrap_or_else(|_| panic!());
+        // controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
         controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 35.,
+                velocity_reference: 150.,
+                safety_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
-                left_distance_2: (0., 0),
                 right_distance: (0., 0),
-                right_distance_2: (0., 0),
                 side_lock: (),
                 times,
             },
             Local {
-                first_pair: (trig_left_1, trig_right_1),
-                receiver_left_1,
-                sender_left_1_clone,
-                receiver_right_1,
-                sender_right_1_clone,
-
-                second_pair: (trig_left_2, trig_right_2),
-                receiver_left_2,
-                sender_left_2_clone,
-                receiver_right_2,
-                sender_right_2_clone,
+                first_pair: (trig_left, trig_right),
+                trig_forward,
+                receiver_left,
+                sender_left_clone,
+                receiver_right,
+                sender_right_clone,
+                receiver_forward,
 
                 wall_difference_recv,
-                wall_difference_sender_1,
-                wall_difference_sender_2,
+                wall_difference_sender,
 
                 sender_sonar_packets,
 
                 senders,
-                echo_pins: [echo_left_1, echo_left_2, echo_right_1, echo_right_2],
+                echo_pins: [echo_forward, echo_left, echo_right],
                 event_manager,
 
                 servo,
@@ -216,9 +204,7 @@ mod app {
     ],shared = [
         velocity,
         left_distance,
-        left_distance_2,
         right_distance,
-        right_distance_2,
         times,
 
     ])]
@@ -249,25 +235,15 @@ mod app {
                         });
                     }
                     GpioEvents::Sonar(sonar) => {
-                        match sonar {
-                            Sonar::Forward => {
-                                panic!() /* compute_distance(0, channels,
-                                          * times,
-                                          * time) */
-                            }
-                            Sonar::Left => {
-                                compute_distance(0, cx.local.senders, echo_pins, times, time)
-                            }
-                            Sonar::Left2 => {
-                                compute_distance(1, cx.local.senders, echo_pins, times, time)
-                            }
-                            Sonar::Right => {
-                                compute_distance(2, cx.local.senders, echo_pins, times, time)
-                            }
-                            Sonar::Right2 => {
-                                compute_distance(3, cx.local.senders, echo_pins, times, time)
-                            }
-                        }
+                        let idx = match sonar {
+                            Sonar::Forward => 0,
+                            Sonar::Left => 1,
+                            Sonar::Right => 2,
+                            Sonar::Left2 => continue,
+                            Sonar::Right2 => continue,
+                        };
+
+                        compute_distance(idx, cx.local.senders, echo_pins, times, time)
                     }
                 }
             }
@@ -275,7 +251,7 @@ mod app {
         // This should not be needed.
     }
 
-    #[task(local = [esc], shared = [velocity,velocity_reference],priority=4)]
+    #[task(local = [esc], shared = [velocity,velocity_reference,safety_velocity_reference],priority=4)]
     /// Provides a PID controller for the ESC.
     async fn controll_loop_velocity(mut cx: controll_loop_velocity::Context) {
         info!("Controll loop velocity spawned");
@@ -284,7 +260,7 @@ mod app {
         loop {
             let time = Mono::now();
             let mut measurement = cx.shared.velocity.lock(|measurement| *measurement);
-            let reference = cx.shared.velocity_reference.lock(|reference| *reference);
+            let mut reference = cx.shared.velocity_reference.lock(|reference| *reference);
 
             // MIIIIIIGHT be better to just wait here?
             if measurement.1 == previous.1 {
@@ -305,6 +281,13 @@ mod app {
                 previous = measurement;
             }
 
+            cx.shared
+                .safety_velocity_reference
+                .lock(|safety_velocity_reference| {
+                    if let Some(safe) = safety_velocity_reference {
+                        reference = *safe;
+                    }
+                });
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
             let _actuation = controller
@@ -328,12 +311,14 @@ mod app {
         }
     }
 
-    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity_reference])]
+    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity])]
     async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         info!("Controll loop steering spawned");
         // let mut start_time = Instant::from_ticks(0);
         loop {
-            cx.shared.velocity_reference.lock(|velocity_reference| { cx.local.servo.set_bucket(*velocity_reference as f32)});
+            cx.shared
+                .velocity
+                .lock(|velocity| cx.local.servo.set_bucket(velocity.0));
             // Read from the channel, if sensor values are slow we will miss deadlines.
             let latest = match cx.local.wall_difference_recv.recv().await {
                 Ok(val) => val,
@@ -342,22 +327,6 @@ mod app {
                     break;
                 }
             };
-
-            // let sample_time = Mono::now()
-            // .checked_duration_since(start_time)
-            // .unwrap()
-            // .to_micros();
-
-            // // TODO! Add in some way to cope with to slow measurements.
-            // if latest == prev {
-            //     // info!("Servo controll too fast");
-            //     prev_modified = prev_modified / 1.001;
-            //     latest = prev_modified;
-            //     info!("Using err = {:?}", latest);
-            // } else {
-            //     prev = latest;
-            //     prev_modified = latest;
-            // }
 
             info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
@@ -382,12 +351,12 @@ mod app {
     }
 
     #[task(priority = 4,local = [
-           receiver_left_1,
-           sender_left_1_clone,
+           receiver_left,
+           sender_left_clone,
 
-           receiver_right_1,
-           sender_right_1_clone,
-           wall_difference_sender_1,
+           receiver_right,
+           sender_right_clone,
+           wall_difference_sender,
            sender_sonar_packets,
            first_pair
     ],
@@ -416,15 +385,8 @@ mod app {
 
         'main: loop {
             let mut found_outlier = false;
-            cx.shared
-                .side_lock
-                .lock(|_| async {
-                    // let now = Mono::now();
-                    // Mono::delay_until(now + 30.millis()).await;
-                    cx.local.first_pair.trigger().await.unwrap();
-                })
-                .await;
 
+            cx.local.first_pair.trigger().await.unwrap();
             // ======================= LEFT DISTANCE =========================
 
             // THIS IS BAD, FIX LATER
@@ -439,7 +401,7 @@ mod app {
                         break 'poll 0.;
                     }
                     Mono::delay(1.millis()).await;
-                    if let Ok(value) = cx.local.receiver_left_1.try_recv() {
+                    if let Ok(value) = cx.local.receiver_left.try_recv() {
                         break 'poll value;
                     }
                     poll_counter += 1;
@@ -448,11 +410,11 @@ mod app {
                     error!("Max polling exceeded for falling edge");
                     break 'poll 0.;
                 }
-                match cx.local.receiver_left_1.try_recv() {
+                match cx.local.receiver_left.try_recv() {
                     Ok(value) => {
                         info!("Left value : {:?}", value);
                         let mut val = value;
-                        while let Ok(inner_val) = cx.local.receiver_left_1.try_recv() {
+                        while let Ok(inner_val) = cx.local.receiver_left.try_recv() {
                             info!("Left value : {:?}", inner_val);
                             val = inner_val;
                         }
@@ -489,7 +451,7 @@ mod app {
                         break 'poll 0.;
                     }
                     Mono::delay(1.millis()).await;
-                    if let Ok(value) = cx.local.receiver_right_1.try_recv() {
+                    if let Ok(value) = cx.local.receiver_right.try_recv() {
                         break 'poll value;
                     }
                     poll_counter += 1;
@@ -498,12 +460,12 @@ mod app {
                     error!("Max polling exceeded for falling edge");
                     break 'poll 0.;
                 }
-                match cx.local.receiver_right_1.try_recv() {
+                match cx.local.receiver_right.try_recv() {
                     Ok(value) => {
                         info!("Right value : {:?}", value);
                         let mut val = value;
                         // Consume all enqueued messages.
-                        while let Ok(inner_val) = cx.local.receiver_right_1.try_recv() {
+                        while let Ok(inner_val) = cx.local.receiver_right.try_recv() {
                             info!("Right value : {:?}", inner_val);
                             val = inner_val;
                         }
@@ -545,7 +507,7 @@ mod app {
             diff_window.push_back(difference);
             let difference = sum(&diff_window);
 
-            match cx.local.wall_difference_sender_1.send(difference).await {
+            match cx.local.wall_difference_sender.send(difference).await {
                 Ok(_) => {}
                 Err(_) => {
                     error!("difference sender 1 channel full.");
@@ -556,53 +518,37 @@ mod app {
     }
 
     #[task(priority = 4,local = [
-           second_pair,
-           receiver_left_2,
-           sender_left_2_clone,
-           receiver_right_2,
-           sender_right_2_clone,
-           wall_difference_sender_2
+           receiver_forward,
+           trig_forward
     ],
     shared = [
-        difference,
-        left_distance_2,
-        right_distance_2,
-        side_lock,
+        safety_velocity_reference
     ])]
-    /// Triggers the second set of sonars.
-    async fn trigger_timestamped_2(mut cx: trigger_timestamped_2::Context) {
-        info!("Trigger for second pair spawned");
-        let mut prev_dist_left = 0.;
-        let mut prev_dist_right = 0.;
-        let mut left_outlier = 0;
-        let mut right_outlier = 0;
+    /// Triggers the forward sensor.
+    async fn trigger_timestamped_forward(mut cx: trigger_timestamped_forward::Context) {
+        let mut prev_dist_forward = 0.;
+        let mut forward_outlier = 0;
 
-        let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
-        let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
-        let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut forward_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
 
         const MAX_POLL: usize = 100;
         let mut poll_counter;
 
+        let mut limiting: bool = false;
+
         'main: loop {
             let mut found_outlier = false;
-            cx.shared
-                .side_lock
-                .lock(|_| async {
-                    let now = Mono::now();
-                    Mono::delay_until(now + 6.millis()).await;
-                    cx.local.second_pair.trigger().await.unwrap();
-                })
-                .await;
 
-            // ======================= LEFT DISTANCE =========================
+            // ======================= FORWARD DISTANCE =========================
+            cx.local.trig_forward.trigger().await.unwrap();
 
             poll_counter = 0;
-            let left_distance = 'poll: loop {
+            let forward_distance = 'poll: loop {
                 if poll_counter >= MAX_POLL {
+                    info!("MAX POLLING FORWARD EXCEEDED");
                     break 'poll 0.;
                 }
-                match cx.local.receiver_left_2.try_recv() {
+                match cx.local.receiver_forward.try_recv() {
                     Ok(value) => {
                         break 'poll value;
                     }
@@ -614,65 +560,64 @@ mod app {
                 };
             };
 
-            if left_distance == 0. {
+            if forward_distance == 0. {
                 found_outlier = true;
             }
 
-            found_outlier |= left_distance.reject::<VOTE_THRESH>(
-                &mut prev_dist_left,
-                &mut left_outlier,
+            found_outlier |= forward_distance.reject::<VOTE_THRESH>(
+                &mut prev_dist_forward,
+                &mut forward_outlier,
                 &OUTLIER_LIMIT,
             );
 
-            // ======================= RIGHT DISTANCE =========================
-
-            poll_counter = 0;
-            let right_distance = 'poll: loop {
-                if poll_counter >= MAX_POLL {
-                    break 'poll 0.;
-                }
-                match cx.local.receiver_right_2.try_recv() {
-                    Ok(value) => {
-                        break 'poll value;
-                    }
-                    Err(_) => {
-                        poll_counter += 1;
-                        Mono::delay(1.millis()).await;
-                        continue;
-                    }
-                };
-            };
-
-            if right_distance == 0. {
-                found_outlier = true;
-            }
-
-            found_outlier |= right_distance.reject::<VOTE_THRESH>(
-                &mut prev_dist_right,
-                &mut right_outlier,
-                &OUTLIER_LIMIT,
-            );
-
-            info!("Distance ({:?},{:?})", left_distance, right_distance);
+            info!("Distance ({:?})", forward_distance);
             // DISCARD OUTLIERS
             if found_outlier {
                 continue 'main;
             }
 
-            left_window.push_back(left_distance);
-            right_window.push_back(right_distance);
+            forward_window.push_back(forward_distance);
 
-            let difference = sum(&left_window) - sum(&right_window);
-            diff_window.push_back(difference);
-            let difference = sum(&diff_window);
+            let distance = sum(&forward_window);
 
-            match cx.local.wall_difference_sender_2.send(difference).await {
-                Ok(_) => {}
-                Err(_) => {
-                    info!("difference sender 2 channel full.");
+            let mut none_checked = true;
+            for (thresh_distance, speed) in OHSHIT_MAP.iter().rev() {
+                if distance < *thresh_distance {
+                    continue;
+                }
+                none_checked = false;
+                if speed.is_none() {
+                    cx.shared
+                        .safety_velocity_reference
+                        .lock(|safety_velocity_reference| *safety_velocity_reference = None);
+                    break;
+                }
+                if let Some(velocity) = speed {
+                    cx.shared
+                        .safety_velocity_reference
+                        .lock(|safety_velocity_reference| {
+                            *safety_velocity_reference = Some(*velocity);
+                            limiting = true;
+                        });
+                }
+                continue 'main;
+            }
+            if none_checked {
+                let speed = OHSHIT_MAP[0].1;
+                if let Some(velocity) = speed {
+                    cx.shared
+                        .safety_velocity_reference
+                        .lock(|safety_velocity_reference| {
+                            *safety_velocity_reference = Some(velocity);
+                            limiting = true;
+                        });
                     continue 'main;
                 }
-            };
+            }
+            cx.shared
+                .safety_velocity_reference
+                .lock(|safety_velocity_reference| *safety_velocity_reference = None);
+            limiting = false;
         }
     }
 }
