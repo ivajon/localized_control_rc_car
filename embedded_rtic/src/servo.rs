@@ -36,7 +36,7 @@ impl<PWM: Instance> Servo<PWM> {
     /// The minimum angle for steering actuation.
     const MIN_ANGLE: i32 = -15;
     /// The steering seems to be offset by some constant factor.
-    const STEERING_ERROR: i32 = -19;
+    const STEERING_ERROR: i32 = 0;
 
     /// Creates a new servo from a [`Pwm`] [`Instance`] and the associated
     /// [`Pin`].
@@ -78,7 +78,7 @@ impl<PWM: Instance> Servo<PWM> {
             return Err(Error::InvalidAngle(value + Self::STEERING_ERROR));
         }
 
-        let value: i16 = value
+        let value: i16 = (value + Self::STEERING_ERROR)
             .try_into()
             .map_err(|_err| Error::InvalidAngle(value))?;
 

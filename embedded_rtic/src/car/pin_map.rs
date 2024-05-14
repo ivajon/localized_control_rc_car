@@ -8,6 +8,7 @@ use nrf52840_hal::{
 };
 
 use super::{
+    constants::SERVO_PID_PARAMS_SCHEDULE,
     event::EventManager,
     wrappers::{EscPwm, MotorController, ServoController, ServoPwm, SpiInstance},
 };
@@ -73,7 +74,7 @@ impl PinMapping<false, false, false, false> {
 
         // Sonars
 
-        let sonar_forward = SonarPins {
+        let sonar_right_2 = SonarPins {
             trigger: p0.p0_12.into_push_pull_output(gpio::Level::Low).degrade(),
             echo: p0.p0_11.into_pulldown_input().degrade(),
         };
@@ -93,7 +94,7 @@ impl PinMapping<false, false, false, false> {
             echo: p1.p1_04.into_pulldown_input().degrade(),
         };
 
-        let sonar_right_2 = SonarPins {
+        let sonar_forward = SonarPins {
             trigger: p1.p1_07.into_push_pull_output(gpio::Level::Low).degrade(),
             echo: p1.p1_08.into_pulldown_input().degrade(),
         };
@@ -227,7 +228,7 @@ impl<const SPI_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
     ) {
         let esc = unsafe { self.servo_output.take().unwrap_unchecked() };
         let esc = Servo::new(device, esc);
-        let controller = ServoController::new(esc);
+        let controller = ServoController::new(esc, SERVO_PID_PARAMS_SCHEDULE);
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,

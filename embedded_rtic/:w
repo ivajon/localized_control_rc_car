@@ -58,16 +58,16 @@ pub mod constants {
     /// The scheduling ranges.
     pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 2] = [
         GainParams {
-            kp: 30,
-            ki: 4,
-            kd: 20,
+            kp: 100,
+            ki: 10,
+            kd: 90,
             max_value: 70.,
             min_value: 0.,
         },
         GainParams {
-            kp: {35/3},
-            ki: {8/2},
-            kd: {25/3},
+            kp: {120/3},
+            ki: 1,
+            kd: {30/3},
             max_value: 150.,
             min_value: 70.,
         },

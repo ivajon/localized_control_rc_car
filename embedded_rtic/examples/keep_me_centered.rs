@@ -169,7 +169,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 20.,
+                velocity_reference: 35.,
                 difference: 0.,
                 left_distance: (0., 0),
                 left_distance_2: (0., 0),
@@ -328,11 +328,12 @@ mod app {
         }
     }
 
-    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference])]
-    async fn controll_loop_steering(cx: controll_loop_steering::Context) {
+    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity_reference])]
+    async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         info!("Controll loop steering spawned");
-        let mut start_time = Instant::from_ticks(0);
+        // let mut start_time = Instant::from_ticks(0);
         loop {
+            cx.shared.velocity_reference.lock(|velocity_reference| { cx.local.servo.set_bucket(*velocity_reference as f32)});
             // Read from the channel, if sensor values are slow we will miss deadlines.
             let latest = match cx.local.wall_difference_recv.recv().await {
                 Ok(val) => val,
@@ -342,10 +343,10 @@ mod app {
                 }
             };
 
-            let sample_time = Mono::now()
-                .checked_duration_since(start_time)
-                .unwrap()
-                .to_micros();
+            // let sample_time = Mono::now()
+            // .checked_duration_since(start_time)
+            // .unwrap()
+            // .to_micros();
 
             // // TODO! Add in some way to cope with to slow measurements.
             // if latest == prev {
@@ -360,14 +361,14 @@ mod app {
 
             info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
-            cx.local.servo.register_measurement(latest as f32, 0);
+            cx.local.servo.register_measurement((
+                latest as f32,
+                Mono::now().duration_since_epoch().to_micros(),
+            ));
             // TODO! Follow something else here.
-            cx.local.servo.follow([0.]);
-            cx.local
-                .servo
-                .actuate(sample_time)
-                .unwrap_or_else(|_| panic!());
-            start_time = Mono::now();
+            cx.local.servo.follow(0.);
+            cx.local.servo.actuate().unwrap_or_else(|_| panic!());
+            // start_time = Mono::now();
         }
     }
 
@@ -410,7 +411,7 @@ mod app {
         let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
         let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
 
-        const MAX_POLL: usize = 100;
+        const MAX_POLL: usize = 200;
         let mut poll_counter;
 
         'main: loop {

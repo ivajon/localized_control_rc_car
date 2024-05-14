@@ -7,8 +7,11 @@
 #![deny(warnings)]
 #![feature(iter_next_chunk)]
 #![feature(associated_type_defaults)]
+#![feature(generic_const_exprs)]
+#![allow(incomplete_features)]
 
 pub mod controller;
+pub mod gain_scheduling;
 pub mod protocol;
 
 #[derive(Clone)]
