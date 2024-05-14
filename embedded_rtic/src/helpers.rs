@@ -29,7 +29,6 @@ pub fn sum(window: &ArrayDeque<f32, SMOOTHING, Wrapping>) -> f32 {
     // .sum::<f32>();
     window
         .iter()
-        .enumerate()
         .map(|(_idx, value)| /* (idx as f32) / { SMOOTHING as f32 } */ * value)
         .sum::<f32>()
         / window.len() as f32
