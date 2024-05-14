@@ -55,12 +55,16 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		namedWindow("Test");
 #ifndef RACE
 		{
-			cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
+			//cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
 			//Display images
 			Mat overlayedImage;
 			Mat testImage = test.getDrivabilityMap();
-			addWeighted(grayTemp, 1, test.getDrivabilityMap(), 0.5, 0, overlayedImage);
+			//cout << "hello" << endl;
+			//cout << "test image: " << testImage << endl;
+			//cout << grayTemp << endl;
+			//cout << test.getDrivabilityMap() << endl;
+			addWeighted(grayTemp, 1, testImage, 0.5, 0, overlayedImage);
 			cvtColor(overlayedImage, overlayedImage, COLOR_GRAY2RGB); //GRAYSCALE
 			circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
 			imshow("Test", overlayedImage);     // Show our image inside the created 
