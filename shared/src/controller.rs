@@ -161,13 +161,13 @@ where
 {
     /// Creates a new controller that sets the output on the
     /// [`Interface`](`Channel`) using a PID control strategy.
-    pub fn new(channel: Interface,initial_intergal:Output) -> Self {
+    pub fn new(channel: Interface, initial_integral: Output) -> Self {
         Self {
             out: channel,
             err: PhantomData,
             reference: ArrayDeque::new(),
             previous: Output::default(),
-            integral: initial_intergal,
+            integral: initial_integral,
             measurement: (0, Output::default()),
             previous_actuation: Output::default(),
         }
@@ -342,19 +342,19 @@ where
 {
     /// Creates a new controller that sets the output on the
     /// [`Interface`](`Channel`) using a PID control strategy.
-    pub fn new(channel: Interface,initial_intergal:Output) -> Self {
+    pub fn new(channel: Interface, initial_integral: Output) -> Self {
         Self {
             out: channel,
             err: PhantomData,
             reference: ArrayDeque::new(),
             previous: Output::default(),
-            integral: initial_intergal,
+            integral: initial_integral,
             measurement: (0, Output::default()),
             previous_actuation: Output::default(),
         }
     }
 
-    pub fn set_integral(&mut self, integral:Output) {
+    pub fn set_integral(&mut self, integral: Output) {
         self.integral = integral;
     }
 
@@ -538,7 +538,7 @@ macro_rules! pid {
         $channel:tt
     ) => {{
         let ret: Pid<_, _, _, $buffer, $kp, $ki, $kd, $ts, $max, $min, $time_scale, $fixed_point> =
-            Pid::new($channel,0.);
+            Pid::new($channel, 0.);
         ret
     }};
     (
@@ -716,7 +716,7 @@ mod test {
     fn test_p() {
         let channel = ([1, 2, 3, 5, 6].into_iter(), 0);
         let target = [6, 6, 6, 6, 6];
-        let mut pid: Pid<_, _, _, 5, 2, 0, 0, 1, 100, 0, 1, 0> = Pid::new(channel,0);
+        let mut pid: Pid<_, _, _, 5, 2, 0, 0, 1, 100, 0, 1, 0> = Pid::new(channel, 0);
         pid.follow(target);
 
         while let Ok(actuation) = pid.actuate() {
@@ -728,7 +728,7 @@ mod test {
     fn test_pi() {
         let channel = ([1, 2].into_iter(), 0);
         let target = [6, 6];
-        let mut pid: Pid<(), _, i32, 2, 2, 1, 0, 1, 100, 0, 1, 0> = Pid::new(channel,0);
+        let mut pid: Pid<(), _, i32, 2, 2, 1, 0, 1, 100, 0, 1, 0> = Pid::new(channel, 0);
         pid.follow(target);
 
         pid.register_measurement(1, 0);
@@ -747,7 +747,7 @@ mod test {
     fn test_pid() {
         let channel = ([1, 2].into_iter(), 0);
         let target = [6, 6];
-        let mut pid: Pid<(), _, i32, 2, 2, 1, 1, 1, 100, 0, 1, 0> = Pid::new(channel,0);
+        let mut pid: Pid<(), _, i32, 2, 2, 1, 1, 1, 100, 0, 1, 0> = Pid::new(channel, 0);
         pid.follow(target);
 
         pid.register_measurement(1, 0);
@@ -839,7 +839,7 @@ mod test {
     fn test_pid_no_diff() {
         let channel = ([0].into_iter(), 0);
         let target = [0, 0];
-        let mut pid: Pid<(), _, i32, 2, 2, 1, 1, 1, 100, 0, 1, 0> = Pid::new(channel,0);
+        let mut pid: Pid<(), _, i32, 2, 2, 1, 1, 1, 100, 0, 1, 0> = Pid::new(channel, 0);
         pid.follow(target);
 
         pid.register_measurement(0, 0);
@@ -856,7 +856,7 @@ mod test {
     fn test_pid_fixed_point() {
         let channel = ([1, 2].into_iter(), 0);
         let target = [6, 6];
-        let mut pid: Pid<(), _, i32, 2, 21, 21, 11, 1, 100, 0, 1, 1> = Pid::new(channel,0);
+        let mut pid: Pid<(), _, i32, 2, 21, 21, 11, 1, 100, 0, 1, 1> = Pid::new(channel, 0);
         pid.follow(target);
 
         pid.register_measurement(1, 0);
