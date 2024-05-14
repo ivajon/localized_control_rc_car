@@ -37,7 +37,7 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	Size2i kernelSize = Size(7, 7);			    //Size of kernel for convolution, larger -> smoother output + slower
 	GaussianBlur(image, image, kernelSize, 0); //Stdev calculated to fit Kernel
 
-	
+
 	//2 - Find edges using Canny edge detector
 	Mat edge;
 	Canny(image, edge, 25, 80);
@@ -101,13 +101,13 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	Point2i calcCenter(centCol, (float)minRow);
 	this->centerPoint = this->centerPoint * prevFactor + (1 - prevFactor) * calcCenter;
 
-	
+
 	//7 - Pass last n values for number of rows from the bottom of the array through moving average filter
 	vector<int> vec = this->rawRowFromBottom;
 	std::rotate(vec.rbegin(), vec.rbegin() + 1, vec.rend());
 	vec[0] = height - minRow;
 	this->rawRowFromBottom = vec;
-	this->rowFromBottom = std::accumulate(vec.begin(),vec.end(),0.0)/vec.size();
+	this->rowFromBottom = std::accumulate(vec.begin(), vec.end(), 0.0) / vec.size();
 
 	this->lineImage = emptyMatrix;
 	this->drivabilityMap = drivabilityMap;

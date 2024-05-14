@@ -1,3 +1,4 @@
+#pragma once
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <windows.h>  
@@ -7,11 +8,10 @@
 using namespace cv;
 using namespace std;
 
-#pragma once
 
 /**
 * Class containing parameters for function used for estimating the distance to the wall
-* 
+*
 */
 class DrivabilityDetector
 {
@@ -23,14 +23,14 @@ private:
 
 	Point2i centerPoint;			//Center point estimate of image
 	float prevWeight;				//Weight given to previous centerpoint in calculations
-	
+
 	//Images for visualization
-	Mat drivabilityMap;			
+	Mat drivabilityMap;
 	Mat lineImage;
 public:
 	/**
 	* Constructor for drivability detector
-	* 
+	*
 	* @param prevWeight   The weight given to the previous centerpoint when averaging
 	* @param initialPoint The initial guess for the center point
 	* @param averageSize  The number of measurements used for calculating the average number of rows
@@ -39,12 +39,12 @@ public:
 
 	/**
 	* Function for calculating the drivable area in a corridor.
-	* 
+	*
 	* It calculates the furthest row from the bottom of the image that doesn't
 	* contain a wall. The output is the moving average of the last 5 measurements.
-	* 
+	*
 	* @param grayScaleImage Grayscale image to run algorithm on
-	* 
+	*
 	* @returns rowFromBottom The furthest row from the bottom which was determined to belong to the floor
 	*/
 	int calculateRowFromBottom(cv::Mat grayScaleImage);
@@ -65,7 +65,7 @@ public:
 
 	/// Gets an image containing the lines detected in the last image passed through the algorithm
 	Mat getLineImage() const { return lineImage; }
-	
+
 	// Gets the size of the moving average filter
 	int getAverageSize() const { return averageSize; }
 };
