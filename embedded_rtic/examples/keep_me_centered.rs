@@ -87,8 +87,8 @@ mod app {
         receiver_right: Receiver<'static, f32, CAPACITY>,
         sender_right_clone: Sender<'static, f32, CAPACITY>,
 
-        wall_difference_sender: Sender<'static, f32, CAPACITY>,
-        wall_difference_recv: Receiver<'static, f32, CAPACITY>,
+        wall_difference_sender: Sender<'static, (f32, (f32, f32)), CAPACITY>,
+        wall_difference_recv: Receiver<'static, (f32, (f32, f32)), CAPACITY>,
 
         // receiver_sonar_packets: Receiver<'static, ((u32, u32), u32), CAPACITY>,
         sender_sonar_packets: Sender<'static, ((u32, u32), u32), CAPACITY>,
@@ -145,7 +145,8 @@ mod app {
         // Channel for forward measurements.
         let (sender_forward, receiver_forward) = make_channel!(f32, CAPACITY);
 
-        let (wall_difference_sender, wall_difference_recv) = make_channel!(f32, CAPACITY);
+        let (wall_difference_sender, wall_difference_recv) =
+            make_channel!((f32, (f32, f32)), CAPACITY);
         let wall_difference_sender = wall_difference_sender.clone();
         // Channel for packed sonar data.
         let (sender_sonar_packets, _receiver_sonar_packets) =
@@ -338,15 +339,17 @@ mod app {
             let forward_distance = &mut cx.shared.forward_distance;
 
             (vel, forward_distance).lock(|velocity, forward_distance| {
-                cx.local
-                    .servo
-                    .set_bucket((*forward_distance, latest, velocity.0))
+                cx.local.servo.set_bucket((
+                    *forward_distance,
+                    latest.1 .0.max(latest.1 .1),
+                    velocity.0,
+                ))
             });
 
             info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
             cx.local.servo.register_measurement((
-                latest as f32,
+                latest.0 as f32,
                 Mono::now().duration_since_epoch().to_micros(),
             ));
             // TODO! Follow something else here.
@@ -403,9 +406,6 @@ mod app {
 
             cx.local.first_pair.trigger().await.unwrap();
             // ======================= LEFT DISTANCE =========================
-
-            // THIS IS BAD, FIX LATER
-            //
 
             poll_counter = 0;
             let zero = Instant::from_ticks(0);
@@ -522,11 +522,18 @@ mod app {
             left_window.push_back(left_distance);
             right_window.push_back(right_distance);
 
-            let difference = sum(&left_window) - sum(&right_window);
+            let left_distance = sum(&left_window);
+            let right_distance = sum(&right_window);
+            let difference = left_distance - right_distance;
             diff_window.push_back(difference);
             let difference = sum(&diff_window);
 
-            match cx.local.wall_difference_sender.send(difference).await {
+            match cx
+                .local
+                .wall_difference_sender
+                .send((difference, (left_distance, right_distance)))
+                .await
+            {
                 Ok(_) => {}
                 Err(_) => {
                     error!("difference sender 1 channel full.");

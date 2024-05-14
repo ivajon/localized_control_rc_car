@@ -94,12 +94,12 @@ pub mod constants {
                     min_value: 60.,
                 }),
             ])),
-            // If the average distance to the valls is large we use a really light PID.
-            Some((80., [
+            // If the largest distance to the wall is large use a really slow moving PID..
+            Some((150., [
                 Some(GainParams {
-                    kp: 150,
-                    ki: 0,
-                    kd: 0,
+                    kp: { 20 / 3 },
+                    ki: { 4 / 3 },
+                    kd: { 15 / 3 },
                     max_value: f32::MAX,
                     min_value: 0.,
                 }),
@@ -108,13 +108,6 @@ pub mod constants {
         ]),
     ];
 
-    // Some(GainParams {
-    //     kp: { 20 / 3 },
-    //     ki: { 4 / 2 },
-    //     kd: { 15 / 3 },
-    //     max_value: 2.,
-    //     min_value: 1.,
-    // }),
     /// The message queue capacity.
     pub const CAPACITY: usize = 100;
 
