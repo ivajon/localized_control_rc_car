@@ -62,7 +62,8 @@ use core::sync::atomic::{AtomicUsize, Ordering};
 
 use car::wrappers::Instant;
 use defmt::{trace, warn};
-use defmt_rtt as _; use embedded_hal::digital::InputPin;
+use defmt_rtt as _;
+use embedded_hal::digital::InputPin;
 use nrf52840_hal::gpio::{Input, Pin, PullDown};
 // global logger
 use panic_probe as _;
@@ -114,8 +115,7 @@ pub fn compute_distance(
     if times[sonar] == zero {
         if pins[sonar].is_high().is_ok_and(|el| el) {
             times[sonar] = time;
-        }
-        else {
+        } else {
             warn!("Tried to set time on falling edge");
         }
     } else {
