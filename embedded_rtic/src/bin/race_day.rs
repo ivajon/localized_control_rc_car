@@ -176,12 +176,12 @@ mod app {
         trigger_timestamped::spawn().unwrap_or_else(|_| panic!());
         trigger_timestamped_forward::spawn().unwrap_or_else(|_| panic!());
         controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
-        // controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
+        controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
 
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 110.,
+                velocity_reference: 50.,
                 pose_reference: 0.,
                 safety_velocity_reference: None,
                 difference: 0.,

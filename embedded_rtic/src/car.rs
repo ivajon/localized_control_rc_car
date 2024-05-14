@@ -82,7 +82,7 @@ pub mod constants {
             None,
         ]),
         // Distance from wall to start using the really harsh PID.
-        (50., [
+        (70., [
             // If we are far away from the wall but the side fireing sonars are "close" to a wall
             // we use gain scheduling that should support up towards 150 cm/s
             Some((0., [
@@ -103,10 +103,10 @@ pub mod constants {
             ])),
             // If we are "far" away from either of the walls we use a really smooth PID controller,
             // this allows us to stay in the middle even when traveling throughwide  hallways.
-            Some((150., [
+            Some((120., [
                 Some(GainParams {
                     kp: { 20 / 3 },
-                    ki: { 4 / 3 },
+                    ki: { 10 / 3 },
                     kd: { 15 / 3 },
                     max_value: f32::MAX,
                     min_value: 0.,
