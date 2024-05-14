@@ -163,7 +163,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 110.,
+                velocity_reference: 80.,
                 safety_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
@@ -258,9 +258,7 @@ mod app {
         let controller = cx.local.esc;
         let mut previous = (0f32, 0);
         // let mut counter = 0;
-        controller.follow([0.0]);
-        controller.actuate().unwrap();
-        Mono::delay(10.millis()).await;
+        Mono::delay(100.millis()).await;
 
         loop {
             let time = Mono::now();

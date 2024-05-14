@@ -93,10 +93,12 @@ pub mod constants {
     pub const VOTE_THRESH: usize = 2;
 
     /// How far before we should slow the car down a notch?
-    pub const OHSHIT_MAP: [(f32, Option<f32>); 3] = [
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 5] = [
         (30., Some(0.)),
-        (40., Some(10.)),
-        (60., None),
+        (40., Some(0.)),
+        (60., Some(20.)),
+        (100., Some(40.)),
+        (150., None),
     ];
 
     /// Sonar Channels for multiple.
@@ -135,9 +137,7 @@ pub mod wrappers {
         gain_scheduling::{GainParams, GainScheduler},
     };
 
-    use super::{
-        constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS_SCHEDULE, SERVO_SCALE},
-    };
+    use super::constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS_SCHEDULE, SERVO_SCALE};
 
     /// The spi device used.
     pub type SpiInstance = SPIS0;
