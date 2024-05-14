@@ -138,11 +138,7 @@ pub fn compute_distance(
 
 /// Computes the velocity of the car based on time stamps in micro seconds.
 #[inline(always)]
-pub fn compute_velocity(
-    previous_time: &mut Option<u64>,
-    time: u64,
-    vel: &mut (f32, u64),
-) {
+pub fn compute_velocity(previous_time: &mut Option<u64>, time: u64, vel: &mut (f32, u64)) {
     match previous_time {
         Some(value) => {
             let dt = time - *value;

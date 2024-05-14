@@ -25,7 +25,10 @@ pub struct PidParams {
 /// Defines a few intrinsic constants for the car.
 pub mod constants {
     use defmt::Format;
-    use shared::{gain_scheduling::GainParams, protocol::{v0_0_2::V0_0_2, Version}};
+    use shared::{
+        gain_scheduling::GainParams,
+        protocol::{v0_0_2::V0_0_2, Version},
+    };
 
     use super::PidParams;
 
@@ -114,7 +117,8 @@ pub mod constants {
     ];
 
     /// The buffer size for the SPI.
-    pub const BUFFER_SIZE: usize = <V0_0_2 as Version>::HEADER_SIZE + <V0_0_2 as Version>::PACKET_SIZE;
+    pub const BUFFER_SIZE: usize =
+        <V0_0_2 as Version>::HEADER_SIZE + <V0_0_2 as Version>::PACKET_SIZE;
 
     /// The message queue capacity.
     pub const CAPACITY: usize = 100;
