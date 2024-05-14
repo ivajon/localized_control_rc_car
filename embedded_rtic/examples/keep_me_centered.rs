@@ -323,7 +323,6 @@ mod app {
         info!("Controll loop steering spawned");
         // let mut start_time = Instant::from_ticks(0);
         loop {
-
             // Read from the channel, if sensor values are slow we will miss deadlines.
             let latest = match cx.local.wall_difference_recv.recv().await {
                 Ok(val) => val,
@@ -332,16 +331,16 @@ mod app {
                     break;
                 }
             };
-            cx.shared
-                .velocity
-                .lock(|velocity| cx.local.servo.set_bucket(velocity.0));
-            if latest > 80. {
-                cx.local.servo.set_bucket(1.);
-            }
-            cx.shared.forward_distance.lock(|forward_distance| {
-                if *forward_distance < 0.7 {
-                    cx.local.servo.set_bucket(0.);
-                }
+
+            // Lock the needed index variables, this should allow us to use multiple index
+            // gain scheduling.
+            let vel = &mut cx.shared.velocity;
+            let forward_distance = &mut cx.shared.forward_distance;
+
+            (vel, forward_distance).lock(|velocity, forward_distance| {
+                cx.local
+                    .servo
+                    .set_bucket((*forward_distance, latest, velocity.0))
             });
 
             info!("Latest difference : {:?}", latest);

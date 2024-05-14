@@ -55,40 +55,66 @@ pub mod constants {
     pub const SERVO_SCALE: u32 = 2;
 
     /// The type of gain store used.
-    pub type GAINSTORE = [GainParams<SERVO_SCALE>; 4];
+    pub type GAINSTORE = [(
+        f32,
+        [Option<(f32, [Option<GainParams<SERVO_SCALE>>; 2])>; 2],
+    ); 2];
 
     /// The scheduling ranges.
     pub const SERVO_PID_PARAMS_SCHEDULE: GAINSTORE = [
-        GainParams {
-            kp: 150,
-            ki: 0,
-            kd: 0,
-            max_value: 1.,
-            min_value: 0.,
-        },
-        GainParams {
-            kp: { 20 / 3 },
-            ki: { 4 / 2 },
-            kd: { 15 / 3 },
-            max_value: 2.,
-            min_value: 1.,
-        },
-        GainParams {
-            kp: 10,
-            ki: 3,
-            kd: 12,
-            max_value: 60.,
-            min_value: 2.,
-        },
-        GainParams {
-            kp: { 20 / 3 },
-            ki: { 4 / 2 },
-            kd: { 15 / 3 },
-            max_value: 150.,
-            min_value: 60.,
-        },
+        // 0..50 cm from the wall we simply use a really harsh PID.
+        (0., [
+            Some((0., [
+                Some(GainParams {
+                    kp: 150,
+                    ki: 0,
+                    kd: 0,
+                    max_value: f32::MAX,
+                    min_value: 0.,
+                }),
+                None,
+            ])),
+            None,
+        ]),
+        // Distance from wall to start using the really harsh PID.
+        (50., [
+            Some((0., [
+                Some(GainParams {
+                    kp: 10,
+                    ki: 3,
+                    kd: 12,
+                    max_value: 60.,
+                    min_value: 2.,
+                }),
+                Some(GainParams {
+                    kp: { 20 / 3 },
+                    ki: { 4 / 2 },
+                    kd: { 15 / 3 },
+                    max_value: 150.,
+                    min_value: 60.,
+                }),
+            ])),
+            // If the average distance to the valls is large we use a really light PID.
+            Some((80., [
+                Some(GainParams {
+                    kp: 150,
+                    ki: 0,
+                    kd: 0,
+                    max_value: f32::MAX,
+                    min_value: 0.,
+                }),
+                None,
+            ])),
+        ]),
     ];
 
+    // Some(GainParams {
+    //     kp: { 20 / 3 },
+    //     ki: { 4 / 2 },
+    //     kd: { 15 / 3 },
+    //     max_value: 2.,
+    //     min_value: 1.,
+    // }),
     /// The message queue capacity.
     pub const CAPACITY: usize = 100;
 
@@ -186,8 +212,6 @@ pub mod wrappers {
         crate::servo::Error,
         crate::servo::Servo<PWM>,
         GAINSTORE,
-        f32,
-        usize,
         10,
         -10,
         { ESC_PID_PARAMS.TIMESCALE },

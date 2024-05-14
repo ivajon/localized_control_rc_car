@@ -17,8 +17,10 @@ pub trait PidParams<const FIXED_POINT: u32>: Copy {
     fn get_max(&self) -> f32;
 }
 
-pub trait GainGetter<Idx: Sized, PrevIdx: Sized, const FIXED_POINT: u32> {
-    fn get(&self, prev_idx: &mut PrevIdx, idx: Idx) -> impl PidParams<FIXED_POINT>;
+pub trait GainGetter<const FIXED_POINT: u32> {
+    type Idx: Sized + Clone;
+    type PrevIdx: Sized + Clone;
+    fn get(&self, prev_idx: &mut Self::PrevIdx, idx: Self::Idx) -> impl PidParams<FIXED_POINT>;
 }
 
 #[derive(Copy, Clone)]
@@ -33,21 +35,19 @@ pub struct GainParams<const FIXED_POINT: u32> {
 pub struct GainScheduler<
     Error: Debug,
     Interface: Channel<Error, Output = f32>,
-    ParamsStore: GainGetter<Index, PrevIdx, FIXED_POINT>,
-    Index: Sized,
-    PrevIdx: Sized,
+    ParamsStore: GainGetter<FIXED_POINT>,
     const THRESHOLD_MAX: i32,
     const THRESHOLD_MIN: i32,
     const TIMESCALE: i32,
     const FIXED_POINT: u32,
 > {
     parameters: ParamsStore,
-    prev_idx: PrevIdx,
+    prev_idx: ParamsStore::PrevIdx,
     interface: Interface,
     measurement: (f32, u64),
     reference: f32,
     prev_time: u64,
-    bucketer: Index,
+    bucketer: ParamsStore::Idx,
     previous_actuation: f32,
     previous_error: f32,
     integral: f32,
@@ -79,9 +79,7 @@ impl<const FIXED_POINT: u32> PidParams<FIXED_POINT> for GainParams<FIXED_POINT> 
 impl<
         Error: Debug,
         Interface: Channel<Error, Output = f32>,
-        ParamsStore: GainGetter<Index, PrevIdx, FIXED_POINT>,
-        Index: Sized + Copy,
-        PrevIdx: Sized + Copy,
+        ParamsStore: GainGetter<FIXED_POINT>,
         const THRESHOLD_MAX: i32,
         const THRESHOLD_MIN: i32,
         const TIMESCALE: i32,
@@ -91,8 +89,6 @@ impl<
         Error,
         Interface,
         ParamsStore,
-        Index,
-        PrevIdx,
         THRESHOLD_MAX,
         THRESHOLD_MIN,
         TIMESCALE,
@@ -103,16 +99,16 @@ impl<
     /// [`Interface`](`Channel`) using a PID control strategy.
     pub fn new(channel: Interface, params: ParamsStore) -> Self
     where
-        PrevIdx: Default,
-        Index: Default,
+        ParamsStore::Idx: Default,
+        ParamsStore::PrevIdx: Default,
     {
         GainScheduler {
             parameters: params,
             prev_time: 0,
             measurement: (0., 0),
             reference: 0.,
-            prev_idx: PrevIdx::default(),
-            bucketer: Index::default(),
+            prev_idx: ParamsStore::PrevIdx::default(),
+            bucketer: ParamsStore::Idx::default(),
             previous_actuation: 0.,
             previous_error: 0.,
             integral: 0.,
@@ -125,7 +121,7 @@ impl<
         self.reference = reference;
     }
 
-    pub fn set_bucket(&mut self, bucketer: Index) {
+    pub fn set_bucket(&mut self, bucketer: ParamsStore::Idx) {
         self.bucketer = bucketer;
     }
 
@@ -135,7 +131,8 @@ impl<
     }
 
     pub fn get_gain(&mut self) -> impl PidParams<FIXED_POINT> + '_ {
-        self.parameters.get(&mut self.prev_idx, self.bucketer)
+        self.parameters
+            .get(&mut self.prev_idx, self.bucketer.clone())
     }
 
     /// Computes the control signal using a PID control strategy.
@@ -204,8 +201,11 @@ impl<
 }
 
 impl<Params: PidParams<FIXED_POINT>, const FIXED_POINT: u32, const LEN: usize>
-    GainGetter<f32, usize, FIXED_POINT> for [Params; LEN]
+    GainGetter<FIXED_POINT> for [Params; LEN]
 {
+    type Idx = f32;
+    type PrevIdx = usize;
+
     fn get(&self, prev_idx: &mut usize, idx: f32) -> impl PidParams<FIXED_POINT> {
         let mut sugested_idx = 0;
         for (inner_idx, param_set) in self.iter().enumerate().rev() {
@@ -230,9 +230,11 @@ impl<
         const FIXED_POINT: u32,
         const LEN1: usize,
         const LEN2: usize,
-    > GainGetter<(f32, f32), (usize, usize), FIXED_POINT>
-    for [(f32, [Option<Params>; LEN2]); LEN1]
+    > GainGetter<FIXED_POINT> for [(f32, [Option<Params>; LEN2]); LEN1]
 {
+    type Idx = (f32, f32);
+    type PrevIdx = (usize, usize);
+
     fn get(&self, prev_idx: &mut (usize, usize), idx: (f32, f32)) -> impl PidParams<FIXED_POINT> {
         let mut sugested_row = 0;
         for (row, (thresh, _)) in self.iter().enumerate().rev() {
@@ -275,9 +277,11 @@ impl<
         const LEN1: usize,
         const LEN2: usize,
         const LEN3: usize,
-    > GainGetter<(f32, f32, f32), (usize, usize, usize), FIXED_POINT>
-    for [(f32, [Option<(f32, [Option<Params>; LEN3])>; LEN2]); LEN1]
+    > GainGetter<FIXED_POINT> for [(f32, [Option<(f32, [Option<Params>; LEN3])>; LEN2]); LEN1]
 {
+    type Idx = (f32, f32, f32);
+    type PrevIdx = (usize, usize, usize);
+
     fn get(
         &self,
         prev_idx: &mut (usize, usize, usize),
