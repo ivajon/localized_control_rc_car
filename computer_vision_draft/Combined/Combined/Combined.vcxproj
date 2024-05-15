@@ -136,10 +136,14 @@
     <ClCompile Include="Camera_Preprocessor.cpp" />
     <ClCompile Include="DrivabilityDetector.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="StartStop.cpp" />
+    <ClCompile Include="TCP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera_Preprocessor.h" />
     <ClInclude Include="DrivabilityDetector.h" />
+    <ClInclude Include="StartStop.h" />
+    <ClInclude Include="TCP.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

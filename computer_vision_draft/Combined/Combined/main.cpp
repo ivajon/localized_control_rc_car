@@ -20,7 +20,7 @@ Mat grayImage;
 Mat hsvImage;
 int frameID;
 bool stop = false;
-bool initialized = false; // Flag to indicate if Camera_Preprocessor has finished initialization
+bool initialized = false;
 
 
 
@@ -29,14 +29,8 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 	while (true) {
 		Mat grayTemp;
 
-		cout << "LOCKING" << endl;
+
 		mutex_var.lock();
-		cout << "LOCKED" << endl;
-
-
-		grayTemp = camReader.getGrayTemp().clone();
-		//grayTemp.copyTo(grayImage);
-
 		if (grayImage.empty()) {
 			mutex_var.unlock();
 
@@ -44,26 +38,22 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 			cout << "WAITING FOR IMAGE" << endl;
 			continue;
 		}
-
+		grayTemp = grayImage.clone();
 
 
 		mutex_var.unlock();
-		cout << "IMG RECV" << endl;
 
-		int rowFromBottom = test.calculateRowFromBottom(grayImage);
+		int rowFromBottom = test.calculateRowFromBottom(grayTemp);
 
 		namedWindow("Test");
 #ifndef RACE
 		{
-			//cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
+			cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
 			//Display images
 			Mat overlayedImage;
 			Mat testImage = test.getDrivabilityMap();
-			//cout << "hello" << endl;
-			//cout << "test image: " << testImage << endl;
-			//cout << grayTemp << endl;
-			//cout << test.getDrivabilityMap() << endl;
+			cout << testImage.size() << " gray: " << grayTemp.size()<<endl;
 			addWeighted(grayTemp, 1, testImage, 0.5, 0, overlayedImage);
 			cvtColor(overlayedImage, overlayedImage, COLOR_GRAY2RGB); //GRAYSCALE
 			circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
@@ -102,7 +92,7 @@ int main(int argc, char** argv)
 	// SPAWN THE THREADS
 	thread camera_handle = camReader.startThread();
 
-	StartStop start();
+	//StartStop start();
 	//TCP tcp();
 	cout << "HEYA" << endl;
 	std::thread looptiloop(main_loop, camReader, test);
