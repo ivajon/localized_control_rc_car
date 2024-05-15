@@ -75,7 +75,7 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	int minRow = height - 1;
 	int lastRow = height - 1;
 
-
+	cout << "minRow: " << minRow << " lastRow " << lastRow << endl;
 
 	Mat drivabilityMap(height, width, CV_8UC1, Scalar(0));
 

@@ -32,6 +32,8 @@ void Camera_Preprocessor::readCameraFeed() {
 		keepGoing = !stop;
 		grayImage = grayTemp.clone();
 		hsvImage = hsvTemp.clone();
+		//grayTemp.copyTo(grayImage);
+		//hsvTemp.copyTo(hsvImage);
 		frameID++;
 		mutex_var->unlock();
 	}
