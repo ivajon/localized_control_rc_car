@@ -12,12 +12,12 @@
 // UNCOMMENT TO RUN ON LINUX, with tcp
 #define TCP
 
-static const char FAST = 100;
+static const char FASTER = 100;
 static const char MEDIUM = 50;
 static const char SLOW = 30;
-#ifdef TCP {
+#ifdef TCP
 	#include "TCP.h"
-}
+
 #endif
 using namespace cv;
 using namespace std;
@@ -99,7 +99,7 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 
 		if (speed > 0.9) {
 #ifdef TCP
-			TCPclient(2, FAST);
+			TCPclient(2, FASTER);
 #endif // TCP
 			//Go fast
 		}
