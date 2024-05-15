@@ -48,12 +48,12 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		namedWindow("Test");
 #ifndef RACE
 		{
-			cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
+		//	cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
 			//Display images
 			Mat overlayedImage;
 			Mat testImage = test.getDrivabilityMap();
-			cout << testImage.size() << " gray: " << grayTemp.size()<<endl;
+		//	cout << testImage.size() << " gray: " << grayTemp.size()<<endl;
 			addWeighted(grayTemp, 1, testImage, 0.5, 0, overlayedImage);
 			cvtColor(overlayedImage, overlayedImage, COLOR_GRAY2RGB); //GRAYSCALE
 			circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
@@ -88,18 +88,18 @@ int main(int argc, char** argv)
 	Camera_Preprocessor camReader(0.5, cap, &mutex_var);
 	Point2i centerPoint(100, 100); //Intial guess for center point(in scaled coordinates)
 	DrivabilityDetector test(0.8, centerPoint, 5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
-
+	StartStop startStopDetector;
 	// SPAWN THE THREADS
 	thread camera_handle = camReader.startThread();
 
-	//StartStop start();
+	thread circle_thread = startStopDetector.startThread();
 	//TCP tcp();
 	cout << "HEYA" << endl;
 	std::thread looptiloop(main_loop, camReader, test);
 
-
 	looptiloop.join();
 	camera_handle.join();
+	circle_thread.join();
 
 	return 0;
 }

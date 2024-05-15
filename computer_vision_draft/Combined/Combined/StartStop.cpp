@@ -1,12 +1,23 @@
 #include "StartStop.h"
 
+StartStop::StartStop() {
+	colorLimitsHSV redLimsTemp, greenLims;
+	redLimsTemp.iLowH = 0;
+	redLimsTemp.iHighH = 10;
+	redLimsTemp.iLowS = 70;
+	redLimsTemp.iHighS = 255;
+	redLimsTemp.iLowV = 50;
+	redLimsTemp.iHighV = 255;
+
+	this->redLims = redLimsTemp;
+	this->greenLims = redLimsTemp;
 
 
-static int start();
-static int red();
-static int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed);
+}
 
-static int start() {
+
+int StartStop::start() {
+	cout << "Circle detector started" << endl;
 	int iLowH = 56;
 	int iHighH = 88;
 
@@ -20,12 +31,13 @@ static int start() {
 	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, false); //start the loop with the Hue values
 	if (i == 1) {
 		//TCPclient(0, 0);
+		cout << "Found green" << endl;
 		return red();	//if successfull start search for red
 	}
 }
 
 
-static int red() {
+int StartStop::red() {
 	int iLowH = 0;
 	int iHighH = 10;
 
@@ -43,7 +55,7 @@ static int red() {
 }
 
 
-static int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed) {
+int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed) {
 	while (true) {
 		Mat imgOriginal, imgHSV, imgThreshold, imgLap, abs_Lap; //array to store picture data
 
