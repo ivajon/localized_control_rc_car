@@ -184,7 +184,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 110.,
+                velocity_reference: 80.,
                 pose_reference: 0.,
                 safety_velocity_reference: None,
                 cruch_velocity_reference: None,
@@ -430,12 +430,12 @@ mod app {
             let vel = &mut cx.shared.velocity;
             let forward_distance = &mut cx.shared.forward_distance;
 
-            (vel, forward_distance).lock(|velocity, forward_distance| {
-                cx.local.servo.set_bucket((
-                    *forward_distance,
-                    latest.1 .0 + latest.1 .1,
+            (vel, forward_distance).lock(|velocity, _forward_distance| {
+                cx.local.servo.set_bucket(
+                    // *forward_distance,
+                    // latest.1 .0 + latest.1 .1,
                     velocity.0,
-                ))
+                )
             });
 
             // info!("Latest difference : {:?}", latest);

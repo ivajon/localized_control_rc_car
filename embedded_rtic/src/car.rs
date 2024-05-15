@@ -61,77 +61,31 @@ pub mod constants {
     /// How wide is the wide boy?
     pub const WIDEBOY: f32 = 100.;
     /// The type of gain store used.
-    pub type GAINSTORE = [(
-        f32,
-        [Option<(f32, [Option<GainParams<SERVO_SCALE>>; 3])>; 2],
-    ); 2];
+    pub type GAINSTORE = [GainParams<SERVO_SCALE>; 3];
 
     /// The scheduling ranges.
     pub const SERVO_PID_PARAMS_SCHEDULE: GAINSTORE = [
-        // 0..50 cm from the wall we simply use a really harsh PID.
-        (0., [
-            // In all cases we use the harsh PID controller. This will simply make us turn away
-            // from the wall in the direction of the error.
-            Some((0., [
-                Some(GainParams {
-                    kp: 250,
-                    ki: 100,
-                    kd: 0,
-                    max_value: 50.,
-                    min_value: 0.,
-                }),
-                Some(GainParams {
-                    kp: 200,
-                    ki: 10,
-                    kd: 100,
-                    max_value: f32::MAX,
-                    min_value: 50.,
-                }),
-                None,
-            ])),
-            None,
-        ]),
-        // Distance from wall to start using the really harsh PID.
-        (50., [
-            // If we are "far" away from either of the walls we use a really smooth PID controller,
-            // this allows us to stay in the middle even when traveling throughwide  hallways.
-            // If we are far away from the wall but the side fireing sonars are "close" to a wall
-            // we use gain scheduling that should support up towards 150 cm/s
-            Some((0., [
-                Some(GainParams {
-                    kp: 550,
-                    ki: 50,
-                    kd: 250,
-                    max_value: 60.,
-                    min_value: 2.,
-                }),
-                Some(GainParams {
-                    kp: 350,
-                    ki: 20,
-                    kd: 200,
-                    max_value: 110.,
-                    min_value: 60.,
-                }),
-                Some(GainParams {
-                    kp: 100,
-                    ki: 15,
-                    kd: 25,
-                    max_value: 150.,
-                    min_value: 110.,
-                }),
-            ])),
-            Some(({ WIDEBOY * 2. }, [
-                Some(GainParams {
-                    kp: 100,
-                    ki: 40,
-                    kd: 25,
-                    max_value: f32::MAX,
-                    min_value: 0.,
-                }),
-                None,
-                None,
-            ])),
-        ]),
+        GainParams {
+            kp: 250,
+            ki: 10,
+            kd: 150,
+            max_value: 60.,
+            min_value: 2.,
+        },
+        GainParams {
+            kp: 150,
+            ki: 5,
+            kd: 75,
+            max_value: 110.,
+            min_value: 60.,
+        },
+        GainParams {
+            kp: 100,
+            ki: 1,
+            kd: 25,
+            max_value: 150.,
+            min_value: 110.,
+        },
     ];
 
     /// The buffer size for the SPI.
@@ -172,7 +126,7 @@ pub mod constants {
     ];
 
     /// OH SHIT SIDE MAP.
-    pub const OHSHIT_SIDE_MAP: [(f32, Option<f32>); 2] = [(0., Some(10.)), (30., None)];
+    pub const OHSHIT_SIDE_MAP: [(f32, Option<f32>); 2] = [(0., Some(10.)), (40., None)];
 
     /// LONG BOY LIMIT.
     pub const WIDEBOY_MAP: [(f32, Option<f32>); 2] = [(0., None), (WIDEBOY, Some(50.))];
@@ -244,7 +198,7 @@ pub mod wrappers {
         crate::servo::Error,
         crate::servo::Servo<PWM>,
         GAINSTORE,
-        15,
+        14,
         -10,
         { ESC_PID_PARAMS.TIMESCALE },
         SERVO_SCALE,
