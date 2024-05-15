@@ -1,34 +1,33 @@
-//! Defines a short example that uses the [`Spi`] to read data using our
-//! [`protocol`](shared::protocol). It then plots the data using our [`tui`](hosted::tui)
+//! Defines a proof of concept for the tcp_graphing over the tui. It uses
+//! [`protocol`](shared::protocol) and then plots the data using our [`tui`](hosted::tui)
 //! abstractions.
 
 #![feature(ascii_char)]
 
 use hosted::{
-    spi::Spi, tcp_monitor::TcpMonitor, tui::{
+    //spi::Spi,
+    tcp_monitor::TcpMonitor,
+    tui::{
         graph::{Graph, MeasurementWriter},
         initiate_terminal,
         input_box::{CommitReader, InputBox, KillReader},
         TerminalWrapper,
-    }
+    },
 };
 use ratatui::layout::{Constraint, Layout};
 use shared::protocol::v0_0_1::{Payload, V0_0_1};
 use std::{error::Error, sync::Arc};
 
+use tokio::{io::AsyncWriteExt, net::TcpStream};
 use tokio::{
     sync::{mpsc, Mutex},
     task::JoinHandle,
     time::Duration,
 };
-use tokio::{
-    io::{AsyncWriteExt},
-    net::{TcpStream},
-};
 
 pub struct MockSpi {
     target_value: f64,
-    spi: Spi<V0_0_1>,
+    //spi: Spi<V0_0_1>,
 }
 
 macro_rules! unwrap_or_break {
@@ -45,11 +44,11 @@ impl MockSpi {
         measurement_writer: MeasurementWriter,
         reference_reader: CommitReader,
     ) -> Option<Vec<JoinHandle<()>>> {
-        let spi = Spi::init("/dev/spidev1.0")?;
+        //let spi = Spi::init("/dev/spidev1.0")?;
 
         let ret = Arc::new(Mutex::new(MockSpi {
             target_value: 0.,
-            spi,
+            //spi,
         }));
         Some(vec![
             tokio::spawn(Self::measurement(ret.clone(), measurement_writer)),
@@ -58,8 +57,13 @@ impl MockSpi {
     }
 
     async fn measurement(spi: Arc<Mutex<Self>>, measurement_writer: MeasurementWriter) {
+        let mut prev_value = 0.; // Låtsas hastighet
+        let mut time = 0;
         loop {
-            let mut spi = spi.lock().await;
+            //let read = protocol();
+            let spi = spi.lock().await;
+
+            /*
             // Read a command, if it does not work, discard it and re-try.
             let read = match spi.spi.read() {
                 Ok(read) => read,
@@ -69,21 +73,19 @@ impl MockSpi {
                     continue;
                 }
             };
-            for el in read.into_iter() {
-                if let Payload::CurrentVelocity { velocity, time_us } = el {
-                    unwrap_or_break!(
-                        measurement_writer
-                            .send(("measured".to_string(), (time_us as f64, velocity as f64)))
-                            .await
-                    );
-                    unwrap_or_break!(
-                        measurement_writer
-                            .send(("target".to_string(), (time_us as f64, spi.target_value)))
-                            .await
-                    );
-                }
-            }
+            */
 
+            unwrap_or_break!(
+                measurement_writer
+                    .send(("measured".to_string(), (time as f64, prev_value as f64)))
+                    .await
+            );
+            unwrap_or_break!(
+                measurement_writer
+                    .send(("target".to_string(), (time as f64, spi.target_value)))
+                    .await
+            );
+            time += 1;
             tokio::time::sleep(Duration::from_millis(100)).await;
         }
     }
@@ -92,13 +94,15 @@ impl MockSpi {
         while let Some(value) = reference_reader.recv().await {
             let mut spi = spi.lock().await;
             spi.target_value = value;
+            /*let mut spi = spi.lock().await;
+            spi.target_value = value;
             match spi.spi.write(Payload::SetSpeed {
                 velocity: value as u32,
                 hold_for_us: 0,
             }) {
                 Ok(_) => {}
                 _ => break,
-            }
+            }*/
         }
     }
 }
@@ -140,9 +144,6 @@ async fn start_app() -> Result<(), ()> {
     // Spawn everything for the input box.
     let (input, commit, commit_writer, kill, input_handles) = InputBox::init(redraw_writer);
 
-    TcpMonitor::init(commit_writer);
-    //tokio::spawn(protocol());
-
     // TODO! Replace this with the real SPI manager.
     let mock_spi_channels: Vec<JoinHandle<()>> = match MockSpi::init(register_channel, commit) {
         Some(value) => value,
@@ -157,6 +158,11 @@ async fn start_app() -> Result<(), ()> {
             return Err(());
         }
     };
+
+    TcpMonitor::init(commit_writer);
+    tokio::spawn(protocol());
+
+    // TODO! Replace this with the real SPI manager.
 
     /*
        Manages all of the tasks, if the frontend_killer gets a message the thread_manager exists the program by aborting
@@ -191,7 +197,12 @@ pub async fn protocol() -> std::io::Result<()> {
     // Connect to peer
     let mut stream = TcpStream::connect("127.0.0.1:8080").await.unwrap();
 
-    stream.write_all(&[1,1]).await?; // Commit
+    stream.write_all(&[1, 1]).await?; // start app
+    tokio::time::sleep(Duration::from_millis(2000)).await;
+    stream.write_all(&[2, 100]).await?; // set speed to 100
+    tokio::time::sleep(Duration::from_millis(2000)).await;
+    stream.write_all(&[0, 1]).await?; // stop app
+
     Ok(())
 }
 
