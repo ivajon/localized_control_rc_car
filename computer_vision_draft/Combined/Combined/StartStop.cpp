@@ -92,19 +92,29 @@ int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int
 		lastFrameID = frameID;
 		mutex_var->unlock();
 
+<<<<<<< HEAD
 		if (isRed == true)
 		{
+=======
+		if (isRed == true)
+		{
+>>>>>>> 85e3d6c (More merge fixing)
 			Mat1b mask1, mask2;
 			inRange(imgHSV, Scalar(LowH, LowS, LowV), Scalar(HighH, HighS, HighV), mask1); // Filter out colors
 			inRange(imgHSV, Scalar(165, 70, 50), Scalar(180, 255, 255), mask2);
 			Mat1b mask = mask1 | mask2;
 			imgThreshold = mask;
-			cout << "red" << endl;
 		}
+<<<<<<< HEAD
 		else
 		{
 			inRange(imgHSV, Scalar(LowH, LowS, LowV), Scalar(HighH, HighS, HighV), imgThreshold); // Filter out colors
 			cout << "green" << endl;
+=======
+		else
+		{
+			inRange(imgHSV, Scalar(LowH, LowS, LowV), Scalar(HighH, HighS, HighV), imgThreshold); // Filter out colors
+>>>>>>> 85e3d6c (More merge fixing)
 		}
 
 		GaussianBlur(imgThreshold, imgThreshold, Size(9, 9), 2, 2); // Doesn't work without
