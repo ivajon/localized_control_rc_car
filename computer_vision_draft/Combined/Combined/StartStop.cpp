@@ -13,14 +13,7 @@ StartStop::StartStop(std::mutex* mutex_var) {
 	this->greenLims = redLimsTemp;
 
 	this->mutex_var = mutex_var;
-
-static int start() {
-	int iLowH = 56;
-	int iHighH = 88;
-
-
 }
-
 
 int StartStop::start() {
 	cout << "Circle detector started" << endl;
@@ -96,19 +89,15 @@ int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int
 		lastFrameID = frameID;
 		mutex_var->unlock();
 
-		cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV);	//color converter
-
 		if (isRed == true) {
 			Mat1b mask1, mask2;
 			inRange(imgHSV, Scalar(LowH, LowS, LowV), Scalar(HighH, HighS, HighV), mask1); //Filter out colors
 			inRange(imgHSV, Scalar(165, 70, 50), Scalar(180, 255, 255), mask2);
 			Mat1b mask = mask1 | mask2;
 			imgThreshold = mask;
-			cout << "red" << endl;
 		}
 		else {
 			inRange(imgHSV, Scalar(LowH, LowS, LowV), Scalar(HighH, HighS, HighV), imgThreshold); //Filter out colors
-			cout << "green" << endl;
 		}
 
 		GaussianBlur(imgThreshold, imgThreshold, Size(9, 9), 2, 2);	//Doesn't work without

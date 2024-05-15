@@ -52,7 +52,6 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 			continue;
 		}
 		lastFrameID = frameID;
-		cout << "Looptiloop" << lastFrameID<<endl;
 		grayTemp = grayImage.clone();
 		
 
