@@ -29,9 +29,10 @@ class StartStop {
 private:
     colorLimitsHSV redLims;
     colorLimitsHSV greenLims;
+    std::mutex* mutex_var;
 public:
     /// Constructor
-    StartStop();
+    StartStop(std::mutex* mutex_var);
    
 
     int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed);

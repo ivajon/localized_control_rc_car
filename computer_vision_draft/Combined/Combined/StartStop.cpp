@@ -1,6 +1,6 @@
 #include "StartStop.h"
 
-StartStop::StartStop() {
+StartStop::StartStop(std::mutex* mutex_var) {
 	colorLimitsHSV redLimsTemp, greenLims;
 	redLimsTemp.iLowH = 0;
 	redLimsTemp.iHighH = 10;
@@ -12,6 +12,7 @@ StartStop::StartStop() {
 	this->redLims = redLimsTemp;
 	this->greenLims = redLimsTemp;
 
+	this->mutex_var = mutex_var;
 
 }
 
@@ -39,7 +40,7 @@ int StartStop::start() {
 
 int StartStop::red() {
 	int iLowH = 0;
-	int iHighH = 10;
+	int iHighH = 20;
 
 	int iLowS = 70;
 	int iHighS = 255;
@@ -49,7 +50,8 @@ int StartStop::red() {
 
 	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, true);
 	if (i == 1) {
-		//TCPclient(1, 0);
+		//TCPclient(1, 0
+		cout << "Found red" << endl;
 	}
 	return -1;
 }
@@ -57,9 +59,19 @@ int StartStop::red() {
 
 int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed) {
 	while (true) {
-		Mat imgOriginal, imgHSV, imgThreshold, imgLap, abs_Lap; //array to store picture data
+		Mat  imgHSV, imgThreshold, imgLap, abs_Lap; //array to store picture data
 
-		cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV);	//color converter
+
+		mutex_var->lock();
+		if (hsvImage.empty()) {
+			mutex_var->unlock();
+			std::this_thread::sleep_for(100ms);
+			cout << "WAITING FOR IMAGE(CIRCLE)" << endl;
+			continue;
+		}
+		imgHSV = hsvImage.clone();
+		mutex_var->unlock();
+
 
 		if (isRed == true) {
 			Mat1b mask1, mask2;
@@ -78,11 +90,20 @@ int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int
 		Laplacian(imgThreshold, imgLap, CV_16S, 3, 1, 0, BORDER_DEFAULT);
 		convertScaleAbs(imgLap, abs_Lap);
 
+
+		
+
 		vector<Vec3f> circles;
-		HoughCircles(abs_Lap, circles, HOUGH_GRADIENT, 2, abs_Lap.rows, 250, 350, 100, 0); //detect the circle
+		HoughCircles(abs_Lap, circles, HOUGH_GRADIENT, 2, abs_Lap.rows, 250, 250, 25, 0); //detect the circle
 		if (!circles.empty()) {
 			return 1;
 		}
+
+		#ifndef RACE
+				imshow("image", imgThreshold);
+				imshow("Lap", abs_Lap);
+				waitKey(10);
+		#endif
 
 	}
 }

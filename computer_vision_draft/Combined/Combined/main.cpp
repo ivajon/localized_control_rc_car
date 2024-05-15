@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 	Camera_Preprocessor camReader(0.5, cap, &mutex_var);
 	Point2i centerPoint(100, 100); //Intial guess for center point(in scaled coordinates)
 	DrivabilityDetector test(0.8, centerPoint, 5); //Create an object of type "DrivabilityDetector", with past weight 0.8, initial guess centerPoint and a 5 point moving average filter
-	StartStop startStopDetector;
+	StartStop startStopDetector(&mutex_var);
 	// SPAWN THE THREADS
 	thread camera_handle = camReader.startThread();
 
