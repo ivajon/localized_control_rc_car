@@ -34,8 +34,8 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 30,
-        KI: 60,
+        KP: 50,
+        KI: 150,
         KD: 10,
         // 10^2
         SCALE: 2,
@@ -55,8 +55,11 @@ pub mod constants {
     // TIMESCALE: 1_000_000,
     // };
 
-    pub const SERVO_SCALE: u32 = 3;
+    /// FIXED POINT FOR SERVO.
+    pub const SERVO_SCALE: u32 = 1;
 
+    /// How wide is the wide boy?
+    pub const WIDEBOY: f32 = 100.;
     /// The type of gain store used.
     pub type GAINSTORE = [(
         f32,
@@ -71,51 +74,57 @@ pub mod constants {
             // from the wall in the direction of the error.
             Some((0., [
                 Some(GainParams {
-                    kp: 1500,
-                    ki: 0,
+                    kp: 250,
+                    ki: 100,
                     kd: 0,
-                    max_value: f32::MAX,
+                    max_value: 50.,
                     min_value: 0.,
                 }),
-                None,
+                Some(GainParams {
+                    kp: 200,
+                    ki: 10,
+                    kd: 100,
+                    max_value: f32::MAX,
+                    min_value: 50.,
+                }),
                 None,
             ])),
             None,
         ]),
         // Distance from wall to start using the really harsh PID.
-        (70., [
+        (50., [
+            // If we are "far" away from either of the walls we use a really smooth PID controller,
+            // this allows us to stay in the middle even when traveling throughwide  hallways.
             // If we are far away from the wall but the side fireing sonars are "close" to a wall
             // we use gain scheduling that should support up towards 150 cm/s
             Some((0., [
                 Some(GainParams {
-                    kp: 200,
-                    ki: 5,
-                    kd: 100,
+                    kp: 550,
+                    ki: 50,
+                    kd: 250,
                     max_value: 60.,
                     min_value: 2.,
                 }),
                 Some(GainParams {
-                    kp: 100,
-                    ki: 3,
-                    kd: 80,
+                    kp: 350,
+                    ki: 20,
+                    kd: 200,
                     max_value: 110.,
                     min_value: 60.,
                 }),
                 Some(GainParams {
-                    kp: 80,
-                    ki: 2,
-                    kd: 40,
+                    kp: 100,
+                    ki: 15,
+                    kd: 25,
                     max_value: 150.,
                     min_value: 110.,
                 }),
             ])),
-            // If we are "far" away from either of the walls we use a really smooth PID controller,
-            // this allows us to stay in the middle even when traveling throughwide  hallways.
-            Some((150., [
+            Some(({ WIDEBOY * 2. }, [
                 Some(GainParams {
                     kp: 100,
-                    ki: 3,
-                    kd: 80,
+                    ki: 40,
+                    kd: 25,
                     max_value: f32::MAX,
                     min_value: 0.,
                 }),
@@ -133,7 +142,7 @@ pub mod constants {
     pub const CAPACITY: usize = 100;
 
     /// How much smoothing should be applied to signals.
-    pub const SMOOTHING: usize = 10;
+    pub const SMOOTHING: usize = 5;
 
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
@@ -157,10 +166,16 @@ pub mod constants {
         (20., Some(10.)),
         // Prepare for a turn.
         (60., Some(20.)),
-        (100., Some(40.)),
-        (150., Some(50.)),
-        (170., None),
+        (200., Some(40.)),
+        (250., Some(50.)),
+        (270., None),
     ];
+
+    /// OH SHIT SIDE MAP.
+    pub const OHSHIT_SIDE_MAP: [(f32, Option<f32>); 2] = [(0., Some(10.)), (30., None)];
+
+    /// LONG BOY LIMIT.
+    pub const WIDEBOY_MAP: [(f32, Option<f32>); 2] = [(0., None), (WIDEBOY, Some(50.))];
 
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
@@ -229,7 +244,7 @@ pub mod wrappers {
         crate::servo::Error,
         crate::servo::Servo<PWM>,
         GAINSTORE,
-        10,
+        15,
         -10,
         { ESC_PID_PARAMS.TIMESCALE },
         SERVO_SCALE,

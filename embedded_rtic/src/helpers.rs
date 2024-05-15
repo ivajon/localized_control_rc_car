@@ -17,13 +17,10 @@ use rtic_monotonics::{
 };
 use rtic_sync::channel::{Receiver, Sender};
 
-use super::car::{
-    constants::{CAPACITY, SMOOTHING},
-    wrappers::Mono,
-};
+use super::car::{constants::CAPACITY, wrappers::Mono};
 
 /// Computes sum of the smoothing window with a recency bias.
-pub fn sum(window: &ArrayDeque<f32, SMOOTHING, Wrapping>) -> f32 {
+pub fn sum<const N: usize>(window: &ArrayDeque<f32, N, Wrapping>) -> f32 {
     window.iter().sum::<f32>() / window.len() as f32
 }
 

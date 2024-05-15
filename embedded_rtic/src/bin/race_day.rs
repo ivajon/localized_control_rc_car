@@ -26,10 +26,12 @@ mod app {
                 MAGNET_SPACING,
                 MIN_VEL,
                 OHSHIT_MAP,
+                OHSHIT_SIDE_MAP,
                 OUTLIER_LIMIT,
                 RADIUS,
                 SMOOTHING,
                 VOTE_THRESH,
+                WIDEBOY_MAP,
             },
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
@@ -71,6 +73,7 @@ mod app {
         velocity_reference: f32,
         pose_reference: f32,
         safety_velocity_reference: Option<f32>,
+        cruch_velocity_reference: Option<f32>,
         difference: f32,
         left_distance: (f32, u64),
         right_distance: (f32, u64),
@@ -184,6 +187,7 @@ mod app {
                 velocity_reference: 110.,
                 pose_reference: 0.,
                 safety_velocity_reference: None,
+                cruch_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
                 right_distance: (0., 0),
@@ -328,7 +332,13 @@ mod app {
         // This should not be needed.
     }
 
-    #[task(local = [esc], shared = [velocity,velocity_reference,safety_velocity_reference],priority=4)]
+    #[task(local = [esc], shared = [
+           velocity,
+           velocity_reference,
+           safety_velocity_reference,
+           cruch_velocity_reference
+    ],priority=4
+    )]
     /// Provides a PID controller for the ESC.
     async fn controll_loop_velocity(mut cx: controll_loop_velocity::Context) {
         info!("Controll loop velocity spawned");
@@ -362,6 +372,15 @@ mod app {
             }
 
             cx.shared
+                .cruch_velocity_reference
+                .lock(|cruch_velocity_reference| {
+                    if let Some(cruch) = cruch_velocity_reference {
+                        warn!("Limited to {:?}", cruch);
+                        reference = *cruch;
+                    }
+                });
+
+            cx.shared
                 .safety_velocity_reference
                 .lock(|safety_velocity_reference| {
                     if let Some(safe) = safety_velocity_reference {
@@ -371,11 +390,11 @@ mod app {
 
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
-            let actuation = controller
+            let _actuation = controller
                 .actuate()
                 .expect("Example is broken this should work");
-            info!("ACTUATION GOES BRRR");
-            info!("{:?}", actuation);
+
+            // info!("{:?}", actuation);
             let outer = measurement;
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
@@ -414,12 +433,12 @@ mod app {
             (vel, forward_distance).lock(|velocity, forward_distance| {
                 cx.local.servo.set_bucket((
                     *forward_distance,
-                    (latest.1 .0 + latest.1 .1) / 2.,
+                    latest.1 .0 + latest.1 .1,
                     velocity.0,
                 ))
             });
 
-            info!("Latest difference : {:?}", latest);
+            // info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
             cx.local.servo.register_measurement((
                 latest.0 as f32,
@@ -428,7 +447,8 @@ mod app {
             cx.shared
                 .pose_reference
                 .lock(|pose_reference| cx.local.servo.follow(*pose_reference));
-            cx.local.servo.actuate().unwrap_or_else(|_| panic!());
+            let actuation = cx.local.servo.actuate().unwrap_or_else(|_| panic!());
+            info!("Actuated : {:?}", actuation);
             // start_time = Mono::now();
         }
     }
@@ -458,6 +478,7 @@ mod app {
         right_distance,
         side_lock,
         times,
+        cruch_velocity_reference,
     ])]
     /// Re-spawn trigger after every new distance is correctly measured.
     async fn trigger_timestamped(mut cx: trigger_timestamped::Context) {
@@ -472,7 +493,7 @@ mod app {
         let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
         let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
 
-        const MAX_POLL: usize = 200;
+        const MAX_POLL: usize = 300;
         let mut poll_counter;
 
         'main: loop {
@@ -504,10 +525,8 @@ mod app {
                 }
                 match cx.local.receiver_left.try_recv() {
                     Ok(value) => {
-                        info!("Left value : {:?}", value);
                         let mut val = value;
                         while let Ok(inner_val) = cx.local.receiver_left.try_recv() {
-                            info!("Left value : {:?}", inner_val);
                             val = inner_val;
                         }
                         break 'poll val;
@@ -555,11 +574,9 @@ mod app {
                 }
                 match cx.local.receiver_right.try_recv() {
                     Ok(value) => {
-                        info!("Right value : {:?}", value);
                         let mut val = value;
                         // Consume all enqueued messages.
                         while let Ok(inner_val) = cx.local.receiver_right.try_recv() {
-                            info!("Right value : {:?}", inner_val);
                             val = inner_val;
                         }
                         break 'poll val;
@@ -591,18 +608,18 @@ mod app {
             // DISCARD OUTLIERS
             if found_outlier {
                 // if we have found an outlier set the
-                info!("OUTLIER");
+                // info!("OUTLIER");
                 // Mono::delay(250.millis()).await;
                 continue 'main;
             }
-            info!("Distance ({:?},{:?})", left_distance, right_distance);
 
             left_window.push_back(left_distance);
             right_window.push_back(right_distance);
 
             let left_distance = sum(&left_window);
             let right_distance = sum(&right_window);
-            let difference = left_distance - right_distance;
+            let difference =
+                (left_distance - right_distance) / (left_distance + right_distance).min(400.);
             diff_window.push_back(difference);
             let difference = sum(&diff_window);
 
@@ -618,6 +635,46 @@ mod app {
                     continue 'main;
                 }
             };
+
+            let dist_sum = left_distance + right_distance;
+            for (thresh_distance, speed) in WIDEBOY_MAP.iter().rev() {
+                if dist_sum < *thresh_distance {
+                    continue;
+                }
+                if speed.is_none() {
+                    cx.shared
+                        .cruch_velocity_reference
+                        .lock(|safety_velocity_reference| *safety_velocity_reference = None);
+                    break;
+                }
+                if let Some(velocity) = speed {
+                    cx.shared
+                        .cruch_velocity_reference
+                        .lock(|safety_velocity_reference| {
+                            *safety_velocity_reference = Some(*velocity);
+                        });
+                }
+            }
+
+            let min_dist = left_distance.min(right_distance);
+            for (thresh_distance, speed) in OHSHIT_SIDE_MAP.iter().rev() {
+                if min_dist < *thresh_distance {
+                    continue;
+                }
+                if speed.is_none() {
+                    cx.shared
+                        .cruch_velocity_reference
+                        .lock(|safety_velocity_reference| *safety_velocity_reference = None);
+                    break;
+                }
+                if let Some(velocity) = speed {
+                    cx.shared
+                        .cruch_velocity_reference
+                        .lock(|safety_velocity_reference| {
+                            *safety_velocity_reference = Some(*velocity);
+                        });
+                }
+            }
         }
     }
 
@@ -635,7 +692,7 @@ mod app {
         let mut prev_dist_forward = 0.;
         let mut forward_outlier = 0;
 
-        let mut forward_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        let mut forward_window: ArrayDeque<f32, 40, Wrapping> = ArrayDeque::new();
 
         const MAX_POLL: usize = 100;
         let mut poll_counter;
@@ -668,11 +725,9 @@ mod app {
                 }
                 match cx.local.receiver_forward.try_recv() {
                     Ok(value) => {
-                        info!("Right value : {:?}", value);
                         let mut val = value;
                         // Consume all enqueued messages.
                         while let Ok(inner_val) = cx.local.receiver_forward.try_recv() {
-                            info!("Forward value : {:?}", inner_val);
                             val = inner_val;
                         }
                         break 'poll val;
@@ -701,7 +756,7 @@ mod app {
                 &OUTLIER_LIMIT,
             );
 
-            info!("Distance ({:?})", forward_distance);
+            // info!("Distance ({:?})", forward_distance);
             // DISCARD OUTLIERS
             if found_outlier {
                 continue 'main;
