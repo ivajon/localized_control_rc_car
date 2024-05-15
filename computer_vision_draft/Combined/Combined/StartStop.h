@@ -13,44 +13,45 @@ extern int frameID;
 extern atomic<bool> stop;
 
 /// Struct for storing color limits for cicrle detection in HSV space
-struct colorLimitsHSV {
+struct colorLimitsHSV
+{
     int iLowH;
     int iHighH;
 
     int iLowS;
     int iHighS;
 
-
     int iLowV;
     int iHighV;
 };
 
-class StartStop {
+class StartStop
+{
 private:
     colorLimitsHSV redLims;
     colorLimitsHSV greenLims;
-    std::mutex* mutex_var;
+    std::mutex *mutex_var;
 
     /// Actual circle detection algorithm
     int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed);
+
 public:
     /// Constructor
-    StartStop(std::mutex* mutex_var);
- 
-    
-    ///Search for red
+    StartStop(std::mutex *mutex_var);
+
+    /// Search for red
     int red();
-    ///Search for green
+    /// Search for green
     int green();
-    ///Start searching
+    /// Start searching
     int start();
 
     /// Start functions in main thread
-    std::thread startThread() {
-        return std::thread([this] { this->start(); });
+    std::thread startThread()
+    {
+        return std::thread([this]
+                           { this->start(); });
     }
-
 };
-
 
 #endif // STARTSTOP_H
