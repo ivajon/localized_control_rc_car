@@ -10,7 +10,7 @@ using namespace std;
 extern mutex mutex_var;
 extern Mat hsvImage;
 extern int frameID;
-extern bool stop;
+extern atomic<bool> stop;
 
 /// Struct for storing color limits for cicrle detection in HSV space
 struct colorLimitsHSV {
@@ -30,13 +30,19 @@ private:
     colorLimitsHSV redLims;
     colorLimitsHSV greenLims;
     std::mutex* mutex_var;
+
+    /// Actual circle detection algorithm
+    int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed);
 public:
     /// Constructor
     StartStop(std::mutex* mutex_var);
-   
-
-    int startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int HighV, bool isRed);
+ 
+    
+    ///Search for red
     int red();
+    ///Search for green
+    int green();
+    ///Start searching
     int start();
 
     /// Start functions in main thread

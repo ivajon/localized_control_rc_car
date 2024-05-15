@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\oscar\\E7012E_software\\OpenCV_c\u002B\u002B\\",
+  "WorkspaceRootPath": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\OpenCV_C\u002B\u002B\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{17B3E916-58D4-411C-88E8-252F11A9FD6A}|OpenCV_c\u002B\u002B\\OpenCV_c\u002B\u002B.vcxproj|C:\\Users\\oscar\\E7012E_software\\OpenCV_c\u002B\u002B\\OpenCV_c\u002B\u002B\\Lab4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{17B3E916-58D4-411C-88E8-252F11A9FD6A}|OpenCV_c\u002B\u002B\\OpenCV_c\u002B\u002B.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\OpenCV_C\u002B\u002B\\OpenCV_c\u002B\u002B\\Lab4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{17B3E916-58D4-411C-88E8-252F11A9FD6A}|OpenCV_c\u002B\u002B\\OpenCV_c\u002B\u002B.vcxproj|solutionrelative:OpenCV_c\u002B\u002B\\Lab4.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -20,11 +20,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Lab4.cpp",
-              "DocumentMoniker": "C:\\Users\\oscar\\E7012E_software\\OpenCV_c\u002B\u002B\\OpenCV_c\u002B\u002B\\Lab4.cpp",
+              "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\OpenCV_C\u002B\u002B\\OpenCV_c\u002B\u002B\\Lab4.cpp",
               "RelativeDocumentMoniker": "OpenCV_c\u002B\u002B\\Lab4.cpp",
-              "ToolTip": "C:\\Users\\oscar\\E7012E_software\\OpenCV_c\u002B\u002B\\OpenCV_c\u002B\u002B\\Lab4.cpp",
+              "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\OpenCV_C\u002B\u002B\\OpenCV_c\u002B\u002B\\Lab4.cpp",
               "RelativeToolTip": "OpenCV_c\u002B\u002B\\Lab4.cpp",
-              "ViewState": "AQIAADAAAAAAAAAAAAAAABYAAAAUAAAA",
+              "ViewState": "AQIAAFMAAACAMjMzMzMbwGgAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-04-30T08:15:11.516Z",
               "EditorCaption": ""
