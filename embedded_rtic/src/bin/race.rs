@@ -29,6 +29,7 @@ mod app {
                 RADIUS,
                 SMOOTHING,
                 VOTE_THRESH,
+                BUFFER_SIZE
             },
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
@@ -43,8 +44,8 @@ mod app {
         clocks::Clocks,
         gpio::{self, Input, Output, Pin, PullDown, PushPull},
         gpiote::*,
-        pac::{PWM0, PWM1},
-        ppi,
+        pac::{PWM0, PWM1, SPIS0},
+        ppi, spis::Transfer,
     };
     use rtic_monotonics::{
         nrf::timer::{fugit::ExtU64, Timer0 as Mono},
@@ -53,6 +54,11 @@ mod app {
     use rtic_sync::{
         channel::{Receiver, Sender},
         make_channel,
+    };
+    use shared::protocol::{
+        v0_0_1::{Payload, V0_0_1},
+        Message,
+        Parse,
     };
 
     /// The duration type
@@ -100,10 +106,14 @@ mod app {
         esc: MotorController<PWM0>,
 
         event_manager: EventManager,
+        spis: Option<Transfer<SPIS0, &'static mut [u8]>>,
     }
 
     #[allow(dead_code)]
-    #[init]
+    #[init(local = [
+            #[link_section = ".uninit.buffer"]
+            RXBUF: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE],
+    ])]
     fn init(cx: init::Context) -> (Shared, Local) {
         let _clocks = Clocks::new(cx.device.CLOCK).enable_ext_hfosc();
 
@@ -113,8 +123,12 @@ mod app {
         let p0 = gpio::p0::Parts::new(cx.device.P0);
         let p1 = gpio::p1::Parts::new(cx.device.P1);
 
+
         // ===================== CONFIGURE PINS =====================
         let pins = PinMapping::new(p0, p1);
+
+        // ===================== CONFIGURE SPI ====================
+        let (pins, spis) = pins.spi(cx.device.SPIS0, cx.local.RXBUF);
 
         // ===================== CONFIGURE CONTROLLERS =====================
         let (pins, servo) = pins.servo_controller(cx.device.PWM1);
@@ -163,7 +177,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 80.,
+                velocity_reference: 0.,
                 safety_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
@@ -191,8 +205,68 @@ mod app {
 
                 servo,
                 esc,
+                spis:Some(spis)
             },
         )
+    }
+
+    #[task(shared = [velocity,left_distance,right_distance,velocity_reference], local = [
+           spis,
+    ],priority = 3,binds = SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0)]
+    fn register_measurement(mut cx: register_measurement::Context) {
+        info!("Waiting for message");
+        let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
+
+        // Convert in to a message.
+        match Message::<V0_0_1>::try_parse(&mut buff.iter().cloned()) {
+            Some(message) => {
+                let payload = message.payload();
+                info!("Got message {:?}", payload);
+                match payload {
+                    Payload::SetSpeed {
+                        velocity,
+                        hold_for_us: _hold,
+                    } => {
+                        cx.shared
+                            .velocity_reference
+                            .lock(|vel| *vel = velocity as f32);
+                    }
+                    // Payload::SetPosition { position } => {
+                    //     cx.shared
+                    //         .pose_reference
+                    //         .lock(|pose_ref| *pose_ref = position as f32);
+                    // }
+                    _ => {}
+                }
+            }
+            None => debug!("SPI got malformed packet"),
+        }
+
+        // let new_velocity = cx.shared.velocity.lock(|measurement| *measurement);
+        // let left_distance = cx.shared.left_distance;
+        // let right_distance = cx.shared.right_distance;
+        // let new_pose = (left_distance, right_distance).lock(|dl, dr| dr.0 - dl.0);
+
+        // Enqueue all of the bytes needed for the transfer.
+        // let new_message = Message::<V0_0_1>::new(Payload::CurrentState {
+        // velocity: new_velocity.0 as u32,
+        // position: new_pose as i32,
+        // distance: 0,
+        // time_us: new_velocity.1,
+        // });
+
+        // for (idx, el) in new_message.enumerate() {
+        //     if idx >= BUFFER_SIZE {
+        //         warn!("BUFFER OVERFLOW");
+        //         break;
+        //     }
+        //     buff[idx] = el;
+        // }
+
+        transfer.reset_events();
+
+        // Enqueue the next packet.
+        *cx.local.spis = transfer.transfer(buff).ok();
     }
 
     #[task(binds = GPIOTE,priority = 7, local=[
