@@ -9,7 +9,7 @@ extern std::mutex mutex_var;
 extern Mat grayImage;
 extern Mat hsvImage;
 extern int frameID;
-extern bool stop;
+extern atomic<bool> stop;
 
 class Camera_Preprocessor
 {
