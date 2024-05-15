@@ -173,6 +173,11 @@ where
         }
     }
 
+    /// Resets the PID values to ensure that it stays resonable.
+    pub fn reset(&mut self) {
+        self.integral = Output::default();
+    }
+
     /// Completely erases previous control signals.
     pub fn follow<I: IntoIterator<Item = Output>>(&mut self, values: I) {
         self.reference.clear();
@@ -352,6 +357,11 @@ where
             measurement: (0, Output::default()),
             previous_actuation: Output::default(),
         }
+    }
+
+    /// Resets the PID values to ensure that it stays resonable.
+    pub fn reset(&mut self) {
+        self.integral = Output::default();
     }
 
     pub fn set_integral(&mut self, integral: Output) {

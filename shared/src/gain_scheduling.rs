@@ -1,7 +1,7 @@
 //! Defines a gain scheduling PID controller.
 use core::{fmt::Debug, marker::PhantomData};
 
-use defmt::{info, warn, Format};
+use defmt::{info, Format};
 
 use crate::controller::{Channel, ControlInfo};
 
@@ -16,6 +16,8 @@ pub trait PidParams<const FIXED_POINT: u32>: Copy {
     fn get_min(&self) -> f32;
     /// Gets the maximum value where the control law is valid.
     fn get_max(&self) -> f32;
+    /// Returns the lower and upperboudns for the Params.
+    fn get_thresh(&self) -> (f32, f32);
 }
 
 /// A generic way to access the gain values used in [gain
@@ -42,6 +44,8 @@ pub struct GainParams<const FIXED_POINT: u32> {
     pub max_value: f32,
     /// Minimum value where this configuration is valid.
     pub min_value: f32,
+    /// The lower and upper thresholds respectivly.
+    pub thresh: (f32, f32),
 }
 
 /// A PID controller that supports basic gain scheduling.
@@ -52,8 +56,6 @@ pub struct GainScheduler<
     Error: Debug,
     Interface: Channel<Error, Output = f32>,
     ParamsStore: GainGetter<FIXED_POINT>,
-    const THRESHOLD_MAX: i32,
-    const THRESHOLD_MIN: i32,
     const TIMESCALE: i32,
     const FIXED_POINT: u32,
 > {
@@ -73,22 +75,11 @@ impl<
         Error: Debug,
         Interface: Channel<Error, Output = f32>,
         ParamsStore: GainGetter<FIXED_POINT>,
-        const THRESHOLD_MAX: i32,
-        const THRESHOLD_MIN: i32,
         const TIMESCALE: i32,
         const FIXED_POINT: u32,
-    >
-    GainScheduler<
-        Error,
-        Interface,
-        ParamsStore,
-        THRESHOLD_MAX,
-        THRESHOLD_MIN,
-        TIMESCALE,
-        FIXED_POINT,
-    >
+    > GainScheduler<Error, Interface, ParamsStore, TIMESCALE, FIXED_POINT>
 where
-    ParamsStore::PrevIdx: Format,
+    ParamsStore::PrevIdx: Format + PartialEq + Copy,
 {
     /// Creates a new controller that sets the output on the
     /// [`Interface`](`Channel`) using a PID control strategy.
@@ -137,13 +128,22 @@ where
         params
     }
 
+    /// Resets the PID values to ensure that it stays resonable.
+    pub fn reset(&mut self) {
+        self.integral = 0.;
+    }
+
     /// Computes the control signal using a PID control strategy.
     ///
     /// if successful it returns the expected value and the read value.
     pub fn actuate(&mut self) -> Result<ControlInfo<f32>, Error> {
+        let prev_idx = self.prev_idx.clone();
         let output = self.compute_output();
         info!("USING IDX {:?}", self.prev_idx);
 
+        if self.prev_idx != prev_idx {
+            // self.integral = 0.;
+        }
         self.interface.set(output.actuation)?;
         self.previous_actuation = output.actuation;
 
@@ -155,6 +155,7 @@ where
 
         let gain = self.get_gain();
 
+        let thresh = gain.get_thresh();
         let kp = gain.get_kp() as f32;
         let ki = gain.get_ki() as f32;
         let kd = gain.get_kd() as f32;
@@ -162,8 +163,8 @@ where
         let time_scale = TIMESCALE as f32;
         let ts = (self.measurement.1 - self.prev_time) as f32;
 
-        let threshold_min = THRESHOLD_MIN as f32;
-        let threshold_max = THRESHOLD_MAX as f32;
+        let threshold_min = thresh.0;
+        let threshold_max = thresh.1;
 
         let fixed_point = { 10i32.pow(FIXED_POINT) as f32 };
 
@@ -180,6 +181,7 @@ where
         self.integral = self.integral.max(threshold_min).min(threshold_max);
 
         let i = self.integral * ki;
+        let i = i.max(threshold_min).min(threshold_max);
 
         // Compute the rate of change between previous time-step and this time-step.
         let d = kd * time_scale * (error - self.previous_error) / ts;
@@ -221,6 +223,10 @@ impl<const FIXED_POINT: u32> PidParams<FIXED_POINT> for GainParams<FIXED_POINT> 
 
     fn get_max(&self) -> f32 {
         self.max_value
+    }
+
+    fn get_thresh(&self) -> (f32, f32) {
+        self.thresh
     }
 }
 impl<Params: PidParams<FIXED_POINT>, const FIXED_POINT: u32, const LEN: usize>
@@ -309,10 +315,8 @@ impl<
         prev_idx: &mut (usize, usize, usize),
         idx: (f32, f32, f32),
     ) -> impl PidParams<FIXED_POINT> {
-        warn!("USING GETTER IDX : {:?}", idx);
         let mut suggested_row = 0;
         for (row, (thresh, _)) in self.iter().enumerate().rev() {
-            info!("Checking thresh {:?}", thresh);
             if idx.0 > *thresh * 1.05 {
                 suggested_row = row;
                 break;
@@ -326,9 +330,7 @@ impl<
         let mut suggested_col = 0;
         let mut col_iter = self[suggested_row].1.iter().enumerate().rev();
         while let Some(col) = col_iter.next() {
-            info!("Checking cols");
             if let (col, Some(parameters)) = col {
-                info!("Checking col {:?}", col);
                 if idx.1 > parameters.0 * 1.05 {
                     suggested_col = col;
                     break;
@@ -345,7 +347,6 @@ impl<
         }
 
         let mut suggested_depth = 0;
-        info!("Sugested col : {:?}", suggested_col);
         let col = self[suggested_row].1[suggested_col].unwrap();
         let mut col_iter = col.1.iter().enumerate().rev();
 
