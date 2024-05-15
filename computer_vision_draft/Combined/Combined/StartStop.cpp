@@ -14,6 +14,9 @@ StartStop::StartStop(std::mutex* mutex_var) {
 
 	this->mutex_var = mutex_var;
 
+static int start() {
+	int iLowH = 56;
+	int iHighH = 88;
 
 
 }
@@ -93,6 +96,7 @@ int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int
 		lastFrameID = frameID;
 		mutex_var->unlock();
 
+		cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV);	//color converter
 
 		if (isRed == true) {
 			Mat1b mask1, mask2;
