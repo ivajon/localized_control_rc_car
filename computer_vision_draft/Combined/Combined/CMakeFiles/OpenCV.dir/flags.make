@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -isystem /usr/local/include/opencv4
 
-CXX_FLAGS = 
+CXX_FLAGS = -O3 -O3 -DNDEBUG
 
