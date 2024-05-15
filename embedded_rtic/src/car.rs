@@ -55,12 +55,12 @@ pub mod constants {
     // TIMESCALE: 1_000_000,
     // };
 
-    pub const SERVO_SCALE: u32 = 2;
+    pub const SERVO_SCALE: u32 = 3;
 
     /// The type of gain store used.
     pub type GAINSTORE = [(
         f32,
-        [Option<(f32, [Option<GainParams<SERVO_SCALE>>; 2])>; 2],
+        [Option<(f32, [Option<GainParams<SERVO_SCALE>>; 3])>; 2],
     ); 2];
 
     /// The scheduling ranges.
@@ -71,12 +71,13 @@ pub mod constants {
             // from the wall in the direction of the error.
             Some((0., [
                 Some(GainParams {
-                    kp: 150,
+                    kp: 1500,
                     ki: 0,
                     kd: 0,
                     max_value: f32::MAX,
                     min_value: 0.,
                 }),
+                None,
                 None,
             ])),
             None,
@@ -87,30 +88,38 @@ pub mod constants {
             // we use gain scheduling that should support up towards 150 cm/s
             Some((0., [
                 Some(GainParams {
-                    kp: 10,
-                    ki: 3,
-                    kd: 12,
+                    kp: 200,
+                    ki: 5,
+                    kd: 100,
                     max_value: 60.,
                     min_value: 2.,
                 }),
                 Some(GainParams {
-                    kp: { 20 / 3 },
-                    ki: { 4 / 2 },
-                    kd: { 15 / 3 },
-                    max_value: 150.,
+                    kp: 100,
+                    ki: 3,
+                    kd: 80,
+                    max_value: 110.,
                     min_value: 60.,
+                }),
+                Some(GainParams {
+                    kp: 80,
+                    ki: 2,
+                    kd: 40,
+                    max_value: 150.,
+                    min_value: 110.,
                 }),
             ])),
             // If we are "far" away from either of the walls we use a really smooth PID controller,
             // this allows us to stay in the middle even when traveling throughwide  hallways.
-            Some((120., [
+            Some((150., [
                 Some(GainParams {
-                    kp: { 20 / 3 },
-                    ki: { 10 / 3 },
-                    kd: { 15 / 3 },
+                    kp: 100,
+                    ki: 3,
+                    kd: 80,
                     max_value: f32::MAX,
                     min_value: 0.,
                 }),
+                None,
                 None,
             ])),
         ]),
@@ -141,12 +150,11 @@ pub mod constants {
     pub const VOTE_THRESH: usize = 2;
 
     /// How far before we should slow the car down a notch?
-    pub const OHSHIT_MAP: [(f32, Option<f32>); 8] = [
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 7] = [
         (0., Some(0.)),
+        (10., Some(5.)),
         // Crawl in to the wall
-        (10., Some(2.)),
-        (20., Some(5.)),
-        (40., Some(10.)),
+        (20., Some(10.)),
         // Prepare for a turn.
         (60., Some(20.)),
         (100., Some(40.)),

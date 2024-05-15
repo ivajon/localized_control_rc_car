@@ -181,7 +181,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 50.,
+                velocity_reference: 110.,
                 pose_reference: 0.,
                 safety_velocity_reference: None,
                 difference: 0.,
@@ -414,7 +414,7 @@ mod app {
             (vel, forward_distance).lock(|velocity, forward_distance| {
                 cx.local.servo.set_bucket((
                     *forward_distance,
-                    latest.1 .0.max(latest.1 .1),
+                    (latest.1 .0 + latest.1 .1) / 2.,
                     velocity.0,
                 ))
             });
