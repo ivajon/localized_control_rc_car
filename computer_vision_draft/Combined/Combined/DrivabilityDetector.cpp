@@ -1,6 +1,5 @@
 #include "DrivabilityDetector.h"
 
-
 //Constructor definition
 DrivabilityDetector::DrivabilityDetector(float prevWeight, Point2i initialPoint, int averageSize) {
 	//Centerpoint

@@ -1,6 +1,6 @@
 #include "StartStop.h"
 
-//#define RACE
+#define RACE
 StartStop::StartStop(std::mutex *mutex_var)
 {
 	colorLimitsHSV redLimsTemp, greenLims;
