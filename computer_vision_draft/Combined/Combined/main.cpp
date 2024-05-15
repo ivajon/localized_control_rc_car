@@ -7,6 +7,9 @@
 #include <mutex>
 #include <thread> 
 #include <atomic>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #define RACE
 // UNCOMMENT TO RUN ON LINUX, with tcp
@@ -31,7 +34,7 @@ bool stop = true;
 bool initialized = false;
 
 
-void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
+void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test,int clientSocket) {
 	cout << "MAIN LOPTILOOP" << endl;
 	Mat grayTemp;
 	bool running = false;
@@ -42,7 +45,7 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 			if (running) {
 				// SEND STOP
 				#ifdef TCP
-				TCPclient(0, 0);
+				TCPclient(0, 0, clientSocket);
 				#endif // 
 			}
 			running = false;
@@ -53,7 +56,7 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		if (!running) {
 			// SEND START
 			#ifdef TCP
-			TCPclient(1, 0);
+			TCPclient(1, 0, clientSocket);
 			#endif // TCP
 		}
 		running = true;
@@ -99,20 +102,20 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 
 		if (speed > 0.9) {
 #ifdef TCP
-			TCPclient(2, FASTER);
+			TCPclient(2, FASTER, clientSocket);
 #endif // TCP
 			//Go fast
 		}
 		else if (speed > 0.5) {
 			//Go medium
 #ifdef TCP
-			TCPclient(2, MEDIUM);
+			TCPclient(2, MEDIUM, clientSocket);
 #endif // TCP
 		}
 		else {
 			//Go slow
 #ifdef TCP
-			TCPclient(2, SLOW);
+			TCPclient(2, SLOW, clientSocket);
 #endif // TCP
 		}
 
@@ -122,6 +125,17 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 //Main loop
 int main(int argc, char** argv)
 {
+
+	int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+	sockaddr_in serverAddress;
+	serverAddress.sin_family = AF_INET;
+	serverAddress.sin_port = htons(8080);
+	serverAddress.sin_addr.s_addr = INADDR_ANY;
+
+	// sending connection request
+	connect(clientSocket, (struct sockaddr*)&serverAddress,
+		sizeof(serverAddress));
 	VideoCapture cap(0);
 
 	if (cap.isOpened() == false)
@@ -142,7 +156,7 @@ int main(int argc, char** argv)
 
 	thread circle_thread = startStopDetector.startThread();
 	cout << "HEYA" << endl;
-	std::thread looptiloop(main_loop, camReader, test);
+	std::thread looptiloop(main_loop, camReader, test, clientSocket);
 
 	looptiloop.join();
 	camera_handle.join();
