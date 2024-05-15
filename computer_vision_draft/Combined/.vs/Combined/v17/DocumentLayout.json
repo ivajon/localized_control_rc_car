@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\StartStop.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\StartStop.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\DrivabilityDetector.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
@@ -17,6 +13,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\DrivabilityDetector.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\StartStop.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\StartStop.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\TCP.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -31,10 +35,6 @@
       "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\Camera_Preprocessor.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\DrivabilityDetector.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\StartStop.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1EAF1A97-F2F3-4BBA-B84E-BFC2B734142F}|Combined\\Combined.vcxproj|solutionrelative:Combined\\StartStop.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
@@ -46,30 +46,30 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "DrivabilityDetector.cpp",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.cpp",
               "RelativeDocumentMoniker": "Combined\\DrivabilityDetector.cpp",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.cpp",
               "RelativeToolTip": "Combined\\DrivabilityDetector.cpp",
-              "ViewState": "AQIAAHkAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAACsAAACAMzMzMzMrwDIAAAA3AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-05-15T18:04:46.844Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 3,
               "Title": "DrivabilityDetector.h",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.h",
               "RelativeDocumentMoniker": "Combined\\DrivabilityDetector.h",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\DrivabilityDetector.h",
               "RelativeToolTip": "Combined\\DrivabilityDetector.h",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAADEAAACAMzMzMzMrwD8AAAAsAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-05-15T08:34:32.431Z",
               "EditorCaption": ""
@@ -89,20 +89,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "StartStop.cpp",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\StartStop.cpp",
               "RelativeDocumentMoniker": "Combined\\StartStop.cpp",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\StartStop.cpp",
               "RelativeToolTip": "Combined\\StartStop.cpp",
-              "ViewState": "AQIAABYAAACAMzMzMzMrwCUAAAAOAAAA",
+              "ViewState": "AQIAAE4AAADAZmZmZmYkwCUAAAAOAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-05-15T07:51:26.614Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "TCP.h",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\TCP.h",
               "RelativeDocumentMoniker": "Combined\\TCP.h",
@@ -115,7 +115,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "TCP.cpp",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\TCP.cpp",
               "RelativeDocumentMoniker": "Combined\\TCP.cpp",
@@ -128,7 +128,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Camera_Preprocessor.h",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\Camera_Preprocessor.h",
               "RelativeDocumentMoniker": "Combined\\Camera_Preprocessor.h",
@@ -141,26 +141,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Camera_Preprocessor.cpp",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\Camera_Preprocessor.cpp",
               "RelativeDocumentMoniker": "Combined\\Camera_Preprocessor.cpp",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\Camera_Preprocessor.cpp",
               "RelativeToolTip": "Combined\\Camera_Preprocessor.cpp",
-              "ViewState": "AQIAAAkAAABgZmZmZmYkwBQAAAAgAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABoAAAAUAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-05-13T12:20:12.765Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "main.cpp",
               "DocumentMoniker": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\main.cpp",
               "RelativeDocumentMoniker": "Combined\\main.cpp",
               "ToolTip": "C:\\Users\\Viktor Lundstr\u00F6m\\Documents\\E7012E_software\\computer_vision_draft\\Combined\\Combined\\main.cpp",
               "RelativeToolTip": "Combined\\main.cpp",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAACAAAA",
+              "ViewState": "AQIAADIAAACAzMzMzMwkwE8AAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-05-13T11:36:22.122Z",
               "EditorCaption": ""
