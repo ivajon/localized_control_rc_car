@@ -24,7 +24,10 @@ impl<V: Version<BusItem = u8>> Spi<V> {
     pub fn init<P: AsRef<Path>>(path: P) -> Option<Self> {
         let mut spi = match Spidev::open(path) {
             Ok(value) => value,
-            _ => return None,
+            _ => {
+                println!("INVALID PATH");
+                return None
+            },
         };
 
         let options = SpidevOptions::new()

@@ -50,7 +50,7 @@ impl TcpMonitor {
                 Ok(bytes) => bytes,
                 _ => return,
             };
-
+            println!("got buf: {:?}", buf);
             if n == 0 {
                 break;
             }
