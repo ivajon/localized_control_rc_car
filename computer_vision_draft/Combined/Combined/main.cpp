@@ -44,8 +44,6 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		}
 		running = true;
 
-		cout << "Looptiloop should be running" << endl;
-
 		mutex_var.lock();
 		if (grayImage.empty() || frameID == lastFrameID) {
 			mutex_var.unlock();
@@ -68,12 +66,12 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 #ifndef RACE
 		{
 			namedWindow("Test");
-		//	cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
+			cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
 			//Display images
 			Mat overlayedImage;
 			Mat testImage = test.getDrivabilityMap();
-		//	cout << testImage.size() << " gray: " << grayTemp.size()<<endl;
+		
 			addWeighted(grayTemp, 1, testImage, 0.5, 0, overlayedImage);
 			cvtColor(overlayedImage, overlayedImage, COLOR_GRAY2RGB); //GRAYSCALE
 			circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
