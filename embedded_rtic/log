@@ -1,0 +1,2722 @@
+0 INFO  init
+└─ dma_spi_protocol::app::init @ examples/dma_spi_protocol.rs:104 
+1 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+2 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+3 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+4 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+5 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+6 INFO  Waiting for message
+└─ dma_spi_protocol::app::intermediary::{async_fn#0} @ examples/dma_spi_protocol.rs:400 
+7 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+8 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+9 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+10 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+11 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+12 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+13 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+14 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+15 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+16 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+17 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+18 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+19 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+20 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+21 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+22 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+23 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+24 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+25 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+26 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+27 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+28 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+29 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+30 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+31 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+32 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+33 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+34 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+35 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+36 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+37 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+38 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+39 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+40 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+41 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+42 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+43 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+44 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+45 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+46 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+47 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+48 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+49 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+50 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+51 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+52 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+53 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+54 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+55 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+56 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+57 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+58 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+59 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+60 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+61 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+62 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+63 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+64 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+65 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+66 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+67 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+68 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+69 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+70 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+71 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+72 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+73 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+74 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+75 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+76 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+77 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+78 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+79 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+80 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+81 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+82 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+83 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+84 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+85 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+86 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+87 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+88 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+89 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+90 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+91 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+92 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+93 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+94 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+95 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+96 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+97 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+98 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+99 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+100 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+101 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+102 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+103 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+104 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+105 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+106 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+107 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+108 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+109 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+110 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+111 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+112 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+113 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+114 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+115 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+116 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+117 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+118 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+119 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+120 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+121 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+122 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+123 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+124 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+125 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+126 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+127 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+128 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+129 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+130 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+131 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+132 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+133 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+134 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+135 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+136 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+137 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+138 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+139 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+140 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+141 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+142 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+143 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+144 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+145 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+146 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+147 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+148 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+149 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+150 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+151 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+152 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+153 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+154 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+155 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+156 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+157 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+158 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+159 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+160 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+161 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+162 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+163 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+164 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+165 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+166 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+167 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+168 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+169 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+170 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+171 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+172 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+173 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+174 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+175 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+176 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+177 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+178 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+179 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+180 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+181 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+182 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+183 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+184 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+185 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+186 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+187 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+188 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+189 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+190 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+191 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+192 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+193 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+194 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+195 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+196 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+197 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+198 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+199 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+200 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+201 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+202 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+203 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+204 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+205 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+206 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+207 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+208 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+209 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+210 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+211 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+212 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+213 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+214 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+215 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+216 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+217 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+218 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+219 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+220 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+221 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+222 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+223 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+224 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+225 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+226 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+227 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+228 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+229 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+230 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+231 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+232 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+233 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+234 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+235 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+236 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+237 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+238 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+239 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+240 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+241 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+242 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+243 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+244 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+245 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+246 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+247 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+248 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+249 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+250 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+251 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+252 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+253 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+254 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+255 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+256 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+257 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+258 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+259 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+260 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+261 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+262 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+263 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+264 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+265 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+266 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+267 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+268 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+269 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+270 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+271 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+272 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+273 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+274 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+275 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+276 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+277 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+278 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+279 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+280 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+281 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+282 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+283 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+284 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+285 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+286 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+287 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+288 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+289 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+290 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+291 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+292 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+293 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+294 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+295 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+296 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+297 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+298 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+299 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+300 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+301 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+302 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+303 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+304 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+305 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+306 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+307 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+308 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+309 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+310 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+311 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+312 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+313 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+314 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+315 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+316 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+317 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+318 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+319 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+320 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+321 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+322 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+323 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+324 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+325 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+326 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+327 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+328 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+329 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+330 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+331 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+332 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+333 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+334 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+335 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+336 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+337 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+338 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+339 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+340 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+341 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+342 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+343 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+344 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+345 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+346 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+347 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+348 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+349 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+350 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+351 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+352 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+353 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+354 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+355 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+356 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+357 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+358 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+359 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+360 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+361 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+362 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+363 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+364 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+365 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+366 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+367 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+368 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+369 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+370 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+371 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+372 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+373 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+374 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+375 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+376 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+377 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+378 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+379 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+380 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+381 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+382 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+383 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+384 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+385 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+386 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+387 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+388 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+389 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+390 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+391 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+392 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+393 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+394 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+395 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+396 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+397 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+398 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+399 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+400 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+401 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+402 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+403 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+404 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+405 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+406 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+407 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+408 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+409 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+410 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+411 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+412 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+413 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+414 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+415 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+416 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+417 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+418 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+419 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+420 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+421 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+422 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+423 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+424 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+425 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+426 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+427 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+428 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+429 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+430 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+431 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+432 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+433 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+434 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+435 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+436 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+437 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+438 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+439 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+440 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+441 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+442 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+443 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+444 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+445 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+446 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+447 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+448 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+449 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+450 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+451 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+452 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+453 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+454 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+455 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+456 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+457 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+458 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+459 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+460 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+461 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+462 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+463 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+464 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+465 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+466 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+467 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+468 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+469 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+470 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+471 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+472 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+473 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+474 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+475 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+476 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+477 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+478 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+479 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+480 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+481 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+482 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+483 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+484 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+485 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+486 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+487 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+488 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+489 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+490 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+491 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+492 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+493 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+494 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+495 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+496 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+497 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+498 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+499 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+500 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+501 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+502 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+503 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+504 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+505 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+506 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+507 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+508 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+509 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+510 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+511 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+512 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+513 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+514 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+515 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+516 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+517 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+518 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+519 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+520 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+521 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+522 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+523 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+524 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+525 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+526 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+527 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+528 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+529 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+530 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+531 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+532 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+533 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+534 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+535 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+536 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+537 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+538 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+539 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+540 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+541 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+542 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+543 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+544 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+545 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+546 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+547 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+548 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+549 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+550 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+551 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+552 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+553 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+554 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+555 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+556 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+557 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+558 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+559 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+560 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+561 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+562 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+563 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+564 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+565 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+566 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+567 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+568 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+569 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+570 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+571 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+572 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+573 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+574 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+576 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+577 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+578 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+579 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+580 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+581 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+582 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+583 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+584 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+585 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+586 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+587 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+588 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+589 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+590 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+591 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+592 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+593 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+594 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+595 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+596 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+597 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+598 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+599 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+600 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+601 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+602 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+603 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+604 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+605 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+606 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+607 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+608 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+609 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+610 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+611 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+612 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+613 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+614 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+615 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+616 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+617 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+618 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+619 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+620 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+621 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+622 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+623 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+624 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+625 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+626 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+627 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+628 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+629 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+630 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+631 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+632 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+633 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+634 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+635 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+636 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+637 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+638 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+639 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+640 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+641 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+642 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+643 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+644 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+645 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+646 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+647 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+648 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+649 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+650 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+651 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+652 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+653 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+654 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+655 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+656 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+657 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+658 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+659 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+660 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+661 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+662 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+663 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+664 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+665 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+666 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+667 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+668 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+669 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+670 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+671 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+672 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+673 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+674 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+675 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+676 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+677 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+678 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+679 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+680 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+681 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+682 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+683 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+684 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+685 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+686 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+687 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+688 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+689 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+690 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+691 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+692 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+693 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+694 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+695 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+696 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+697 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+698 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+699 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+700 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+701 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+702 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+703 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+704 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+705 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+706 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+707 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+708 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+709 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+710 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+711 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+712 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+713 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+714 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+715 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+716 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+717 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+718 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+719 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+720 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+721 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+722 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+723 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+724 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+725 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+726 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+727 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+728 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+729 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+730 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+731 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+732 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+733 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+734 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+735 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+736 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+737 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+738 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+739 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+740 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+741 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+742 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+743 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+744 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+745 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+746 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+747 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+748 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+749 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+750 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+751 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+752 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+753 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+754 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+755 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+756 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+757 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+758 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+759 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+760 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+761 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+762 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+763 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+764 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+765 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+766 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+767 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+768 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+769 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+770 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+771 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+772 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+773 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+774 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+775 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+776 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+777 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+778 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+779 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+780 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+781 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+782 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+783 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+784 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+785 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+786 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+787 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+788 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+789 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+790 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+791 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+792 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+793 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+794 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+795 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+796 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+797 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+798 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+799 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+800 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+801 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+802 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+803 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+804 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+805 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+806 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+807 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+808 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+809 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+810 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+811 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+812 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+813 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+814 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+815 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+816 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+817 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+818 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+819 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+820 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+821 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+822 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+823 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+824 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+825 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+826 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+827 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+828 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+829 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+830 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+831 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+832 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+833 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+834 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+835 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+836 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+837 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+838 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+839 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+840 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+841 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+842 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+843 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+844 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+845 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+846 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+847 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+848 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+849 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+850 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+851 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+852 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+853 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+854 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+855 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+856 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+857 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+858 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+859 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+860 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+861 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+862 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+863 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+864 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+865 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+866 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+867 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+868 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+869 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+870 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+871 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+872 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+873 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+874 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+875 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+876 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+877 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+878 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+879 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+880 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+881 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+882 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+883 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+884 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+885 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+886 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+887 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+888 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+889 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+890 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+891 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+892 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+893 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+894 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+895 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+896 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+897 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+898 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+899 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+900 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+901 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+902 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+903 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+904 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+905 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+906 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+907 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+908 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+909 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+910 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+911 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+912 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+913 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+914 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+915 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+916 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+917 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+918 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+919 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+920 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+921 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+922 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+923 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+924 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+925 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+926 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+927 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+928 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+929 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+930 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+931 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+932 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+933 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+934 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+935 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+936 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+937 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+938 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+939 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+941 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+942 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+943 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+944 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+945 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+946 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+947 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+948 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+949 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+950 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+951 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+952 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+953 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+954 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+955 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+956 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+957 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+958 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+959 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+960 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+961 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+962 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+963 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+964 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+965 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+966 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+967 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+968 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+969 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+970 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+971 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+972 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+973 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+974 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+975 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+976 INFO  Waiting for message
+└─ dma_spi_protocol::app::register_measurement @ examples/dma_spi_protocol.rs:212 
+977 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+978 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+979 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+980 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+981 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+982 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+983 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+984 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+985 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+986 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+987 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+988 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+989 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+990 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+991 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+992 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+993 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+994 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+995 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+996 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+997 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+998 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+999 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1000 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1001 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1002 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1003 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1004 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1005 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1006 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1007 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1008 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1009 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1010 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1011 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1012 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1013 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1014 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1015 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1016 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1017 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1018 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1019 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1020 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1021 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1022 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1023 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1024 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1025 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1026 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1027 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1028 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1029 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1030 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1031 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1032 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1033 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1034 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1035 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1036 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1037 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1038 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1039 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1040 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1041 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1042 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1043 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1044 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1045 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1046 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1047 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1048 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1049 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1050 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1051 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1052 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1053 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1054 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1055 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1056 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1057 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1058 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1059 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1060 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1061 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1062 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1063 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1064 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1065 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1066 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1067 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1068 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1069 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1070 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1071 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1072 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1073 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1074 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1075 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1076 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1077 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1078 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1079 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1080 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1081 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1082 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1083 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1084 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1085 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1086 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1087 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1088 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1089 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1090 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1091 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1092 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1093 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1094 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1095 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1096 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1097 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1098 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1099 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1100 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1101 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1102 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1103 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1105 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1106 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1107 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1108 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1109 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1110 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1111 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1112 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1113 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1114 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1115 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1116 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1117 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1118 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1119 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1120 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1121 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1122 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1123 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1124 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1125 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1126 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1127 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1128 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1129 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1130 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1131 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1132 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1133 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1134 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1135 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1136 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1137 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1138 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1139 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1140 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1141 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1142 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1143 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1144 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1145 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1146 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1147 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1148 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1149 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1150 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1151 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1152 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1153 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1154 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1155 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1156 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1157 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1158 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1159 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1160 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1161 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1162 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1163 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1164 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1165 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1166 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1167 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1168 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1169 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1170 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1171 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1172 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1173 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1174 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1175 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1176 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1177 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1178 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1179 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1180 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1181 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1182 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1183 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1184 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1185 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1186 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1187 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1188 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1189 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1190 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1191 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1192 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1193 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1194 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1195 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1196 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1197 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1198 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1199 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1200 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1201 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1202 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1203 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1204 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1205 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1206 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1207 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1208 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1209 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1210 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1211 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1212 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1213 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1214 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1215 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1216 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1217 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1218 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1219 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1220 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1221 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1222 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1223 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1224 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1225 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1226 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1227 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1228 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1229 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1230 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1231 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1232 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1233 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1234 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1235 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1236 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1237 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1238 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1239 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1240 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1241 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1242 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1243 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1244 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1245 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1246 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1247 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1248 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1249 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1250 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1251 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1252 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1253 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1254 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1255 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1256 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1257 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1258 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1259 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1260 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1261 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1262 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1263 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1264 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1265 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1266 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1267 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1268 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1269 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1270 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1271 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1272 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1273 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1274 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1275 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1276 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1277 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1278 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1279 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1280 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1281 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1282 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1283 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1284 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1285 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1286 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1287 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1288 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1289 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1290 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1291 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1292 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1293 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1294 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1295 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1296 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1297 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1298 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1299 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1300 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1301 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1302 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1303 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1304 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1305 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1306 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1307 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1308 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1309 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1310 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1311 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1312 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1313 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1314 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1315 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1316 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1317 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1318 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1319 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1320 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1321 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1322 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1323 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1324 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1325 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1326 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1327 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1328 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1329 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1330 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1331 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1332 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1333 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1334 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1335 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1336 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1337 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1338 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1339 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1340 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1341 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1342 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1343 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1344 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1345 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1346 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1347 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1348 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1349 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1350 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1351 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1352 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1353 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1354 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1355 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1356 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1357 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1358 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1359 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1360 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
+1361 INFO  Expected min vel to be  4.7118
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:439 
+1362 INFO  Previous speed (0.0, 0) target : 0.0
+└─ dma_spi_protocol::app::control_loop::{async_fn#0} @ examples/dma_spi_protocol.rs:453 
+1363 WARN  Flaky esc might cause problems around the origin, please use larger control signals.
+└─ controller::esc::{impl#0}::speed @ src/esc.rs:80  
