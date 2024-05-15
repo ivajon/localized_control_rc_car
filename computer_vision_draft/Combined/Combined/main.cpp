@@ -19,35 +19,55 @@ std::condition_variable cp;
 Mat grayImage;
 Mat hsvImage;
 int frameID;
-bool stop = false;
+atomic<bool> stop = true;
 bool initialized = false;
 
 
 
 void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 	cout << "MAIN LOPTILOOP" << endl;
-	while (true) {
-		Mat grayTemp;
+	Mat grayTemp;
+	bool running = false;
+	int lastFrameID = 0;
+	while (true) { 
+		if (stop) {
+			if (running) {
+				// SEND STOP
+			}
+			running = false;
+		}
+		while (stop) {
+			std::this_thread::sleep_for(50ms);
+		}
+		if (!running) {
+			// SEND START
+		}
+		running = true;
 
+		cout << "Looptiloop should be running" << endl;
 
 		mutex_var.lock();
-		if (grayImage.empty()) {
+		if (grayImage.empty() || frameID == lastFrameID) {
 			mutex_var.unlock();
-
 			std::this_thread::sleep_for(100ms);
 			cout << "WAITING FOR IMAGE" << endl;
 			continue;
 		}
+		lastFrameID = frameID;
+		cout << "Looptiloop" << lastFrameID<<endl;
 		grayTemp = grayImage.clone();
+		
 
 
 		mutex_var.unlock();
 
+
 		int rowFromBottom = test.calculateRowFromBottom(grayTemp);
 
-		namedWindow("Test");
+		
 #ifndef RACE
 		{
+			namedWindow("Test");
 		//	cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
 			//Display images
@@ -59,14 +79,15 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 			circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
 			imshow("Test", overlayedImage);     // Show our image inside the created 
 
+			if (waitKey(2) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
+			{
+				cout << "esc key is pressed by user" << endl;
+				break;
+			}
 		}
 #endif
-
-		if (waitKey(2) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
-		{
-			cout << "esc key is pressed by user" << endl;
-			break;
-		}
+		// SEND SET SPEED
+		
 
 	}
 }

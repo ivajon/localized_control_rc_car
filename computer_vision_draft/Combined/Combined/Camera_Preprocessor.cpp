@@ -10,7 +10,7 @@ Camera_Preprocessor::Camera_Preprocessor(float scaleFactor, VideoCapture camera,
 void Camera_Preprocessor::readCameraFeed() {
 	Mat img;
 	bool keepGoing = true;
-	frameID = 0;
+	frameID = 1;
 
 	while (keepGoing) {
 		bool readImage = this->camera.read(img);
@@ -24,12 +24,11 @@ void Camera_Preprocessor::readCameraFeed() {
 		}
 		resize(img, img, Size(), this->scaleFactor, this->scaleFactor);
 		Mat grayTemp, hsvTemp;
-		cvtColor(img, grayTemp, COLOR_RGB2GRAY);
-		cvtColor(img, hsvTemp, COLOR_RGB2HSV);
+		cvtColor(img, grayTemp, COLOR_BGR2GRAY);
+		cvtColor(img, hsvTemp, COLOR_BGR2HSV);
 		this->grayTemp = grayTemp.clone();
 
 		mutex_var->lock();
-		keepGoing = !stop;
 		grayImage = grayTemp.clone();
 		hsvImage = hsvTemp.clone();
 		frameID++;

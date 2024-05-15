@@ -1,7 +1,7 @@
 cam = webcam(1);
 cam.Resolution = "640x480";
 
-ImageFolder = pwd+"\capture2";
+ImageFolder = pwd+"\Circles";
 for k=1:100 % this loop will take 5 pictures and save them in the Matlab folder 
     img = snapshot(cam);
     file_name = sprintf('Image%d.png',k)% name Image with a sequence of number, ex Image1.png , Image2.png....
