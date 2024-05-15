@@ -1,7 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
-//#include <windows.h>  
 #include "DrivabilityDetector.h"
 #include "Camera_Preprocessor.h"
 #include "StartStop.h"
@@ -51,18 +50,14 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		mutex_var.lock();
 		if (grayImage.empty() || frameID == lastFrameID) {
 			mutex_var.unlock();
-			std::this_thread::sleep_for(100ms);
-			cout << "WAITING FOR IMAGE" << endl;
+			std::this_thread::sleep_for(15ms);
 			continue;
 		}
 		lastFrameID = frameID;
 		grayTemp = grayImage.clone();
-		
-
-
 		mutex_var.unlock();
 
-
+		//Call function
 		int rowFromBottom = test.calculateRowFromBottom(grayTemp);
 
 		
@@ -87,6 +82,7 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 			}
 		}
 #endif
+
 		// SEND SET SPEED
 		
 
@@ -115,7 +111,6 @@ int main(int argc, char** argv)
 	thread camera_handle = camReader.startThread();
 
 	thread circle_thread = startStopDetector.startThread();
-	//TCP tcp();
 	cout << "HEYA" << endl;
 	std::thread looptiloop(main_loop, camReader, test);
 

@@ -47,7 +47,6 @@ int StartStop::green()
 	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, false);
 	if (i == 1)
 	{
-		cout << "Found green" << endl;
 		stop = false;
 	}
 	return -1;
@@ -67,7 +66,6 @@ int StartStop::red()
 	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, true);
 	if (i == 1)
 	{
-		// TCPclient(1, 0)
 		cout << "Found red" << endl;
 		stop = true;
 	}
@@ -85,8 +83,7 @@ int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int
 		if (hsvImage.empty() || frameID == lastFrameID)
 		{
 			mutex_var->unlock();
-			std::this_thread::sleep_for(100ms);
-			cout << "WAITING FOR IMAGE(CIRCLE)" << endl;
+			std::this_thread::sleep_for(15ms);
 			continue;
 		}
 		imgHSV = hsvImage.clone();
