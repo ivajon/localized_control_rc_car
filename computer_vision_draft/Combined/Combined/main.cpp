@@ -4,13 +4,18 @@
 #include "DrivabilityDetector.h"
 #include "Camera_Preprocessor.h"
 #include "StartStop.h"
-#include "TCP.h"
 #include <mutex>
 #include <thread> 
 #include <atomic>
 
-#define RACE
+//#define RACE
+// UNCOMMENT TO RUN ON LINUX, with tcp
+//#define TCP
 
+#ifdef TCP {
+	#include "TCP.h"
+}
+#endif
 using namespace cv;
 using namespace std;
 
@@ -33,7 +38,9 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		if (stop) {
 			if (running) {
 				// SEND STOP
+				#ifdef TCP
 				TCPclient(0, 0);
+				#endif // 
 			}
 			running = false;
 		}
@@ -42,7 +49,9 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		}
 		if (!running) {
 			// SEND START
+			#ifdef TCP
 			TCPclient(1, 0);
+			#endif // TCP
 		}
 		running = true;
 		stopMutex.unlock();

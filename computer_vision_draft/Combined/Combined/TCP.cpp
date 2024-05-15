@@ -1,5 +1,6 @@
 #include "TCP.h"
 
+#ifdef TCP
 void TCPclient(char first, char second) {
 	int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -17,3 +18,4 @@ void TCPclient(char first, char second) {
 	send(clientSocket, message, sizeof(message), 0);
 
 }
+#endif

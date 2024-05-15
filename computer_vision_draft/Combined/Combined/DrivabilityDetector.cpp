@@ -13,8 +13,8 @@ DrivabilityDetector::DrivabilityDetector(float prevWeight, Point2i initialPoint,
 	this->rawRowFromBottom = vector<int>(averageSize, 0);
 
 	//Initializing images
-	this->drivabilityMap = Mat(480, 640, CV_8UC1, Scalar(0));
-	this->drivabilityMap.copyTo(this->lineImage);
+	this->lineImage = Mat(480, 640, CV_8UC1, Scalar(0));
+	this->edgeImage = lineImage.clone();
 }
 
 //Function definitions
@@ -26,11 +26,10 @@ Using Hough Lines transform to determine the drivable parts of the floor.
 * 1 - Blur image with Gaussian filter
 * 2 - Find edges using Canny edge detector
 * 3 - Find nearly horizontal lines using Hough line transform
-* 4 - Print lines onto empty array
-* 5 - Search through array until line is found, find row furthest from bottom of image
-* 6 - Calculate center row, take as centerpoint(+ weighted average with last value)
-* 7 - Pass last n values for number of rows from the bottom of the array through moving average filter
-* 8 - Return no. rows from bottom
+* 4 - Get main lines
+* 5 - Get center
+* 6 - Pass last n values for number of rows from the bottom of the array through moving average filter
+* 7 - Return no.rows from bottom
 */
 int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	//1 - Blur image with Gaussian filter
@@ -42,80 +41,99 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	Mat edge;
 	Canny(image, edge, 25, 80);
 
-	//3 - Find nearly horizontal lines using Hough line transform
-	std::vector<Vec2f> lines;
+	//3 - Find lines
+	std::vector<Vec4i> lines;
 	double rho = 1.0;    //Pixel resolution
 	double theta = 1.0 / 180 * CV_PI; //Angle resolution
-	double minAngle = 85.0 / 180 * CV_PI;
-	double maxAngle = 105.0 / 180 * CV_PI;
+	const double maxSlope = 0.25;
 
-	int minVotes = 36; //Mininum number of votes for a line
-	HoughLines(edge, lines, rho, theta, minVotes, 0, 0, minAngle, maxAngle);
+	int minVotes = 30; //Mininum number of votes for a line
+	HoughLinesP(edge, lines, rho, theta, minVotes, 100, 40);
 
-	//4 - Print lines onto empty array
+	//4 - Get main lines
 	int width = image.cols;
 	int height = image.rows;
-	Mat emptyMatrix(height, width, CV_8UC1, Scalar(0)); //Initialize empty matrix, 8-bit, 1-color channel, 
+	Mat cimage;
+	cvtColor(image, cimage, COLOR_GRAY2BGR);
+	double leftLength = 0, rightLength = 0, leftdydx, rightdydx;
+	int leftIndex = -1, rightIndex = -1;
 	for (size_t k = 0; k < lines.size(); k++) {
-		float rho = lines[k][0];
-		float theta = lines[k][1];
-		if (((theta > 89.5 / 180 * CV_PI) && (theta < 90.5 / 180 * CV_PI)))
+		int dx = lines[k][2] - lines[k][0];
+		int dy = lines[k][3] - lines[k][1];
+		if (abs(dx) < 20)
 			continue;
-		double a = cos(theta), b = sin(theta);
-		double x0 = a * rho, y0 = b * rho; //Find centerpoint in x,y coordinates
-		int pixelWidth = 1000;
-		Point pt1(cvRound(x0 + pixelWidth * (-b)), cvRound(y0 + pixelWidth * (a))); //FInd endpoiunts of line
-		Point pt2(cvRound(x0 - pixelWidth * (-b)), cvRound(y0 - pixelWidth * (a)));
-		line(emptyMatrix, pt1, pt2, Scalar(255, 255, 255), 1, LINE_AA);
-
-	}
-
-	//5 - Search through array until line is found, find row furthest from bottom of image
-	//6 - Calculate center row, take as centerpoint(+weighted average with last value)
-	int minRow = height - 1;
-	int lastRow = height - 1;
-
-	Mat drivabilityMap(height, width, CV_8UC1, Scalar(0));
-
-	//cout << "driveMap " << drivabilityMap << endl;
-	//Get center point
-	int centCol = 0;
-	int nonZero = 0;
-	for (size_t col = 0; col < width;col++) {
-		for (size_t row = height - 1; row > 0;row--) {
-			drivabilityMap.at<uchar>(row, col) = 255;
-			if (emptyMatrix.at<uchar>(row, col) != 0) {
-				lastRow = row;
-				break;
+		float dydx = (float)dy / dx;
+		if (dydx < 0 && dydx > -maxSlope) {
+			if (rightLength < abs(dx)) {
+				rightLength = abs(dx);
+				rightIndex = k;
+				rightdydx = dydx;
 			}
 		}
-		if (minRow > lastRow) { //If found larger row, change minimum row and start finding center column of new row
-			minRow = lastRow;
-			centCol = col;
-			nonZero = 1;
+		else if (dydx > 0 && dydx < maxSlope) {
+			if (leftLength < abs(dx)) {
+				leftLength = abs(dx);
+				leftIndex = k;
+				leftdydx = dydx;
+			}
+			//cout << "Postive slope" << endl;
 		}
-		else if (minRow == lastRow) { //If still on same row, add next column for finding center
-			centCol += col;
-			nonZero++;
+		else {
+			continue;
 		}
 	}
-	centCol = centCol / nonZero; //Calculate average(integer rounding is fine)
+
+	//4 calculate center
+	int centX, centY;
+	if (leftIndex != -1 && rightIndex != -1) {
+		int y1 = lines[leftIndex][1];
+		int x1 = lines[leftIndex][0];
+
+		int y2 = lines[rightIndex][3];
+		int x2 = lines[rightIndex][2];
+		#ifndef RACE
+		line(cimage, Point(lines[leftIndex][0], lines[leftIndex][1]), Point(lines[leftIndex][2], lines[leftIndex][3]), Scalar(0, 0, 255), 3, LINE_AA);
+		line(cimage, Point(lines[rightIndex][0], lines[rightIndex][1]), Point(lines[rightIndex][2], lines[rightIndex][3]), Scalar(0, 0, 255), 3, LINE_AA);
+		#endif
+		centX = ((float)y2 - (float)y1 + leftdydx * (float)x1 - rightdydx * (float)x2) / (leftdydx - rightdydx);
+		centY = leftdydx * (centX - x1) + y1;
+	}
+	else if (rightIndex != -1) {
+		centY = lines[rightIndex][3];
+		centX = lines[rightIndex][2];
+		#ifndef RACE
+		line(cimage, Point(lines[rightIndex][0], lines[rightIndex][1]), Point(lines[rightIndex][2], lines[rightIndex][3]), Scalar(0, 0, 255), 3, LINE_AA);
+		#endif
+	}
+	else if (rightIndex != -1) {
+		centY = lines[leftIndex][1];
+		centX = lines[leftIndex][0];
+		#ifndef RACE
+		line(cimage, Point(lines[rightIndex][0], lines[rightIndex][1]), Point(lines[rightIndex][2], lines[rightIndex][3]), Scalar(0, 0, 255), 3, LINE_AA);
+		#endif		
+	}
+
+#ifndef RACE
+	circle(cimage, Point(centX, centY), 5, Scalar(255, 0, 0), 5);
+#endif
+	
+
+
 	float prevFactor = this->prevWeight;
-	Point2i calcCenter(centCol, (float)minRow);
+	Point2i calcCenter(centX, centY);
 	this->centerPoint = this->centerPoint * prevFactor + (1 - prevFactor) * calcCenter;
 
 
-	//7 - Pass last n values for number of rows from the bottom of the array through moving average filter
+	//6 - Pass last n values for number of rows from the bottom of the array through moving average filter
 	vector<int> vec = this->rawRowFromBottom;
 	std::rotate(vec.rbegin(), vec.rbegin() + 1, vec.rend());
-	vec[0] = height - minRow;
+	vec[0] = height - centY;
 	this->rawRowFromBottom = vec;
 	this->rowFromBottom = std::accumulate(vec.begin(), vec.end(), 0.0) / vec.size();
+	this->lineImage = cimage;
+	this->edgeImage = edge;
 
-	this->lineImage = emptyMatrix;
-	this->drivabilityMap = drivabilityMap;
-
-	//8 - Return no.rows from bottom
+	//7 - Return no.rows from bottom
 	return this->rowFromBottom;
 }
 

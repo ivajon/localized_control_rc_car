@@ -25,8 +25,8 @@ private:
 	float prevWeight;				//Weight given to previous centerpoint in calculations
 
 	//Images for visualization
-	Mat drivabilityMap;
 	Mat lineImage;
+	Mat edgeImage;
 public:
 	/**
 	* Constructor for drivability detector
