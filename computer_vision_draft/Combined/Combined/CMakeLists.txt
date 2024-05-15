@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( E7012e_software )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( OpenCV main.cpp DrivabilityDetector.cpp Camera_Preprocessor.cpp StartStop.cpp TCP.cpp)
+target_link_libraries( OpenCV ${OpenCV_LIBS} pthread )
