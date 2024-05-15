@@ -24,6 +24,7 @@ void Camera_Preprocessor::readCameraFeed() {
 		}
 		resize(img, img, Size(), this->scaleFactor, this->scaleFactor);
 		flip(img, img, 0);
+		flip(img, img, 1);
 		Mat grayTemp, hsvTemp;
 		cvtColor(img, grayTemp, COLOR_BGR2GRAY);
 		cvtColor(img, hsvTemp, COLOR_BGR2HSV);

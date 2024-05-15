@@ -61,7 +61,7 @@ public:
 	float getPrevWeight() const { return prevWeight; }
 
 	/// Gets the last calculated drivability map, a mask containing the drivable parts of the image
-	Mat getDrivabilityMap() const { return drivabilityMap; }
+	Mat getEdgeImage() const { return edgeImage; }
 
 	/// Gets an image containing the lines detected in the last image passed through the algorithm
 	Mat getLineImage() const { return lineImage; }

@@ -75,14 +75,9 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 			namedWindow("Test");
 			cout << "Distance from bottom : " << test.getRowFromBottom() << endl;
 
-			//Display images
-			Mat overlayedImage;
-			Mat testImage = test.getDrivabilityMap();
 		
-			addWeighted(grayTemp, 1, testImage, 0.5, 0, overlayedImage);
-			cvtColor(overlayedImage, overlayedImage, COLOR_GRAY2RGB); //GRAYSCALE
-			circle(overlayedImage, test.getCenterPoint(), 5, Scalar(0, 0, 255), 3);
-			imshow("Test", overlayedImage);     // Show our image inside the created 
+			imshow("Centerimage", test.getLineImage());
+			imshow("EdgeImages", test.getEdgeImage());
 
 			if (waitKey(2) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
 			{

@@ -39,16 +39,16 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 
 	//2 - Find edges using Canny edge detector
 	Mat edge;
-	Canny(image, edge, 25, 80);
+	Canny(image, edge, 25, 50);
 
 	//3 - Find lines
 	std::vector<Vec4i> lines;
 	double rho = 1.0;    //Pixel resolution
 	double theta = 1.0 / 180 * CV_PI; //Angle resolution
-	const double maxSlope = 0.25;
+	const double maxSlope = 0.5;
 
 	int minVotes = 30; //Mininum number of votes for a line
-	HoughLinesP(edge, lines, rho, theta, minVotes, 100, 40);
+	HoughLinesP(edge, lines, rho, theta, minVotes, 130, 30);
 
 	//4 - Get main lines
 	int width = image.cols;
@@ -113,9 +113,7 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 		#endif		
 	}
 
-#ifndef RACE
-	circle(cimage, Point(centX, centY), 5, Scalar(255, 0, 0), 5);
-#endif
+
 	
 
 
@@ -123,6 +121,9 @@ int DrivabilityDetector::calculateRowFromBottom(cv::Mat image) {
 	Point2i calcCenter(centX, centY);
 	this->centerPoint = this->centerPoint * prevFactor + (1 - prevFactor) * calcCenter;
 
+#ifndef RACE
+	circle(cimage, this->centerPoint, 5, Scalar(255, 0, 0), 5);
+#endif
 
 	//6 - Pass last n values for number of rows from the bottom of the array through moving average filter
 	vector<int> vec = this->rawRowFromBottom;
