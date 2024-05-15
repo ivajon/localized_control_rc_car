@@ -12,6 +12,7 @@ use tokio::{
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    println!("RUSTY STARTED :)");
     let (commit_writer, commit_reader) = mpsc::channel(1024);
     let _spi_handle = MockSpi::init(commit_reader).unwrap();
     let (_sessions, _tcp_handle) = TcpMonitor::init(commit_writer).unwrap();
