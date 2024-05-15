@@ -21,21 +21,25 @@ StartStop::StartStop(std::mutex* mutex_var) {
 
 int StartStop::start() {
 	cout << "Circle detector started" << endl;
+	while (true)
+	{
+		if(stop){
+			this->green();
+		}
+		else
+		{
+			this->red();
+		}
+	}
 	
 
-	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, false); //start the loop with the Hue values
-	if (i == 1) {
-		//TCPclient(0, 0);
-		cout << "Found green" << endl;
-		stop = false;
-		return red();	//if successfull start search for red
-	}
+	
 }
 
 
 int StartStop::green() {
-	int iLowH = 40;
-	int iHighH = 60;
+	int iLowH = 20;
+	int iHighH = 90;
 
 	int iLowS = 30;
 	int iHighS = 255;
@@ -44,10 +48,10 @@ int StartStop::green() {
 	int iLowV = 50;
 	int iHighV = 255;	//Sets the hue values to only detect green
 
-	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, true);
+	int i = startStop(iLowH, iHighH, iLowS, iHighS, iLowV, iHighV, false);
 	if (i == 1) {
 		cout << "Found green" << endl;
-		stop = true;
+		stop = false;
 	}
 	return -1;
 }
@@ -93,7 +97,7 @@ int StartStop::startStop(int LowH, int HighH, int LowS, int HighS, int LowV, int
 		if (isRed == true) {
 			Mat1b mask1, mask2;
 			inRange(imgHSV, Scalar(LowH, LowS, LowV), Scalar(HighH, HighS, HighV), mask1); //Filter out colors
-			inRange(imgHSV, Scalar(175, 70, 50), Scalar(180, 255, 255), mask2);
+			inRange(imgHSV, Scalar(165, 70, 50), Scalar(180, 255, 255), mask2);
 			Mat1b mask = mask1 | mask2;
 			imgThreshold = mask;
 			cout << "red" << endl;
