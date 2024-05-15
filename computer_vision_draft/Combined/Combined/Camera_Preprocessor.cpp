@@ -18,7 +18,7 @@ void Camera_Preprocessor::readCameraFeed() {
 
 		if (!readImage) {
 
-			cout << "2222222" << endl;
+			cout << "Could not read image" << endl;
 
 			continue;
 		}
