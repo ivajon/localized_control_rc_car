@@ -8,7 +8,6 @@ use nrf52840_hal::{
 };
 
 use super::{
-    constants::SERVO_PID_PARAMS_SCHEDULE,
     event::EventManager,
     wrappers::{EscPwm, MotorController, ServoController, ServoPwm, SpiInstance},
 };
@@ -232,11 +231,11 @@ impl<const SPI_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
         device: ServoPwm,
     ) -> (
         PinMapping<SPI_USED, true, ESC_USED, EVENTS_CONFIGURED>,
-        ServoController<ServoPwm>,
+        ServoController<Servo<ServoPwm>>,
     ) {
         let esc = unsafe { self.servo_output.take().unwrap_unchecked() };
         let esc = Servo::new(device, esc);
-        let controller = ServoController::new(esc, SERVO_PID_PARAMS_SCHEDULE);
+        let controller = ServoController::new(esc, 0.);
 
         let new_self = PinMapping {
             sonar_left: self.sonar_left,

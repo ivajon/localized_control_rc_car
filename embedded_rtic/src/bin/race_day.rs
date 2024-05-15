@@ -26,12 +26,10 @@ mod app {
                 MAGNET_SPACING,
                 MIN_VEL,
                 OHSHIT_MAP,
-                OHSHIT_SIDE_MAP,
                 OUTLIER_LIMIT,
                 RADIUS,
                 SMOOTHING,
                 VOTE_THRESH,
-                WIDEBOY_MAP,
             },
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
@@ -40,8 +38,9 @@ mod app {
         compute_distance,
         compute_velocity,
         helpers::{sum, timeout, OutlierRejection, Trigger},
+        servo::Servo,
     };
-    use defmt::{debug, error, info, warn};
+    use defmt::{debug, error, info};
     use nrf52840_hal::{
         clocks::Clocks,
         gpio::{self, Input, Output, Pin, PullDown, PushPull},
@@ -59,7 +58,7 @@ mod app {
         make_channel,
     };
     use shared::protocol::{
-        v0_0_2::{Payload, V0_0_2},
+        v0_0_1::{Payload, V0_0_1},
         Message,
         Parse,
     };
@@ -78,6 +77,8 @@ mod app {
         left_distance: (f32, u64),
         right_distance: (f32, u64),
         forward_distance: f32,
+
+        actual_velocity_ref: f32,
 
         side_lock: (),
         times: [Instant; 3],
@@ -108,7 +109,7 @@ mod app {
 
         senders: [Sender<'static, f32, CAPACITY>; 3],
 
-        servo: ServoController<PWM1>,
+        servo: ServoController<Servo<PWM1>>,
         esc: MotorController<PWM0>,
 
         event_manager: EventManager,
@@ -181,10 +182,11 @@ mod app {
         controll_loop_steering::spawn().unwrap_or_else(|_| panic!());
         controll_loop_velocity::spawn().unwrap_or_else(|_| panic!());
 
+        let velocity_reference = 40.;
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 80.,
+                velocity_reference,
                 pose_reference: 0.,
                 safety_velocity_reference: None,
                 cruch_velocity_reference: None,
@@ -194,6 +196,7 @@ mod app {
                 forward_distance: f32::MAX,
                 side_lock: (),
                 times,
+                actual_velocity_ref: velocity_reference,
             },
             Local {
                 first_pair: (trig_left, trig_right),
@@ -228,47 +231,50 @@ mod app {
         let (buff, transfer) = cx.local.spis.take().unwrap_or_else(|| panic!()).wait();
 
         // Convert in to a message.
-        match Message::<V0_0_2>::try_parse(&mut buff.iter().cloned()) {
+        match Message::<V0_0_1>::try_parse(&mut buff.iter().cloned()) {
             Some(message) => {
                 let payload = message.payload();
                 info!("Got message {:?}", payload);
                 match payload {
-                    Payload::SetSpeed { velocity } => {
+                    Payload::SetSpeed {
+                        velocity,
+                        hold_for_us: _hold,
+                    } => {
                         cx.shared
                             .velocity_reference
                             .lock(|vel| *vel = velocity as f32);
                     }
-                    Payload::SetPosition { position } => {
-                        cx.shared
-                            .pose_reference
-                            .lock(|pose_ref| *pose_ref = position as f32);
-                    }
+                    // Payload::SetPosition { position } => {
+                    //     cx.shared
+                    //         .pose_reference
+                    //         .lock(|pose_ref| *pose_ref = position as f32);
+                    // }
                     _ => {}
                 }
             }
             None => debug!("SPI got malformed packet"),
         }
 
-        let new_velocity = cx.shared.velocity.lock(|measurement| *measurement);
-        let left_distance = cx.shared.left_distance;
-        let right_distance = cx.shared.right_distance;
-        let new_pose = (left_distance, right_distance).lock(|dl, dr| dr.0 - dl.0);
+        // let new_velocity = cx.shared.velocity.lock(|measurement| *measurement);
+        // let left_distance = cx.shared.left_distance;
+        // let right_distance = cx.shared.right_distance;
+        // let new_pose = (left_distance, right_distance).lock(|dl, dr| dr.0 - dl.0);
 
         // Enqueue all of the bytes needed for the transfer.
-        let new_message = Message::<V0_0_2>::new(Payload::CurrentState {
-            velocity: new_velocity.0 as u32,
-            position: new_pose as i32,
-            distance: 0,
-            time_us: new_velocity.1,
-        });
+        // let new_message = Message::<V0_0_1>::new(Payload::CurrentState {
+        // velocity: new_velocity.0 as u32,
+        // position: new_pose as i32,
+        // distance: 0,
+        // time_us: new_velocity.1,
+        // });
 
-        for (idx, el) in new_message.enumerate() {
-            if idx >= BUFFER_SIZE {
-                warn!("BUFFER OVERFLOW");
-                break;
-            }
-            buff[idx] = el;
-        }
+        // for (idx, el) in new_message.enumerate() {
+        //     if idx >= BUFFER_SIZE {
+        //         warn!("BUFFER OVERFLOW");
+        //         break;
+        //     }
+        //     buff[idx] = el;
+        // }
 
         transfer.reset_events();
 
@@ -336,7 +342,8 @@ mod app {
            velocity,
            velocity_reference,
            safety_velocity_reference,
-           cruch_velocity_reference
+           cruch_velocity_reference,
+           actual_velocity_ref
     ],priority=4
     )]
     /// Provides a PID controller for the ESC.
@@ -356,7 +363,7 @@ mod app {
             if measurement.1 == previous.1 {
                 debug!("Measured velocity must be faster than {:?} cm/s to be accurately sampled in this manner.",MIN_VEL);
 
-                let angle = { 1.0f32 * MAGNET_SPACING as f32 / 10_000f32 };
+                let angle = { 2.0f32 * MAGNET_SPACING as f32 / 10_000f32 };
                 let angvel =
                     angle * { ESC_PID_PARAMS.TIMESCALE as f32 } / (ESC_PID_PARAMS.TS as f32);
 
@@ -375,8 +382,10 @@ mod app {
                 .cruch_velocity_reference
                 .lock(|cruch_velocity_reference| {
                     if let Some(cruch) = cruch_velocity_reference {
-                        warn!("Limited to {:?}", cruch);
-                        reference = *cruch;
+                        if *cruch < reference {
+                            // warn!("Limited to {:?}", cruch);
+                            reference = *cruch;
+                        }
                     }
                 });
 
@@ -384,9 +393,20 @@ mod app {
                 .safety_velocity_reference
                 .lock(|safety_velocity_reference| {
                     if let Some(safe) = safety_velocity_reference {
-                        reference = *safe;
+                        if *safe < reference {
+                            reference = *safe;
+                        }
                     }
                 });
+
+            cx.shared.actual_velocity_ref.lock(|actual_velocity_ref| {
+                if reference == 0. {
+                    controller.reset();
+                }
+                *actual_velocity_ref = reference
+            });
+
+            info!("REF : {:?}", reference);
 
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
@@ -412,9 +432,16 @@ mod app {
         }
     }
 
-    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity,forward_distance,pose_reference])]
+    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [
+           difference,
+           velocity,
+           forward_distance,
+           pose_reference,
+           actual_velocity_ref
+    ])]
     async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         info!("Controll loop steering spawned");
+        let mut prev = Instant::from_ticks(0);
         loop {
             // Read from the channel, if sensor values are slow we will miss deadlines.
             let latest = match cx.local.wall_difference_recv.recv().await {
@@ -427,29 +454,33 @@ mod app {
 
             // Lock the needed index variables, this should allow us to use multiple index
             // gain scheduling.
-            let vel = &mut cx.shared.velocity;
-            let forward_distance = &mut cx.shared.forward_distance;
-
-            (vel, forward_distance).lock(|velocity, _forward_distance| {
-                cx.local.servo.set_bucket(
-                    // *forward_distance,
-                    // latest.1 .0 + latest.1 .1,
-                    velocity.0,
-                )
-            });
-
+            // if latest.0 > 1. {
+            //     latest.0 = 1.;
+            // }
+            // if latest.0 < -1. {
+            //     latest.0 = -1.;
+            // }
             // info!("Latest difference : {:?}", latest);
             // Register measurement and actuate.
-            cx.local.servo.register_measurement((
+            cx.local.servo.register_measurement(
                 latest.0 as f32,
-                Mono::now().duration_since_epoch().to_micros(),
-            ));
+                Mono::now().duration_since_epoch().to_micros() as u32,
+            );
             cx.shared
                 .pose_reference
-                .lock(|pose_reference| cx.local.servo.follow(*pose_reference));
-            let actuation = cx.local.servo.actuate().unwrap_or_else(|_| panic!());
+                .lock(|pose_reference| cx.local.servo.follow([*pose_reference]));
+            let actuation = cx
+                .local
+                .servo
+                .actuate(
+                    Mono::now()
+                        .checked_duration_since(prev)
+                        .unwrap()
+                        .to_micros(),
+                )
+                .unwrap_or_else(|_| panic!());
             info!("Actuated : {:?}", actuation);
-            // start_time = Mono::now();
+            prev = Mono::now();
         }
     }
 
@@ -493,7 +524,7 @@ mod app {
         let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
         let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
 
-        const MAX_POLL: usize = 300;
+        const MAX_POLL: usize = 500;
         let mut poll_counter;
 
         'main: loop {
@@ -618,8 +649,7 @@ mod app {
 
             let left_distance = sum(&left_window);
             let right_distance = sum(&right_window);
-            let difference =
-                (left_distance - right_distance) / (left_distance + right_distance).min(400.);
+            let difference = left_distance - right_distance; //(left_distance + right_distance).min(400.);
             diff_window.push_back(difference);
             let difference = sum(&diff_window);
 
@@ -635,46 +665,6 @@ mod app {
                     continue 'main;
                 }
             };
-
-            let dist_sum = left_distance + right_distance;
-            for (thresh_distance, speed) in WIDEBOY_MAP.iter().rev() {
-                if dist_sum < *thresh_distance {
-                    continue;
-                }
-                if speed.is_none() {
-                    cx.shared
-                        .cruch_velocity_reference
-                        .lock(|safety_velocity_reference| *safety_velocity_reference = None);
-                    break;
-                }
-                if let Some(velocity) = speed {
-                    cx.shared
-                        .cruch_velocity_reference
-                        .lock(|safety_velocity_reference| {
-                            *safety_velocity_reference = Some(*velocity);
-                        });
-                }
-            }
-
-            let min_dist = left_distance.min(right_distance);
-            for (thresh_distance, speed) in OHSHIT_SIDE_MAP.iter().rev() {
-                if min_dist < *thresh_distance {
-                    continue;
-                }
-                if speed.is_none() {
-                    cx.shared
-                        .cruch_velocity_reference
-                        .lock(|safety_velocity_reference| *safety_velocity_reference = None);
-                    break;
-                }
-                if let Some(velocity) = speed {
-                    cx.shared
-                        .cruch_velocity_reference
-                        .lock(|safety_velocity_reference| {
-                            *safety_velocity_reference = Some(*velocity);
-                        });
-                }
-            }
         }
     }
 

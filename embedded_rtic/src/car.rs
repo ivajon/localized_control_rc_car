@@ -34,7 +34,7 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 50,
+        KP: 150,
         KI: 150,
         KD: 10,
         // 10^2
@@ -43,17 +43,15 @@ pub mod constants {
         TIMESCALE: 1_000_000,
     };
 
-    /// The PID parameters for the ESC.
-    // pub const SERVO_PID_PARAMS: PidParams = PidParams {
-    // KP: 150,
-    // KI: 5,
-    // KD: 60,
-    // 10^3
-    // SCALE: 3,
-    // This is not used.
-    // TS: 60_000, // 4 Hz should probly be higher
-    // TIMESCALE: 1_000_000,
-    // };
+    /// The PID parameters for the .
+    pub const SERVO_PID_PARAMS: PidParams = PidParams {
+        KP: 70,
+        KI: 10,
+        KD: 40,
+        SCALE: 3,
+        TS: 60_000, // 4 Hz should probly be higher
+        TIMESCALE: 1_000_000,
+    };
 
     /// FIXED POINT FOR SERVO.
     pub const SERVO_SCALE: u32 = 1;
@@ -61,32 +59,46 @@ pub mod constants {
     /// How wide is the wide boy?
     pub const WIDEBOY: f32 = 100.;
     /// The type of gain store used.
-    pub type GAINSTORE = [GainParams<SERVO_SCALE>; 3];
+    pub type GAINSTORE = [GainParams<SERVO_SCALE>; 2];
 
     /// The scheduling ranges.
-    pub const SERVO_PID_PARAMS_SCHEDULE: GAINSTORE = [
-        GainParams {
-            kp: 250,
-            ki: 10,
-            kd: 150,
-            max_value: 60.,
-            min_value: 2.,
-        },
-        GainParams {
-            kp: 150,
-            ki: 5,
-            kd: 75,
-            max_value: 110.,
-            min_value: 60.,
-        },
-        GainParams {
-            kp: 100,
-            ki: 1,
-            kd: 25,
-            max_value: 150.,
-            min_value: 110.,
-        },
-    ];
+    // pub const SERVO_PID_PARAMS_SCHEDULE: GAINSTORE = [
+    //     // GainParams {
+    //     //     kp: 125,
+    //     //     ki: 10,
+    //     //     kd: 50,
+    //     //     max_value: 10.,
+    //     //     min_value: 0.,
+    //     //     thresh: (-12., 12.),
+    //     // },
+    //     // GainParams {
+    //     //     kp: 30,
+    //     //     ki: 3,
+    //     //     kd: 10,
+    //     //     max_value: 60.,
+    //     //     min_value: 10.,
+    //     //     thresh: (-10., 10.),
+    //     // },
+    //     GainParams {
+    //         kp: 10,
+    //         ki: 0,
+    //         kd: 0,
+    //
+    //         //ki: 5,
+    //         //kd: 20,
+    //         max_value: 110.,
+    //         min_value: 0.,
+    //         thresh: (-12., 12.),
+    //     },
+    //     GainParams {
+    //         kp: 100,
+    //         ki: 5,
+    //         kd: 40,
+    //         max_value: 150.,
+    //         min_value: 110.,
+    //         thresh: (-2., 2.),
+    //     },
+    // ];
 
     /// The buffer size for the SPI.
     pub const BUFFER_SIZE: usize =
@@ -96,7 +108,7 @@ pub mod constants {
     pub const CAPACITY: usize = 100;
 
     /// How much smoothing should be applied to signals.
-    pub const SMOOTHING: usize = 5;
+    pub const SMOOTHING: usize = 10;
 
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
@@ -119,17 +131,11 @@ pub mod constants {
         // Crawl in to the wall
         (20., Some(10.)),
         // Prepare for a turn.
-        (60., Some(20.)),
+        (50., Some(20.)),
         (200., Some(40.)),
         (250., Some(50.)),
         (270., None),
     ];
-
-    /// OH SHIT SIDE MAP.
-    pub const OHSHIT_SIDE_MAP: [(f32, Option<f32>); 2] = [(0., Some(10.)), (40., None)];
-
-    /// LONG BOY LIMIT.
-    pub const WIDEBOY_MAP: [(f32, Option<f32>); 2] = [(0., None), (WIDEBOY, Some(50.))];
 
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
@@ -162,9 +168,9 @@ pub mod constants {
 pub mod wrappers {
     use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
     pub use rtic_monotonics::nrf::timer::Timer0 as Mono;
-    use shared::{controller::Pid, gain_scheduling::GainScheduler};
+    use shared::controller::{Pid, PidDynamic};
 
-    use super::constants::{ESC_PID_PARAMS, GAINSTORE, SERVO_SCALE};
+    use super::constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS};
 
     /// The spi device used.
     pub type SpiInstance = SPIS0;
@@ -194,13 +200,24 @@ pub mod wrappers {
     >;
 
     /// A wrapper around the [`Pid`] controller with predefined coefficients.
-    pub type ServoController<PWM> = GainScheduler<
+    // pub type ServoController<PWM> = GainScheduler<
+    //     crate::servo::Error,
+    //     crate::servo::Servo<PWM>,
+    //     GAINSTORE,
+    //     { ESC_PID_PARAMS.TIMESCALE },
+    //     SERVO_SCALE,
+    // >;
+    pub type ServoController<PWM> = PidDynamic<
         crate::servo::Error,
-        crate::servo::Servo<PWM>,
-        GAINSTORE,
-        14,
-        -10,
-        { ESC_PID_PARAMS.TIMESCALE },
-        SERVO_SCALE,
+        PWM,
+        f32,
+        1,
+        { SERVO_PID_PARAMS.KP },
+        { SERVO_PID_PARAMS.KI },
+        { SERVO_PID_PARAMS.KD },
+        12,
+        -12,
+        { SERVO_PID_PARAMS.TIMESCALE },
+        { SERVO_PID_PARAMS.SCALE },
     >;
 }

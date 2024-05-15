@@ -36,7 +36,7 @@ impl<PWM: Instance> Servo<PWM> {
     /// The minimum angle for steering actuation.
     pub const MIN_ANGLE: i32 = -15;
     /// The steering seems to be offset by some constant factor.
-    pub const STEERING_ERROR: i32 = 0;
+    pub const STEERING_ERROR: i32 = 3;
 
     /// Creates a new servo from a [`Pwm`] [`Instance`] and the associated
     /// [`Pin`].
