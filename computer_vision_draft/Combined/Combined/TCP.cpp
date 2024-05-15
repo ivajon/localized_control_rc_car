@@ -1,9 +1,6 @@
-/*#include "TCP.h"
+#include "TCP.h"
 
-
-
-
-int TCPclient(char first, char second) {
+void TCPclient(char first, char second) {
 	int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
 	sockaddr_in serverAddress;
@@ -19,7 +16,4 @@ int TCPclient(char first, char second) {
 	const char message[2] = { first, second };
 	send(clientSocket, message, sizeof(message), 0);
 
-
-	return 0;
-
-}*/
+}

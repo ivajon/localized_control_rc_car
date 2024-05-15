@@ -1,13 +1,14 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
-#include <windows.h>  
+//#include <windows.h>  
 #include "DrivabilityDetector.h"
 #include "Camera_Preprocessor.h"
 #include "StartStop.h"
 #include "TCP.h"
 #include <mutex>
 #include <thread> 
+#include <atomic>
 
 //#define RACE
 
@@ -15,13 +16,12 @@ using namespace cv;
 using namespace std;
 
 std::mutex mutex_var;
-std::condition_variable cp;
+std::mutex stopMutex;
 Mat grayImage;
 Mat hsvImage;
 int frameID;
-atomic<bool> stop = true;
+bool stop = true;
 bool initialized = false;
-
 
 
 void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
@@ -30,9 +30,11 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 	bool running = false;
 	int lastFrameID = 0;
 	while (true) { 
+		stopMutex.lock();
 		if (stop) {
 			if (running) {
 				// SEND STOP
+				TCPclient(0, 0);
 			}
 			running = false;
 		}
@@ -41,8 +43,10 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		}
 		if (!running) {
 			// SEND START
+			TCPclient(1, 0);
 		}
 		running = true;
+		stopMutex.unlock();
 
 		mutex_var.lock();
 		if (grayImage.empty() || frameID == lastFrameID) {

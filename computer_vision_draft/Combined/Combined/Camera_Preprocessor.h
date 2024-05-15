@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <mutex>
+#include <thread>
 
 using namespace cv;
 using namespace std;
@@ -9,7 +10,7 @@ extern std::mutex mutex_var;
 extern Mat grayImage;
 extern Mat hsvImage;
 extern int frameID;
-extern atomic<bool> stop;
+extern bool stop;
 
 class Camera_Preprocessor
 {
