@@ -18,4 +18,4 @@ void TCPclient(char first, char second) {
 	send(clientSocket, message, sizeof(message), 0);
 
 }
-#endif
+

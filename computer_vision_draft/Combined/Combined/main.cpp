@@ -8,10 +8,13 @@
 #include <thread> 
 #include <atomic>
 
-//#define RACE
+#define RACE
 // UNCOMMENT TO RUN ON LINUX, with tcp
-//#define TCP
+#define TCP
 
+static const char FAST = 100;
+static const char MEDIUM = 50;
+static const char SLOW = 30;
 #ifdef TCP {
 	#include "TCP.h"
 }
@@ -69,6 +72,7 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 		//Call function
 		int rowFromBottom = test.calculateRowFromBottom(grayTemp);
 
+
 		
 #ifndef RACE
 		{
@@ -88,7 +92,29 @@ void main_loop(Camera_Preprocessor camReader, DrivabilityDetector test) {
 #endif
 
 		// SEND SET SPEED
-		
+		const int lower = 70;
+		const float upper = 150;
+
+		float speed = upper / (rowFromBottom - lower);
+
+		if (speed > 0.9) {
+#ifdef TCP
+			TCPclient(2, FAST);
+#endif // TCP
+			//Go fast
+		}
+		else if (speed > 0.5) {
+			//Go medium
+#ifdef TCP
+			TCPclient(2, MEDIUM);
+#endif // TCP
+		}
+		else {
+			//Go slow
+#ifdef TCP
+			TCPclient(2, SLOW);
+#endif // TCP
+		}
 
 	}
 }
