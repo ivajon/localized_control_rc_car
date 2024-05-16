@@ -27,7 +27,7 @@ pub fn sum(window: &ArrayDeque<f32, SMOOTHING, Wrapping>) -> f32 {
     // let sum = (0..(window.len()))
     // .map(|idx| (idx as f32) / { SMOOTHING as f32 })
     // .sum::<f32>();
-    window.iter().map(|value| *value).sum::<f32>() / window.len() as f32
+    window.iter().copied().map(|value| *value).sum::<f32>() / window.len() as f32
 }
 
 /// Sends a message on the channel after the given time.
