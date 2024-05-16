@@ -57,10 +57,10 @@ pub mod constants {
     /// The scheduling ranges.
     pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 2] = [
         GainParams {
-            kp: 6,
+            kp: 9,
             ki: 2,
             kd: 4,
-            max_value: 20.,
+            max_value: 25.,
             min_value: 0.,
         },
         GainParams {
@@ -68,7 +68,7 @@ pub mod constants {
             ki: 2, 
             kd: 4,
             max_value: 150.,
-            min_value: 20.,
+            min_value: 25.,
         },
     ];
 
@@ -79,7 +79,7 @@ pub mod constants {
     pub const BUFFER_SIZE: usize = 100;
 
     /// How much smoothing should be applied to signals.
-    pub const SMOOTHING: usize = 40;
+    pub const SMOOTHING: usize = 20;
 
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
@@ -93,13 +93,14 @@ pub mod constants {
 
     /// How many outliers in a row have to occur before we accept that it is the
     /// truth?
-    pub const VOTE_THRESH: usize = 3;
+    pub const VOTE_THRESH: usize = 2;
 
     /// How far before we should slow the car down a notch?
-    pub const OHSHIT_MAP: [(f32, Option<f32>); 4] = [
-        (10., Some(0.)),
-        (20., Some(10.)),
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 5] = [
+        (10., Some(10.)),
+        (20., Some(20.)),
         (40., Some(40.)),
+        (60., Some(60.)),
         (150., None),
     ];
 

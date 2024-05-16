@@ -230,7 +230,7 @@ mod app {
                         hold_for_us: _hold,
                     } => {
                         if velocity > 0 {
-                            velocity = 50;
+                            velocity = 110;
                         }
                         cx.shared
                             .velocity_reference
@@ -418,7 +418,7 @@ mod app {
                 Mono::now().duration_since_epoch().to_micros(),
             ));
             // TODO! Follow something else here.
-            cx.local.servo.follow(50.);
+            cx.local.servo.follow(5.);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
             // start_time = Mono::now();
         }
@@ -454,14 +454,16 @@ mod app {
     async fn trigger_timestamped(mut cx: trigger_timestamped::Context) {
         info!("Trigger for first pair spawned");
         // let mut time_stamp: u32 = 0;
-        let mut prev_dist_left = 0.;
+        // let mut prev_dist_left = 0.;
         let mut prev_dist_right = 0.;
-        let mut left_outlier = 0;
+        // let mut left_outlier = 0;
         let mut right_outlier = 0;
 
-        let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        // let mut left_window: ArrayDeque<f32, SMOOTHING, Wrapping> =
+        // ArrayDeque::new();
         let mut right_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
-        let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> = ArrayDeque::new();
+        // let mut diff_window: ArrayDeque<f32, SMOOTHING, Wrapping> =
+        // ArrayDeque::new();
 
         const MAX_POLL: usize = 200;
         let mut poll_counter;
@@ -472,58 +474,59 @@ mod app {
             cx.local.first_pair.trigger().await.unwrap();
             // ======================= LEFT DISTANCE =========================
 
-            // THIS IS BAD, FIX LATER
+            while let Ok(_) = cx.local.receiver_left.try_recv() {}
+            // // THIS IS BAD, FIX LATER
+            // //
             //
-
-            poll_counter = 0;
+            // poll_counter = 0;
             let zero = Instant::from_ticks(0);
-            let left_distance = 'poll: loop {
-                while cx.shared.times.lock(|times| times[1] == zero) {
-                    if poll_counter >= MAX_POLL {
-                        error!("Max polling exceeded");
-                        break 'poll 0.;
-                    }
-                    Mono::delay(1.millis()).await;
-                    if let Ok(value) = cx.local.receiver_left.try_recv() {
-                        break 'poll value;
-                    }
-                    poll_counter += 1;
-                }
-                if poll_counter >= MAX_POLL {
-                    error!("Max polling exceeded for falling edge");
-                    break 'poll 0.;
-                }
-                match cx.local.receiver_left.try_recv() {
-                    Ok(value) => {
-                        info!("Left value : {:?}", value);
-                        let mut val = value;
-                        while let Ok(inner_val) = cx.local.receiver_left.try_recv() {
-                            info!("Left value : {:?}", inner_val);
-                            val = inner_val;
-                        }
-                        break 'poll val;
-                    }
-                    Err(_) => {
-                        poll_counter += 1;
-                        Mono::delay(1.millis()).await;
-                        continue;
-                        // continue 'main;
-                    }
-                };
-            };
-            if left_distance == 0. {
-                cx.shared.times.lock(|times| {
-                    times[1] = zero;
-                    times[2] = zero;
-                });
-                found_outlier = true;
-            }
-
-            found_outlier |= left_distance.reject::<VOTE_THRESH>(
-                &mut prev_dist_left,
-                &mut left_outlier,
-                &OUTLIER_LIMIT,
-            );
+            // let left_distance = 'poll: loop {
+            //     while cx.shared.times.lock(|times| times[1] == zero) {
+            //         if poll_counter >= MAX_POLL {
+            //             error!("Max polling exceeded");
+            //             break 'poll 0.;
+            //         }
+            //         Mono::delay(1.millis()).await;
+            //         if let Ok(value) = cx.local.receiver_left.try_recv() {
+            //             break 'poll value;
+            //         }
+            //         poll_counter += 1;
+            //     }
+            //     if poll_counter >= MAX_POLL {
+            //         error!("Max polling exceeded for falling edge");
+            //         break 'poll 0.;
+            //     }
+            //     match cx.local.receiver_left.try_recv() {
+            //         Ok(value) => {
+            //             info!("Left value : {:?}", value);
+            //             let mut val = value;
+            //             while let Ok(inner_val) = cx.local.receiver_left.try_recv() {
+            //                 info!("Left value : {:?}", inner_val);
+            //                 val = inner_val;
+            //             }
+            //             break 'poll val;
+            //         }
+            //         Err(_) => {
+            //             poll_counter += 1;
+            //             Mono::delay(1.millis()).await;
+            //             continue;
+            //             // continue 'main;
+            //         }
+            //     };
+            // };
+            // if left_distance == 0. {
+            //     cx.shared.times.lock(|times| {
+            //         times[1] = zero;
+            //         times[2] = zero;
+            //     });
+            //     found_outlier = true;
+            // }
+            //
+            // found_outlier |= left_distance.reject::<VOTE_THRESH>(
+            //     &mut prev_dist_left,
+            //     &mut left_outlier,
+            //     &OUTLIER_LIMIT,
+            // );
 
             // ======================= RIGHT DISTANCE =========================
             poll_counter = 0;
@@ -585,13 +588,13 @@ mod app {
                 // Mono::delay(250.millis()).await;
                 continue 'main;
             }
-            info!("Distance ({:?},{:?})", left_distance, right_distance);
+            // info!("Distance ({:?},{:?})", left_distance, right_distance);
 
-            left_window.push_back(left_distance);
+            // left_window.push_back(left_distance);
             right_window.push_back(right_distance);
 
-            let difference = sum(&left_window) - sum(&right_window);
-            diff_window.push_back(difference);
+            // let difference = sum(&left_window) - sum(&right_window);
+            // diff_window.push_back(difference);
             // let difference = sum(&diff_window);
 
             match cx.local.wall_difference_sender.send(right_distance).await {
