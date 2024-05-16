@@ -466,7 +466,7 @@ where
 
         self.previous = error;
 
-        let output = ((p + i + d) / fixed_point)
+        let output = Output::default() - ((p + i + d) / fixed_point)
             .max(threshold_min)
             .min(threshold_max);
 

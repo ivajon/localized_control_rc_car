@@ -218,7 +218,7 @@ impl<
 
         self.previous_error = error;
 
-        let output = ((p + i + d) / fixed_point)
+        let output = -((p + i + d) / fixed_point)
             .max(threshold_min)
             .min(threshold_max);
 
