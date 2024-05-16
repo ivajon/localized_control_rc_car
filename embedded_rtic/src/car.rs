@@ -64,9 +64,9 @@ pub mod constants {
             min_value: 0.,
         },
         GainParams {
-            kp: 6,
-            ki: 2, 
-            kd: 4,
+            kp: 8,
+            ki: 4,
+            kd: 5,
             max_value: 150.,
             min_value: 25.,
         },
