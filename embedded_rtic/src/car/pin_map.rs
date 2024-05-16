@@ -270,18 +270,18 @@ impl<const SPI_USED: bool, const ESC_USED: bool, const EVENTS_CONFIGURED: bool>
     }
 }
 
+/// The final pin cluster retruned on consumption.
+pub type FinalPins = (
+    SonarPins,
+    (SonarPins, SonarPins),
+    (SonarPins, SonarPins),
+    Pin<Input<PullUp>>,
+);
 impl<const SPI_USED: bool, const SERVO_USED: bool, const ESC_USED: bool>
     PinMapping<SPI_USED, SERVO_USED, ESC_USED, true>
 {
     /// Consumes the type returning the raw pins.
-    pub fn consume(
-        self,
-    ) -> (
-        SonarPins,
-        (SonarPins, SonarPins),
-        (SonarPins, SonarPins),
-        Pin<Input<PullUp>>,
-    ) {
+    pub fn consume(self) -> FinalPins {
         (
             self.sonar_forward,
             (self.sonar_left, self.sonar_left_2),

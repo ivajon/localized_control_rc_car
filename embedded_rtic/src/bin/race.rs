@@ -224,24 +224,18 @@ mod app {
             Some(message) => {
                 let payload = message.payload();
                 info!("Got message {:?}", payload);
-                match payload {
-                    Payload::SetSpeed {
-                        mut velocity,
-                        hold_for_us: _hold,
-                    } => {
-                        if velocity > 0 {
-                            velocity = 110;
-                        }
-                        cx.shared
-                            .velocity_reference
-                            .lock(|vel| *vel = velocity as f32);
+
+                if let Payload::SetSpeed {
+                    mut velocity,
+                    hold_for_us: _hold,
+                } = payload
+                {
+                    if velocity > 0 {
+                        velocity = 110;
                     }
-                    // Payload::SetPosition { position } => {
-                    //     cx.shared
-                    //         .pose_reference
-                    //         .lock(|pose_ref| *pose_ref = position as f32);
-                    // }
-                    _ => {}
+                    cx.shared
+                        .velocity_reference
+                        .lock(|vel| *vel = velocity as f32);
                 }
             }
             None => debug!("SPI got malformed packet"),
@@ -474,7 +468,7 @@ mod app {
             cx.local.first_pair.trigger().await.unwrap();
             // ======================= LEFT DISTANCE =========================
 
-            while let Ok(_) = cx.local.receiver_left.try_recv() {}
+            while cx.local.receiver_left.try_recv().is_ok() {}
             // // THIS IS BAD, FIX LATER
             // //
             //

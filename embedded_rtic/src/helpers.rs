@@ -67,7 +67,7 @@ pub trait Abs {
 /// Rejects outliers in the data.
 pub trait OutlierRejection: PartialOrd + Sized + Sub<Self, Output = Self> + Clone + Abs {
     /// Rejects the value if it is an outlier.
-    fn reject<'to_continue, const VOTING_THRESHOLD: usize>(
+    fn reject<const VOTING_THRESHOLD: usize>(
         &self,
         previous_value: &mut Self,
         outlier_counter: &mut usize,
