@@ -32,9 +32,9 @@ impl<PWM: Instance> Servo<PWM> {
     /// Maximum duty cycle for the [`Pwm`].
     const MAXIMUM_DUTY_CYCLE: u16 = 2500;
     /// The maximum angle for steering actuation.
-    const MAX_ANGLE: i32 = 15;
+    pub const MAX_ANGLE: i32 = 15;
     /// The minimum angle for steering actuation.
-    const MIN_ANGLE: i32 = -15;
+    pub const MIN_ANGLE: i32 = -15;
     /// The steering seems to be offset by some constant factor.
     const STEERING_ERROR: i32 = 0;
 

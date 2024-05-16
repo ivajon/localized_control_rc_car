@@ -9,6 +9,7 @@
 #![feature(associated_type_defaults)]
 #![feature(generic_const_exprs)]
 #![allow(incomplete_features)]
+#![allow(clippy::result_unit_err)]
 
 pub mod controller;
 pub mod gain_scheduling;

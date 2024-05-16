@@ -151,20 +151,19 @@ impl<
         let mut min_idx = 0;
 
         for (idx, (lower_bound, _target_idx)) in self.index_map.iter().enumerate() {
-            if self.bucketer as f32 > *lower_bound * 1.05 {
-                info!("IDX : {:?}",idx);
+            if self.bucketer > *lower_bound * 1.05 {
+                info!("IDX : {:?}", idx);
                 min_idx = idx;
             } else {
                 break;
             }
         }
-        if min_idx < self.prev_idx {
-            if self.bucketer >= self.index_map[self.prev_idx].0 * 0.95 {
-                min_idx = self.prev_idx;
-            }
+
+        if min_idx < self.prev_idx && self.bucketer >= self.index_map[self.prev_idx].0 * 0.95 {
+            min_idx = self.prev_idx;
         }
 
-        info!("using idx : {:?}",min_idx);
+        info!("using idx : {:?}", min_idx);
 
         self.parameters[self.index_map[min_idx].1]
     }
@@ -174,7 +173,7 @@ impl<
     /// if successful it returns the expected value and the read value.
     pub fn actuate(&mut self) -> Result<ControlInfo<f32>, ()> {
         let output = self.compute_output()?;
-        info!("Applying {:?}",output);
+        info!("Applying {:?}", output);
 
         self.interface.set(output.actuation).unwrap();
         self.previous_actuation = output.actuation;

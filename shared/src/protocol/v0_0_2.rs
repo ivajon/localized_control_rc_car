@@ -14,7 +14,7 @@ impl Version for V0_0_2 {
     const VERSION_ID: Self::BusItem = 0b00_00_00_10;
 }
 
-/// The payload for [`V0_0_1`] of the protocol.
+/// The payload for [`V0_0_2`] of the protocol.
 #[derive(defmt::Format, PartialEq, Clone, Copy)]
 pub enum Payload {
     /// Sets the speed of the esc to the specified velocity in cm/s.
