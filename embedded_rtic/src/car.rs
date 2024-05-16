@@ -32,7 +32,7 @@ pub mod constants {
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
         KP: 500,
-        KI: 100,
+        KI: 200,
         KD: 20,
         // 10^2
         SCALE: 2,
@@ -57,16 +57,16 @@ pub mod constants {
     /// The scheduling ranges.
     pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 2] = [
         GainParams {
-            kp: 25,
-            ki: 4,
-            kd: 15,
+            kp: 6,
+            ki: 2,
+            kd: 4,
             max_value: 20.,
             min_value: 0.,
         },
         GainParams {
-            kp: 10,
+            kp: 6,
             ki: 2, 
-            kd: 7,
+            kd: 4,
             max_value: 150.,
             min_value: 20.,
         },
@@ -93,7 +93,7 @@ pub mod constants {
 
     /// How many outliers in a row have to occur before we accept that it is the
     /// truth?
-    pub const VOTE_THRESH: usize = 2;
+    pub const VOTE_THRESH: usize = 3;
 
     /// How far before we should slow the car down a notch?
     pub const OHSHIT_MAP: [(f32, Option<f32>); 4] = [

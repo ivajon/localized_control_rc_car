@@ -178,7 +178,7 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 90.,
+                velocity_reference: 0.,
                 actual_velocity_ref: 0.,
                 safety_velocity_reference: None,
                 difference: 0.,
@@ -226,9 +226,12 @@ mod app {
                 info!("Got message {:?}", payload);
                 match payload {
                     Payload::SetSpeed {
-                        velocity,
+                        mut velocity,
                         hold_for_us: _hold,
                     } => {
+                        if velocity > 0 {
+                            velocity = 50;
+                        }
                         cx.shared
                             .velocity_reference
                             .lock(|vel| *vel = velocity as f32);
@@ -334,9 +337,7 @@ mod app {
         let controller = cx.local.esc;
         let mut previous = (0f32, 0);
         // let mut counter = 0;
-        controller.follow([0.0]);
-        controller.actuate().unwrap();
-        Mono::delay(10.millis()).await;
+        Mono::delay(1000.millis()).await;
 
         loop {
             let time = Mono::now();
@@ -372,12 +373,10 @@ mod app {
                     }
                 });
 
-            cx.shared
-                .actual_velocity_ref
-                .lock(|actual_velocity_ref|{
-                    info!("USING REF {:?}",actual_velocity_ref);
-                    *actual_velocity_ref = reference
-                });
+            cx.shared.actual_velocity_ref.lock(|actual_velocity_ref| {
+                info!("USING REF {:?}", actual_velocity_ref);
+                *actual_velocity_ref = reference
+            });
 
             controller.register_measurement(measurement.0, measurement.1 as u32);
             controller.follow([reference]);
@@ -389,7 +388,6 @@ mod app {
             let outer = measurement;
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
-
 
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
@@ -420,7 +418,7 @@ mod app {
                 Mono::now().duration_since_epoch().to_micros(),
             ));
             // TODO! Follow something else here.
-            cx.local.servo.follow(0.);
+            cx.local.servo.follow(50.);
             cx.local.servo.actuate().unwrap_or_else(|_| panic!());
             // start_time = Mono::now();
         }
@@ -594,9 +592,9 @@ mod app {
 
             let difference = sum(&left_window) - sum(&right_window);
             diff_window.push_back(difference);
-            let difference = sum(&diff_window);
+            // let difference = sum(&diff_window);
 
-            match cx.local.wall_difference_sender.send(difference).await {
+            match cx.local.wall_difference_sender.send(right_distance).await {
                 Ok(_) => {}
                 Err(_) => {
                     error!("difference sender 1 channel full.");
