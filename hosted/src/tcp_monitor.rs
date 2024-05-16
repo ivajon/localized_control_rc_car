@@ -1,5 +1,6 @@
-use std::{error::Error, sync::Arc};
+//!
 
+use std::{error::Error, sync::Arc};
 use crate::tui::input_box::CommitWriter;
 use tokio::{
     io::AsyncReadExt,
@@ -49,7 +50,7 @@ impl TcpMonitor {
                 Ok(bytes) => bytes,
                 _ => return,
             };
-
+            println!("got buf: {:?}", buf);
             if n == 0 {
                 break;
             }
