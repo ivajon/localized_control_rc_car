@@ -39,11 +39,6 @@ impl<PWM: Instance> Esc<PWM> {
 
     /// Instantiates a new [`Esc`] that is controlled over PWM.
     pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
-        trace!(
-            "Instantiating a new ESC on pwm : {:?} and pin : {:?}",
-            pwm,
-            pin
-        );
         let pwm = Pwm::new(pwm);
 
         // PWM configuration, sets the period to 50 Hz and specifies a duty cycle

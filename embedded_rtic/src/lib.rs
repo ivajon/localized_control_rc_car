@@ -53,16 +53,27 @@
 #![no_main]
 #![no_std]
 #![deny(warnings)]
+#![feature(async_fn_traits)]
+#![feature(async_closure)]
 #![deny(missing_docs)]
 #![deny(clippy::all)]
 #![allow(clippy::manual_range_contains)]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
-use defmt_rtt as _; // global logger
-use panic_probe as _; // memory layout
+use car::wrappers::Instant;
+use defmt::{trace, warn};
+use defmt_rtt as _;
+use embedded_hal::digital::InputPin;
+use nrf52840_hal::gpio::{Input, Pin, PullDown};
+// global logger
+use panic_probe as _;
+use rtic_sync::channel::Sender;
+
+use crate::car::constants::{MAGNET_SPACING, RADIUS}; // memory layout
 
 pub mod car;
 pub mod esc;
+pub mod helpers;
 pub mod servo;
 pub mod wrapper;
 
@@ -86,5 +97,68 @@ defmt::timestamp!("{=usize}", {
 pub fn exit() -> ! {
     loop {
         cortex_m::asm::bkpt();
+    }
+}
+
+/// Computes the distance for a specific sensor channel and sends that in the
+/// specified [`Sender`].
+#[inline(always)]
+pub fn compute_distance(
+    sonar: usize,
+    channels: &mut [Sender<'static, f32, { car::constants::CAPACITY }>],
+    pins: &mut [Pin<Input<PullDown>>],
+    times: &mut [Instant],
+    time: Instant,
+) {
+    let zero = Instant::from_ticks(0);
+
+    if times[sonar] == zero {
+        if pins[sonar].is_high().is_ok_and(|el| el) {
+            times[sonar] = time;
+        } else {
+            warn!("Tried to set time on falling edge");
+        }
+    } else {
+        let distance = time
+            .checked_duration_since(times[sonar])
+            .unwrap()
+            .to_micros() as f32
+            / 56.;
+        match channels[sonar].try_send(distance) {
+            Ok(_) => {}
+            _ => {
+                defmt::error!(
+                    "Distance did not fit in to the buffer, scheduling is probably broken."
+                );
+            }
+        }
+        times[sonar] = zero;
+    }
+}
+
+/// Computes the velocity of the car based on time stamps in micro seconds.
+#[inline(always)]
+pub fn compute_velocity(
+    previous_time: &mut Option<u64>,
+    time: u64,
+    // sender: &mut Sender<'static, i32, CAPACITY>,
+    vel: &mut (f32, u64),
+) {
+    match previous_time {
+        Some(value) => {
+            let dt = time - *value;
+            let angvel = (MAGNET_SPACING as u64) * 1_000_000 / dt;
+            let angvel = angvel / 10_000;
+            trace!("Angular velocity {:?}", angvel);
+            let velocity = RADIUS * angvel;
+            trace!("Velocity : {:?} cm/s", vel);
+            *previous_time = Some(time);
+
+            *vel = (velocity as f32, time);
+            // let _ = sender.try_send(vel as i32);
+        }
+        None => {
+            *previous_time = Some(time);
+        }
     }
 }

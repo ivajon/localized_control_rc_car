@@ -281,6 +281,7 @@ mod app {
                         }
                     }
                 }
+                _ => {}
             }
         }
         // Clear interrupt pending bits.

@@ -20,3 +20,4 @@ bbr = "build --release --bin"
 
 [env]
 DEFMT_LOG = "info"
+# DEFMT_LOG = "trace"

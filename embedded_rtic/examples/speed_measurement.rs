@@ -150,7 +150,7 @@ mod app {
                 delay(10000000);
             }
 
-            for i in (20..23).rev() {
+            for i in (200..230).rev() {
                 cx.local.esc.speed(i).unwrap();
                 info!("Set speed to {:?}", i);
                 delay(10000000);

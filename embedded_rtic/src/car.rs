@@ -1,6 +1,7 @@
 //! BSP for our car, defines some specifics for out car.
 
-use shared::controller::Pid;
+pub mod event;
+pub mod pin_map;
 
 #[allow(non_snake_case)]
 /// A collection of PID parameters.
@@ -24,25 +25,84 @@ pub struct PidParams {
 /// Defines a few intrinsic constants for the car.
 pub mod constants {
     use defmt::Format;
+    use shared::gain_scheduling::GainParams;
 
     use super::PidParams;
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 300,
-        KI: 80,
-        KD: 31,
+        KP: 500,
+        KI: 200,
+        KD: 20,
         // 10^2
         SCALE: 2,
         TS: 50_000,
         TIMESCALE: 1_000_000,
     };
 
+    /// The PID parameters for the ESC.
+    // pub const SERVO_PID_PARAMS: PidParams = PidParams {
+    // KP: 150,
+    // KI: 5,
+    // KD: 60,
+    // 10^3
+    // SCALE: 3,
+    // This is not used.
+    // TS: 60_000, // 4 Hz should probly be higher
+    // TIMESCALE: 1_000_000,
+    // };
+
+    pub const SERVO_SCALE: u32 = 2;
+
+    /// The scheduling ranges.
+    pub const SERVO_PID_PARAMS_SCHEDULE: [GainParams<SERVO_SCALE>; 2] = [
+        GainParams {
+            kp: 9,
+            ki: 2,
+            kd: 4,
+            max_value: 25.,
+            min_value: 0.,
+        },
+        GainParams {
+            kp: 8,
+            ki: 4,
+            kd: 5,
+            max_value: 150.,
+            min_value: 25.,
+        },
+    ];
+
+    /// The message queue capacity.
+    pub const CAPACITY: usize = 100;
+
+    /// The message queue capacity.
+    pub const BUFFER_SIZE: usize = 100;
+
+    /// How much smoothing should be applied to signals.
+    pub const SMOOTHING: usize = 20;
+
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
 
     /// The wheel radius in centimeters.
     pub const RADIUS: u64 = 3;
+
+    /// How much can a sonar value increase/decrease wihout being concidered an
+    /// outlier.
+    pub const OUTLIER_LIMIT: f32 = 150.;
+
+    /// How many outliers in a row have to occur before we accept that it is the
+    /// truth?
+    pub const VOTE_THRESH: usize = 2;
+
+    /// How far before we should slow the car down a notch?
+    pub const OHSHIT_MAP: [(f32, Option<f32>); 5] = [
+        (10., Some(10.)),
+        (20., Some(20.)),
+        (40., Some(40.)),
+        (60., Some(60.)),
+        (150., None),
+    ];
 
     /// Sonar Channels for multiple.
     #[derive(Copy, Clone, Format)]
@@ -51,8 +111,12 @@ pub mod constants {
         Forward,
         /// Sonar position: Left
         Left,
+        /// Second Sonar position: Left
+        Left2,
         /// Sonar positions: Right
         Right,
+        /// Second Sonar position: Right
+        Right2,
     }
 
     /// The minimum measurable velocity in cm / s.
@@ -69,7 +133,25 @@ pub mod constants {
 
 /// Defines wrapper types that make the [`rtic`] code easier to read.
 pub mod wrappers {
-    use super::{constants::ESC_PID_PARAMS, Pid};
+    use nrf52840_hal::pac::{PWM0, PWM1, SPIS0};
+    pub use rtic_monotonics::nrf::timer::Timer0 as Mono;
+    use shared::{
+        controller::Pid,
+        gain_scheduling::{GainParams, GainScheduler},
+    };
+
+    use super::constants::{ESC_PID_PARAMS, SERVO_PID_PARAMS_SCHEDULE, SERVO_SCALE};
+
+    /// The spi device used.
+    pub type SpiInstance = SPIS0;
+
+    /// The PWM in charge of controlling the [`Esc`](crate::esc::Esc)
+    pub type EscPwm = PWM0;
+    /// The PWM in charge of controlling the [`Servo`](crate::servo::Servo)
+    pub type ServoPwm = PWM1;
+
+    /// The duration type.
+    pub type Instant = <Mono as rtic_monotonics::Monotonic>::Instant;
 
     /// A wrapper around the [`Pid`] controller with predefined coefficients.
     pub type MotorController<PWM> = Pid<
@@ -82,8 +164,20 @@ pub mod wrappers {
         { ESC_PID_PARAMS.KD },
         { ESC_PID_PARAMS.TS },
         1000,
-        -1000,
+        -0,
         { ESC_PID_PARAMS.TIMESCALE },
         { ESC_PID_PARAMS.SCALE },
+    >;
+
+    /// A wrapper around the [`Pid`] controller with predefined coefficients.
+    pub type ServoController<PWM> = GainScheduler<
+        crate::servo::Error,
+        crate::servo::Servo<PWM>,
+        GainParams<SERVO_SCALE>,
+        { SERVO_PID_PARAMS_SCHEDULE.len() },
+        10,
+        -10,
+        { ESC_PID_PARAMS.TIMESCALE },
+        SERVO_SCALE,
     >;
 }

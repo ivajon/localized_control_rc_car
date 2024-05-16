@@ -6,6 +6,7 @@ use nrf52840_hal::{
     pwm::{Channel, Instance, Pwm},
     time::U32Ext,
 };
+use shared::controller::Channel as ControllerChannel;
 
 use self::sealed::Remap;
 use crate::wrapper::{Degrees, Exti32};
@@ -31,18 +32,17 @@ impl<PWM: Instance> Servo<PWM> {
     /// Maximum duty cycle for the [`Pwm`].
     const MAXIMUM_DUTY_CYCLE: u16 = 2500;
     /// The maximum angle for steering actuation.
-    const MAX_ANGLE: i32 = 15;
+    pub const MAX_ANGLE: i32 = 15;
     /// The minimum angle for steering actuation.
-    const MIN_ANGLE: i32 = -15;
+    pub const MIN_ANGLE: i32 = -15;
     /// The steering seems to be offset by some constant factor.
-    const STEERING_ERROR: i32 = -19;
+    const STEERING_ERROR: i32 = 0;
 
     /// Creates a new servo from a [`Pwm`] [`Instance`] and the associated
     /// [`Pin`].
     ///
     /// This allows use of any [`Pwm`] peripheral and [`Pin`] on the board.
     pub fn new(pwm: PWM, pin: Pin<Output<PushPull>>) -> Self {
-        trace!("Instantiating servo from pwm : {:?} on pin {:?}", pwm, pin);
         let pwm = Pwm::new(pwm);
 
         // Pwm configuration.
@@ -78,7 +78,7 @@ impl<PWM: Instance> Servo<PWM> {
             return Err(Error::InvalidAngle(value + Self::STEERING_ERROR));
         }
 
-        let value: i16 = value
+        let value: i16 = (value + Self::STEERING_ERROR)
             .try_into()
             .map_err(|_err| Error::InvalidAngle(value))?;
 
@@ -94,6 +94,14 @@ impl<PWM: Instance> Servo<PWM> {
         self.pwm
             .set_duty_on(Channel::C0, Self::MAXIMUM_DUTY_CYCLE - value);
         Ok(())
+    }
+}
+
+impl<I: Instance> ControllerChannel<Error> for Servo<I> {
+    type Output = f32;
+
+    fn set(&mut self, value: Self::Output) -> Result<(), Error> {
+        self.angle((value as i32).deg())
     }
 }
 

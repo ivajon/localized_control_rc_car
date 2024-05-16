@@ -20,6 +20,7 @@ fn main() {
     // `memory.x` is changed.
     println!("cargo:rerun-if-changed=memory.x");
     println!("cargo:rerun-if-changed=custom_link.x");
+    println!("cargo:rerun-if-changed=./.cargo/config.toml");
 
     println!("cargo:rustc-link-arg-bins=--nmagic");
     // println!("cargo:rustc-link-arg-bins=-Tcustom_link.x");

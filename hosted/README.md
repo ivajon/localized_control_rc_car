@@ -1,6 +1,9 @@
 # Hosted software
 
-## Reference planning
+This crate provides a simple tcp/spi translator and some graphing tooling. To run either of these simply use
 
-A nice little writeup on how to use opencv via rust.
-<https://blog.devgenius.io/rust-and-opencv-bb0467bf35ff>
+```bash
+cargo run --example=<example name>
+```
+
+To execute the given example.

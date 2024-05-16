@@ -9,7 +9,7 @@ cortex-m-rt = { version = "0.7" }
 defmt = { version = "0.3", features = ["encoding-rzcobs"] }
 defmt-rtt = { version = "0.4" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
-rtic = { version = "2.0.0", features = ["thumbv7-backend"] }
+rtic = { version = "2.1.1", features = ["thumbv7-backend"] }
 nrf52840-hal = { git = "https://github.com/nrf-rs/nrf-hal/", features = ["rt"],default-features = false }
 rtic-monotonics = { version = "1.0.0", features = [
     "cortex-m-systick",
@@ -36,25 +36,17 @@ incremental = false
 opt-level = "s"         # <-
 overflow-checks = true  # <-
 
-# cargo test
-[profile.test]
-codegen-units = 1
-debug = 2
-debug-assertions = true # <-
-incremental = false
-opt-level = "s"         # <-
-overflow-checks = true  # <-
 
 # cargo build/run --release
 [profile.release]
 codegen-units = 1
-debug = 2
+debug = false
 debug-assertions = false # <-
-incremental = false
+incremental = false 
 lto = 'fat'
-opt-level = "s"          # <-
 overflow-checks = false  # <-
 strip = "debuginfo"
+opt-level = 3
 
 # cargo test --release
 [profile.bench]

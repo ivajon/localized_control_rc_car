@@ -73,9 +73,33 @@ pub struct Pid<
     previous_actuation: Output,
 }
 
+/// This assumes that we have a i32 as data.
+pub struct PidDynamic<
+    Error: Debug,
+    Interface: Channel<Error>,
+    Output: Sized,
+    const BUFFER: usize,
+    const KP: i32,
+    const KI: i32,
+    const KD: i32,
+    const THRESHOLD_MAX: i32,
+    const THRESHOLD_MIN: i32,
+    const TIMESCALE: i32,
+    const FIXED_POINT: u32,
+> {
+    err: PhantomData<Error>,
+    out: Interface,
+    reference: ArrayDeque<Output, BUFFER>,
+    previous: Output,
+    // This might need to be changed in to i64 to not cause errors.
+    integral: Output,
+    measurement: (u32, Output),
+    previous_actuation: Output,
+}
+
 /// Wraps the info about a specific time step in the control sequence.
-#[derive(Debug)]
-pub struct ControlInfo<Output: Sized> {
+#[derive(Debug, defmt::Format)]
+pub struct ControlInfo<Output: Sized + defmt::Format> {
     /// The expected value.
     pub reference: Output,
     /// The actual value read from the [`Channel`].
@@ -95,7 +119,7 @@ pub struct ControlInfo<Output: Sized> {
 impl<
         Error: Debug,
         Interface: Channel<Error, Output = Output>,
-        Output: Sized,
+        Output: Sized + defmt::Format,
         ConversionError: Debug,
         const BUFFER: usize,
         const KP: i32,
@@ -274,6 +298,191 @@ where
     }
 }
 
+impl<
+        Error: Debug,
+        Interface: Channel<Error, Output = Output>,
+        Output: Sized + defmt::Format,
+        ConversionError: Debug,
+        const BUFFER: usize,
+        const KP: i32,
+        const KI: i32,
+        const KD: i32,
+        const THRESHOLD_MAX: i32,
+        const THRESHOLD_MIN: i32,
+        const TIMESCALE: i32,
+        const FIXED_POINT: u32,
+    >
+    PidDynamic<
+        Error,
+        Interface,
+        Output,
+        BUFFER,
+        KP,
+        KI,
+        KD,
+        THRESHOLD_MAX,
+        THRESHOLD_MIN,
+        TIMESCALE,
+        FIXED_POINT,
+    >
+where
+    Output: Sub<Output, Output = Output>
+        + Mul<Output, Output = Output>
+        + Div<Output, Output = Output>
+        + DoubleSize
+        + Default
+        + AddAssign<Output>
+        + Add<Output, Output = Output>
+        + Copy
+        + PartialOrd
+        + CmpExt,
+    Output::Ret: Add<Output::Ret, Output = Output::Ret> + Div<Output::Ret, Output = Output::Ret>,
+    i32: Convert<Output, Error = ConversionError>,
+    u64: Convert<Output, Error = ConversionError>,
+{
+    /// Creates a new controller that sets the output on the
+    /// [`Interface`](`Channel`) using a PID control strategy.
+    pub fn new(channel: Interface) -> Self {
+        Self {
+            out: channel,
+            err: PhantomData,
+            reference: ArrayDeque::new(),
+            previous: Output::default(),
+            integral: Output::default(),
+            measurement: (0, Output::default()),
+            previous_actuation: Output::default(),
+        }
+    }
+
+    /// Completely erases previous control signals.
+    pub fn follow<I: IntoIterator<Item = Output>>(&mut self, values: I) {
+        self.reference.clear();
+        self.reference.extend(values);
+    }
+
+    /// Extends the reference signal with new values.
+    pub fn extend<I: IntoIterator<Item = Output>>(&mut self, values: I) {
+        self.reference.extend(values);
+    }
+
+    /// Registers the most recent measurement.
+    pub fn register_measurement(&mut self, value: Output, time_step: u32) {
+        self.measurement = (time_step, value);
+    }
+
+    /// Computes the control signal using a PID control strategy.
+    ///
+    /// if successful it returns the expected value and the read value.
+    pub fn actuate_rate_limited(
+        &mut self,
+        rate_limit: Output,
+        ts: u64,
+    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>>
+    where
+        <Output as DoubleSize>::Ret: Debug + Copy,
+        Output: Debug + Copy,
+    {
+        let mut output_pre_rate_limit = self.compute_output(ts)?;
+
+        let output = match (
+            output_pre_rate_limit.actuation > (self.previous_actuation + rate_limit),
+            output_pre_rate_limit.actuation < (self.previous_actuation - rate_limit),
+        ) {
+            (true, _) => self.previous_actuation + rate_limit,
+            (_, true) => self.previous_actuation - rate_limit,
+            (_, _) => output_pre_rate_limit.actuation,
+        };
+
+        self.out
+            .set(output)
+            .map_err(|err| ControllerError::ChannelError(err))?;
+        self.previous_actuation = output;
+        output_pre_rate_limit.actuation = output;
+        Ok(output_pre_rate_limit)
+    }
+
+    /// Computes the control signal using a PID control strategy.
+    ///
+    /// if successful it returns the expected value and the read value.
+    pub fn actuate(
+        &mut self,
+        ts: u64,
+    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>>
+    where
+        <Output as DoubleSize>::Ret: Debug + Copy,
+        Output: Debug + Copy,
+    {
+        let output = self.compute_output(ts)?;
+
+        self.out
+            .set(output.actuation)
+            .map_err(|err| ControllerError::ChannelError(err))?;
+        self.previous_actuation = output.actuation;
+
+        Ok(output)
+    }
+
+    fn compute_output(
+        &mut self,
+        ts: u64,
+    ) -> Result<ControlInfo<Output>, ControllerError<Error, ConversionError>> {
+        let target: Output = match self.reference.pop_front() {
+            Some(value) => value,
+            None => return Err(ControllerError::BufferEmpty),
+        };
+
+        let kp: Output = KP.convert()?;
+        let ki: Output = KI.convert()?;
+        let kd: Output = KD.convert()?;
+
+        let time_scale: Output = TIMESCALE.convert()?;
+        let ts: Output = ts.convert()?;
+
+        let threshold_min = THRESHOLD_MIN.convert()?;
+        let threshold_max = THRESHOLD_MAX.convert()?;
+
+        let fixed_point = { 10i32.pow(FIXED_POINT) }.convert()?;
+
+        let actual: Output = self.measurement.1;
+
+        let error = target - actual;
+
+        let p = error * kp;
+
+        // Integral is approximated as a sum of discrete signals.
+        let avg: Output::Ret = self.previous.double_size() + error.double_size();
+        let two: Output = 2.convert()?;
+        let two = two.double_size();
+        self.integral +=
+            (Output::half_size(avg / two).map_err(|_| ControllerError::ValueToLarge)?) * ts
+                / time_scale;
+
+        self.integral = self.integral.max(threshold_min).min(threshold_max);
+
+        let i = self.integral * ki;
+
+        // Compute the rate of change between previous time-step and this time-step.
+        let d = kd * time_scale * (error - self.previous) / ts;
+
+        self.previous = error;
+
+        let output = Output::default()
+            - ((p + i + d) / fixed_point)
+                .max(threshold_min)
+                .min(threshold_max);
+
+        Ok(ControlInfo {
+            reference: target,
+            measured: actual,
+            actuation: output,
+            p,
+            i,
+            d,
+            pre_threshold: (p + i + d) / fixed_point,
+        })
+    }
+}
+
 #[macro_export]
 /// Makes the instantiation of a new [`PID`](Pid) controller a bit more
 /// readable.
@@ -379,6 +588,22 @@ mod sealed {
 
         fn convert(self) -> Result<i32, Self::Error> {
             Ok(self)
+        }
+    }
+
+    impl Convert<i32> for u64 {
+        type Error = Infallible;
+
+        fn convert(self) -> Result<i32, Self::Error> {
+            Ok(self as i32)
+        }
+    }
+
+    impl Convert<f32> for u64 {
+        type Error = Infallible;
+
+        fn convert(self) -> Result<f32, Self::Error> {
+            Ok(self as f32)
         }
     }
 
