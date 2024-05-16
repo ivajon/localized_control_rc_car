@@ -98,8 +98,8 @@ pub struct PidDynamic<
 }
 
 /// Wraps the info about a specific time step in the control sequence.
-#[derive(Debug,defmt::Format)]
-pub struct ControlInfo<Output: Sized+defmt::Format> {
+#[derive(Debug, defmt::Format)]
+pub struct ControlInfo<Output: Sized + defmt::Format> {
     /// The expected value.
     pub reference: Output,
     /// The actual value read from the [`Channel`].
@@ -119,7 +119,7 @@ pub struct ControlInfo<Output: Sized+defmt::Format> {
 impl<
         Error: Debug,
         Interface: Channel<Error, Output = Output>,
-        Output: Sized+defmt::Format,
+        Output: Sized + defmt::Format,
         ConversionError: Debug,
         const BUFFER: usize,
         const KP: i32,
@@ -301,7 +301,7 @@ where
 impl<
         Error: Debug,
         Interface: Channel<Error, Output = Output>,
-        Output: Sized+defmt::Format,
+        Output: Sized + defmt::Format,
         ConversionError: Debug,
         const BUFFER: usize,
         const KP: i32,
@@ -481,8 +481,6 @@ where
         })
     }
 }
-
-
 
 #[macro_export]
 /// Makes the instantiation of a new [`PID`](Pid) controller a bit more

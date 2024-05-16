@@ -31,9 +31,9 @@ pub mod constants {
 
     /// The PID parameters for the ESC.
     pub const ESC_PID_PARAMS: PidParams = PidParams {
-        KP: 100,
-        KI: 300,
-        KD: 0,
+        KP: 500,
+        KI: 100,
+        KD: 20,
         // 10^2
         SCALE: 2,
         TS: 50_000,
@@ -60,15 +60,15 @@ pub mod constants {
             kp: 25,
             ki: 4,
             kd: 15,
-            max_value: 30.,
+            max_value: 20.,
             min_value: 0.,
         },
         GainParams {
-            kp: { 25 / 3 },
-            ki: { 4 / 2 },
-            kd: { 15 / 3 },
+            kp: 10,
+            ki: 2, 
+            kd: 7,
             max_value: 150.,
-            min_value: 30.,
+            min_value: 20.,
         },
     ];
 
@@ -79,7 +79,7 @@ pub mod constants {
     pub const BUFFER_SIZE: usize = 100;
 
     /// How much smoothing should be applied to signals.
-    pub const SMOOTHING: usize = 10;
+    pub const SMOOTHING: usize = 40;
 
     /// The magnet spacing in the rotary encoder.
     pub const MAGNET_SPACING: u32 = 31415/4/* 2 * 31415 / 3 */;
@@ -97,9 +97,9 @@ pub mod constants {
 
     /// How far before we should slow the car down a notch?
     pub const OHSHIT_MAP: [(f32, Option<f32>); 4] = [
-        (30., Some(0.)),
-        (40., Some(10.)),
-        (60., Some(40.)),
+        (10., Some(0.)),
+        (20., Some(10.)),
+        (40., Some(40.)),
         (150., None),
     ];
 
@@ -163,7 +163,7 @@ pub mod wrappers {
         { ESC_PID_PARAMS.KD },
         { ESC_PID_PARAMS.TS },
         1000,
-        -1000,
+        -0,
         { ESC_PID_PARAMS.TIMESCALE },
         { ESC_PID_PARAMS.SCALE },
     >;

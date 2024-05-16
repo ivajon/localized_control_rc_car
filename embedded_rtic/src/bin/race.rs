@@ -20,6 +20,7 @@ mod app {
         car::{
             constants::{
                 Sonar,
+                BUFFER_SIZE,
                 CAPACITY,
                 ESC_PID_PARAMS,
                 MAGNET_SPACING,
@@ -29,7 +30,6 @@ mod app {
                 RADIUS,
                 SMOOTHING,
                 VOTE_THRESH,
-                BUFFER_SIZE
             },
             event::{EventManager, GpioEvents},
             pin_map::PinMapping,
@@ -45,7 +45,8 @@ mod app {
         gpio::{self, Input, Output, Pin, PullDown, PushPull},
         gpiote::*,
         pac::{PWM0, PWM1, SPIS0},
-        ppi, spis::Transfer,
+        ppi,
+        spis::Transfer,
     };
     use rtic_monotonics::{
         nrf::timer::{fugit::ExtU64, Timer0 as Mono},
@@ -68,6 +69,7 @@ mod app {
     struct Shared {
         velocity: (f32, u64),
         velocity_reference: f32,
+        actual_velocity_ref: f32,
         safety_velocity_reference: Option<f32>,
         difference: f32,
         left_distance: (f32, u64),
@@ -123,7 +125,6 @@ mod app {
         let p0 = gpio::p0::Parts::new(cx.device.P0);
         let p1 = gpio::p1::Parts::new(cx.device.P1);
 
-
         // ===================== CONFIGURE PINS =====================
         let pins = PinMapping::new(p0, p1);
 
@@ -177,7 +178,8 @@ mod app {
         (
             Shared {
                 velocity: (0., 0),
-                velocity_reference: 0.,
+                velocity_reference: 90.,
+                actual_velocity_ref: 0.,
                 safety_velocity_reference: None,
                 difference: 0.,
                 left_distance: (0., 0),
@@ -205,7 +207,7 @@ mod app {
 
                 servo,
                 esc,
-                spis:Some(spis)
+                spis: Some(spis),
             },
         )
     }
@@ -325,7 +327,7 @@ mod app {
         // This should not be needed.
     }
 
-    #[task(local = [esc], shared = [velocity,velocity_reference,safety_velocity_reference],priority=4)]
+    #[task(local = [esc], shared = [velocity,velocity_reference,safety_velocity_reference,actual_velocity_ref],priority=4)]
     /// Provides a PID controller for the ESC.
     async fn controll_loop_velocity(mut cx: controll_loop_velocity::Context) {
         info!("Controll loop velocity spawned");
@@ -364,8 +366,17 @@ mod app {
                 .safety_velocity_reference
                 .lock(|safety_velocity_reference| {
                     if let Some(safe) = safety_velocity_reference {
-                        reference = *safe;
+                        if *safe < reference {
+                            reference = *safe;
+                        }
                     }
+                });
+
+            cx.shared
+                .actual_velocity_ref
+                .lock(|actual_velocity_ref|{
+                    info!("USING REF {:?}",actual_velocity_ref);
+                    *actual_velocity_ref = reference
                 });
 
             controller.register_measurement(measurement.0, measurement.1 as u32);
@@ -379,27 +390,20 @@ mod app {
 
             cx.shared.velocity.lock(|measurement| *measurement = outer);
 
-            let duration = Mono::now()
-                .checked_duration_since(time)
-                .unwrap()
-                .to_micros();
-            if duration > ESC_PID_PARAMS.TS as u64 {
-                defmt::error!("ESC controll loop took {:?} us", duration);
-            }
 
             // Delay between entry time and actuation time.
             Mono::delay_until(time + { ESC_PID_PARAMS.TS as u64 }.micros()).await;
         }
     }
 
-    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,velocity])]
+    #[task(priority = 4, local = [servo,wall_difference_recv], shared = [difference,actual_velocity_ref])]
     async fn controll_loop_steering(mut cx: controll_loop_steering::Context) {
         info!("Controll loop steering spawned");
         // let mut start_time = Instant::from_ticks(0);
         loop {
             cx.shared
-                .velocity
-                .lock(|velocity| cx.local.servo.set_bucket(velocity.0));
+                .actual_velocity_ref
+                .lock(|actual_velocity_ref| cx.local.servo.set_bucket(*actual_velocity_ref));
             // Read from the channel, if sensor values are slow we will miss deadlines.
             let latest = match cx.local.wall_difference_recv.recv().await {
                 Ok(val) => val,
